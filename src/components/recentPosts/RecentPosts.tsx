@@ -1,8 +1,13 @@
 import React from "react";
 import styles from "./recentPosts.module.css";
 import Card from "../card/Card";
-import { PostApiResponse, PostWithFormattedTags, RecentPostsProps } from "@/types";
+import {
+  PostApiResponse,
+  PostWithFormattedTags,
+  RecentPostsProps,
+} from "@/types";
 import { cookies } from "next/headers";
+import Link from "next/link";
 
 const RecentPosts = async ({ page }: RecentPostsProps) => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -30,7 +35,12 @@ const RecentPosts = async ({ page }: RecentPostsProps) => {
   const posts: PostWithFormattedTags[] = data?.posts?.slice(0, 5) ?? []; // 페이지네이션 로직에 따라 slice 범위 조정 필요
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}></h2>
+      <div className={styles.title}>
+        <h2 className={styles.mainTitle}>Recent Posts</h2>
+        <Link href="/blog" className={styles.subTitle}>
+          view more
+        </Link>
+      </div>
       <div className={styles.posts}>
         {posts.length > 0 ? (
           posts.map((item: PostWithFormattedTags, index: number) => (
