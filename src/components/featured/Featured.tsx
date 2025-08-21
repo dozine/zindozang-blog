@@ -6,6 +6,7 @@ import styles from "./featured.module.css";
 import Image from "next/image";
 import Slider from "react-slick";
 import { Featuredost } from "@/types";
+import Link from "next/link";
 
 const Featured = () => {
   const featuredPosts: Featuredost[] = [
@@ -14,12 +15,6 @@ const Featured = () => {
       title: "블로그 소개글 ",
       desc: "안녕하세요. 프론트엔드 개발자 장도진입니다.",
       image: "/zindozang.png",
-    },
-    {
-      id: 2,
-      title: "Next.js로 블로그 만들기",
-      desc: "Next.js를 활용한 블로그 제작 과정을 소개합니다.",
-      image: "/p1.jpeg",
     },
   ];
 
@@ -35,7 +30,9 @@ const Featured = () => {
   };
   return (
     <div className={styles.container}>
-      <div className={styles.featuredTitle}>안녕하세요. 블로그 진도장입니다.</div>
+      <div className={styles.featuredTitle}>
+        안녕하세요. 블로그 <b>진도장</b> 입니다.
+      </div>
 
       <Slider {...settings}>
         {featuredPosts.map((post: Featuredost, index: number) => (
@@ -53,7 +50,9 @@ const Featured = () => {
             <div className={styles.textContainer}>
               <h1 className={styles.postTitle}>{post.title}</h1>
               <p className={styles.postDesc}>{post.desc}</p>
-              <button className={styles.button}>더 읽기</button>
+              <Link href="/posts/intro반갑습니다" className={styles.button}>
+                더 읽기
+              </Link>
             </div>
           </div>
         ))}
