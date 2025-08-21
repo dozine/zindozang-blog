@@ -8,14 +8,16 @@ const SinglePageClient = dynamic(() => import("./singlePageClient"), {
   loading: () => <p>로딩 중...</p>,
 });
 
-async function getPostData(slug: string): Promise<FormattedPostResponse | null> {
+async function getPostData(
+  slug: string
+): Promise<FormattedPostResponse | null> {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!baseUrl) {
     console.error("Next_PUBLIC_BASE_URL이 설정되지 않았습니다.");
   }
 
   try {
-    const cookie = cookies();
+    const cookie = await cookies();
     const cookieHeader = cookie.toString();
 
     const res = await fetch(`${baseUrl}/api/posts/${slug}?popular=true`, {
@@ -26,7 +28,9 @@ async function getPostData(slug: string): Promise<FormattedPostResponse | null> 
     });
 
     if (!res.ok) {
-      console.error(`Error fetching post data: ${res.status} ${res.statusText}`);
+      console.error(
+        `Error fetching post data: ${res.status} ${res.statusText}`
+      );
       return null;
     }
 
@@ -43,7 +47,11 @@ async function getPostData(slug: string): Promise<FormattedPostResponse | null> 
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const data = await getPostData(slug as string);
 
@@ -55,11 +63,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   return {
     title: data.title,
-    description: data.desc ? data.desc.substring(0, 160).replace(/<[^>]*>/g, "") : "",
+    description: data.desc
+      ? data.desc.substring(0, 160).replace(/<[^>]*>/g, "")
+      : "",
   };
 }
 
-const SinglePage = async ({ params }: { params: Promise<{ slug: string }> }) => {
+const SinglePage = async ({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) => {
   const { slug } = await params;
 
   const data = await getPostData(slug as string);
