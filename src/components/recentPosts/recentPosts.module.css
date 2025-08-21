@@ -3,5 +3,15 @@
 }
 
 .title {
-  margin: 50px 0px;
+  display: flex;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.mainTitle {
+  font-size: large;
+  margin-right: 20px;
+}
+.subTitle {
+  font-size: small;
+  color: gray;
 }

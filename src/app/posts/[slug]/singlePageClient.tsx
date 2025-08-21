@@ -50,18 +50,6 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
 
           <div className={styles.userContainer}>
             <div className={styles.user}>
-              {data.user?.image && (
-                <div className={styles.userImageContainer}>
-                  <Image
-                    src={data.user.image}
-                    alt={data.user.name ? `${data.user.name}의 아바타` : "사용자 아바타"}
-                    fill
-                    className={styles.avatar}
-                    sizes="(max-width: 768px) 40px, 50px"
-                    priority
-                  />
-                </div>
-              )}
               <div className={styles.userTextContainer}>
                 <span className={styles.date}>
                   {new Date(data.createdAt).toLocaleString("ko-KR", {

@@ -15,7 +15,7 @@ async function getPostData(slug: string): Promise<FormattedPostResponse | null> 
   }
 
   try {
-    const cookie = cookies();
+    const cookie = await cookies();
     const cookieHeader = cookie.toString();
 
     const res = await fetch(`${baseUrl}/api/posts/${slug}?popular=true`, {
