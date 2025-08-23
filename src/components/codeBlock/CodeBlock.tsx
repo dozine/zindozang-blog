@@ -2,10 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  vscDarkPlus,
-  oneLight,
-} from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { vscDarkPlus, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 interface CodeProps {
   node?: any;
@@ -21,11 +18,7 @@ interface CodeBlockProps {
   isDark?: boolean;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
-  language = "",
-  children,
-  isDark = false,
-}) => {
+const CodeBlock: React.FC<CodeBlockProps> = ({ language = "", children, isDark = false }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -47,9 +40,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         width: "100%",
         maxWidth: "100%",
         borderRadius: "12px",
-        boxShadow: isDark
-          ? "0 10px 25px rgba(0, 0, 0, 0)"
-          : "0 10px 25px rgba(0, 0, 0, 0)",
+        boxShadow: isDark ? "0 10px 25px rgba(0, 0, 0, 0)" : "0 10px 25px rgba(0, 0, 0, 0)",
         overflowX: "hidden",
       }}
     >
@@ -74,8 +65,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         }}
         codeTagProps={{
           style: {
-            fontFamily:
-              '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+            fontFamily: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
             whiteSpace: "pre",
             wordBreak: "normal",
           },
@@ -148,9 +138,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           <button
             onClick={handleCopy}
             style={{
-              background: copied
-                ? "rgba(34, 197, 94, 0.2)"
-                : "rgba(255, 255, 255, 0.1)",
+              background: copied ? "rgba(34, 197, 94, 0.2)" : "rgba(255, 255, 255, 0.1)",
               border: "1px solid rgba(255, 255, 255, 0.2)",
               color: "white",
               padding: "6px 10px",

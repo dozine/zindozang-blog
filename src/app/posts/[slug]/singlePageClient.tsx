@@ -134,9 +134,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                 const codeString = String(children).replace(/\n$/, "");
                 const isInlineCode =
                   inline === true ||
-                  (!className &&
-                    !codeString.includes("\n") &&
-                    codeString.length < 100);
+                  (!className && !codeString.includes("\n") && codeString.length < 100);
 
                 if (isInlineCode) {
                   return (
