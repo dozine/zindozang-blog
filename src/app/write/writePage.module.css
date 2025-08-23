@@ -10,8 +10,8 @@
 }
 
 .input {
-  padding: 50px 10px;
-  font-size: 64px;
+  padding: 10px;
+  font-size: 30px;
   border: none;
   outline: none;
   background-color: transparent;
@@ -20,19 +20,6 @@
 
 .input::placeholder {
   color: #b3b3b1;
-}
-
-.editor {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  height: 700px;
-  position: relative;
-}
-
-.textArea {
-  width: 100%;
-  height: 100%;
 }
 
 .publish {
@@ -57,7 +44,6 @@
   color: var(--textColor);
 }
 
-/* 모바일 반응형 스타일 */
 @media screen and (max-width: 768px) {
   .input {
     padding: 30px 5px;
@@ -73,4 +59,15 @@
     right: 20px;
     padding: 8px 16px;
   }
+}
+
+.imageUploader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--soft-textColor);
+}
+.editorContainer :global(.w-md-editor-text-input pre) {
+  white-space: pre-wrap !important;
 }

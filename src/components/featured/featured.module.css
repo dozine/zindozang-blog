@@ -4,8 +4,7 @@
 }
 
 .featuredTitle {
-  font-size: 38px;
-  font-weight: 300;
+  font-size: 24px;
   margin-bottom: 35px;
   color: --textColor;
   letter-spacing: -0.5px;
@@ -152,29 +151,7 @@
   transform: translateX(5px);
 }
 
-/* 반응형 디자인 */
-@media screen and (max-width: 1280px) {
-  .featuredTitle {
-    font-size: 34px;
-  }
-
-  .postTitle {
-    font-size: 32px;
-  }
-}
-
 @media screen and (max-width: 1024px) {
-  .slide {
-    flex-direction: column !important;
-    gap: 30px;
-    padding: 15px 0 35px;
-  }
-
-  .featuredTitle {
-    font-size: 30px;
-    text-align: center;
-  }
-
   .imgContainer {
     width: 90%;
     max-width: 600px;
@@ -198,8 +175,14 @@
 }
 
 @media screen and (max-width: 768px) {
+  .slide {
+    flex-direction: column;
+    gap: 30px;
+    padding: 15px 0 35px;
+  }
   .featuredTitle {
-    font-size: 28px;
+    font-size: 24px;
+    text-align: center;
   }
 
   .postTitle {

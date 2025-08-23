@@ -71,3 +71,54 @@
   font-size: 0.9rem;
   margin-top: 5px;
 }
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.plusButton {
+  background-color: transparent;
+  border: 1px solid var(--soft-textColor);
+  border-radius: 100%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plusButton:hover {
+  background-color: var(--soft-bg);
+  border-color: var(--textColor);
+}
+
+.plusButton img {
+  filter: var(--invert);
+}
+
+.uploadStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: var(--soft-textColor);
+}
+
+.progressBar {
+  width: 150px;
+  height: 5px;
+  background-color: var(--soft-bg);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--textColor);
+  transition: width 0.3s ease-in-out;
+}

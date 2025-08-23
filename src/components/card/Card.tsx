@@ -2,7 +2,7 @@ import Image from "next/image";
 import styles from "./card.module.css";
 import Link from "next/link";
 import { CardProps } from "@/types";
-import { TagWithPostCount } from "@/types/tag";
+import { extractTextFromMarkdown } from "@/app/utils/markdown";
 
 const Card = ({ item, priority = false, index = 0 }: CardProps) => {
   const shouldPrioritize = priority || index < 3;
@@ -20,12 +20,12 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
             <span className={styles.category}>{item.catSlug}</span>
           </div>
           <div className={styles.titleContainer}>
-            <h1>{item.title}</h1>
+            <h1 className={styles.title}>{item.title}</h1>
           </div>
           <p>
             {(() => {
               if (!item.desc) return "";
-              const descText = item.desc.replace(/<[^>]+>/g, "");
+              const descText = extractTextFromMarkdown(item.desc);
               return descText.length > 60 ? descText.substring(0, 60) + "..." : descText;
             })()}
           </p>
