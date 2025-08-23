@@ -1,33 +1,25 @@
 "use client";
 import React from "react";
 import styles from "./writePage.module.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "react-quill-new/dist/quill.bubble.css";
 import "react-quill-new/dist/quill.snow.css";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import editorModules from "../utils/editor";
 import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
 import { Category, Tag } from "@prisma/client";
 import { TagWithPostCount } from "@/types/tag";
 import { PostWithFormattedTags, UpdatePostBody } from "@/types";
-import type { default as ReactQuillType } from "react-quill-new";
-import ReactQuill from "react-quill-new";
+import { ICommand } from "@uiw/react-md-editor";
+import dynamic from "next/dynamic";
 
-const registerImageResize = async () => {
-  if (typeof window !== "undefined") {
-    const Quill = (await import("react-quill-new")).Quill;
-    const ImageResize = (await import("quill-image-resize-module-react")).default;
-    Quill.register("modules/imageResize", ImageResize);
-  }
-};
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const WritePage = () => {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const isEditing: boolean = searchParams.get("edit") === "true";
   const editSlug: string = searchParams.get("slug");
 
@@ -36,10 +28,7 @@ const WritePage = () => {
   const [title, setTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  // 모달과 관련된 상태
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
-
-  // 설정값들
   const [catSlug, setCatSlug] = useState<string>("");
   const [tagInput, setTagInput] = useState<string>("");
   const [tags, setTags] = useState<Tag[]>([]);
@@ -47,11 +36,7 @@ const WritePage = () => {
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const quillRef = useRef<ReactQuillType | null>(null);
-
-  useEffect(() => {
-    registerImageResize();
-  }, []);
+  const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
 
   useEffect(() => {
     if (isEditing && editSlug) {
@@ -81,10 +66,10 @@ const WritePage = () => {
       fetchPost();
     } else if (isEditing && !editSlug) {
       console.error("수정할 게시글의 slug가 없습니다.");
+      router.push("/write");
     }
-  }, [isEditing, editSlug]);
+  }, [isEditing, editSlug, router]);
 
-  // 카테고리 불러오기
   useEffect(() => {
     const getCategories = async () => {
       try {
@@ -99,7 +84,6 @@ const WritePage = () => {
     getCategories();
   }, []);
 
-  // 사용 가능한 태그 불러오기
   useEffect(() => {
     const fetchAvailableTags = async () => {
       try {
@@ -115,41 +99,47 @@ const WritePage = () => {
     fetchAvailableTags();
   }, []);
 
-  // 이미지 업로드 완료 시 호출되는 함수
-  const handleImageUploaded = (urls: string[]) => {
-    setMedia(urls);
+  const handlePublishClick = () => {
+    if (!title.trim()) return alert("제목을 입력해주세요.");
+    if (!value.trim()) return alert("내용을 입력해주세요.");
+    setShowSettingsModal(true);
+  };
+
+  const handleImageUploaded = (url: string | string[]) => {
+    let imageUrl = "";
+    if (Array.isArray(url)) {
+      // 배열인 경우 medium 크기 이미지 사용 (두 번째 요소)
+      imageUrl = url[1] || url[0];
+      console.log("이미지 업로드 완료 (배열):", url[1] || url[0]);
+    } else {
+      // 단일 URL인 경우
+      console.log("이미지 업로드 완료 (단일):", url);
+      imageUrl = url;
+    }
+    const markdownImage = `\n\n![image](${imageUrl})\n\n`;
+    setValue((prevValue) => prevValue + markdownImage);
+    setMedia(imageUrl);
+  };
+
+  const resetImageUploadTrigger = () => {
+    setTriggerImageUpload(false);
   };
 
   const slugify = (str: string) =>
     str
       .normalize("NFC")
       .trim()
-      .replace(/[^\w가-힣\s-]/g, "") // 영문, 숫자, 한글, 공백, 하이픈(-)만 허용
-      .replace(/\s+/g, "-") // 공백을 하이픈으로 변환
-      .replace(/-+/g, "-") // 연속된 하이픈 제거
+      .replace(/[^\w가-힣\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .toLowerCase();
 
-  // 게시하기 버튼 클릭 시 모달 열기
-  const handlePublishClick = () => {
-    if (!title.trim()) {
-      alert("제목을 입력해주세요.");
-      return;
-    }
-    if (!value.trim()) {
-      alert("내용을 입력해주세요.");
-      return;
-    }
-    setShowSettingsModal(true);
-  };
-
-  // 모달에서 최종 게시 버튼 클릭 시
   const handleFinalPublish = async () => {
-    const finalCatSlug: string = catSlug || "uncategorized";
     const tagIds: string[] = tags.map((tag) => tag.id);
-
+    const finalCatSlug: string = catSlug || "uncategorized";
+    setLoading(true);
     try {
-      if (isEditing) {
-        // 수정 API 호출
+      if (isEditing && editSlug) {
         const updateBody: UpdatePostBody = {
           title,
           desc: value,
@@ -175,7 +165,6 @@ const WritePage = () => {
         alert("게시글이 성공적으로 수정되었습니다.");
         router.push(`/posts/${editSlug}`);
       } else {
-        // 새 게시글 작성 API 호출
         const createBody = {
           title,
           desc: value,
@@ -207,10 +196,38 @@ const WritePage = () => {
       console.error("Error submitting post:", err);
       alert(err.message);
     } finally {
+      setLoading(false);
       setShowSettingsModal(false);
     }
   };
 
+  const customCommands: ICommand[] = [
+    {
+      name: "image",
+      keyCommand: "image",
+      buttonProps: { "aria-label": "Add image" },
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+      ),
+      execute: () => {
+        console.log("이미지 업로드 트리거");
+        setTriggerImageUpload(true);
+      },
+    },
+  ];
   if (status === "loading" || loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
@@ -219,10 +236,8 @@ const WritePage = () => {
     router.push("/");
     return null;
   }
-
   return (
     <div className={styles.container}>
-      {/* 제목 입력 */}
       <input
         type="text"
         placeholder="Title"
@@ -230,49 +245,79 @@ const WritePage = () => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
+      <ImageUploader
+        onImageUploaded={handleImageUploaded}
+        triggerUpload={triggerImageUpload}
+        onUploadTriggered={resetImageUploadTrigger}
+      />
 
-      {/* 에디터 영역 */}
-      <div className={styles.editor}>
-        {/* 이미지 업로더 컴포넌트 */}
-        <ImageUploader onImageUploaded={handleImageUploaded} quillRef={quillRef} />
-
-        {/* Quill 에디터 */}
-        <ReactQuill
-          ref={quillRef as any}
-          className={styles.textArea}
-          theme="bubble"
+      {media && typeof media === "string" && (
+        <div className={styles.imagePreview}>
+          <img
+            src={media}
+            alt="업로드된 이미지"
+            style={{
+              maxWidth: "300px",
+              maxHeight: "200px",
+              objectFit: "cover",
+              borderRadius: "8px",
+              border: "1px solid var(--soft-textColor)",
+            }}
+          />
+          <button
+            onClick={() => setMedia("")}
+            style={{
+              position: "absolute",
+              top: "5px",
+              right: "5px",
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              border: "none",
+              borderRadius: "50%",
+              width: "24px",
+              height: "24px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      <div data-color-mode="light" className={styles.editorContainer}>
+        <MDEditor
           value={value}
-          onChange={setValue}
-          placeholder="Tell your story..."
-          modules={editorModules}
+          onChange={(val) => setValue(val || "")}
+          style={{ minHeight: 500 }}
+          commands={customCommands}
         />
       </div>
 
-      {/* 게시 버튼 */}
       <button className={styles.publish} onClick={handlePublishClick}>
         {isEditing ? "수정하기" : "Publish"}
       </button>
-
-      {/* 설정 모달 */}
-      <PostSettingModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        catSlug={catSlug}
-        setCatSlug={setCatSlug}
-        isPublished={isPublished}
-        setIsPublished={setIsPublished}
-        tagInput={tagInput}
-        setTagInput={setTagInput}
-        tags={tags}
-        setTags={setTags}
-        categories={categories}
-        availableTags={availableTags}
-        setAvailableTags={setAvailableTags}
-        onPublish={() => {
-          handleFinalPublish();
-          setShowSettingsModal(false);
-        }}
-      />
+      {showSettingsModal && (
+        <PostSettingModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          catSlug={catSlug}
+          setCatSlug={setCatSlug}
+          isPublished={isPublished}
+          setIsPublished={setIsPublished}
+          tagInput={tagInput}
+          setTagInput={setTagInput}
+          tags={tags}
+          setTags={setTags}
+          categories={categories}
+          availableTags={availableTags}
+          setAvailableTags={setAvailableTags}
+          onPublish={() => {
+            handleFinalPublish();
+            setShowSettingsModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,22 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import PostDeleteModal from "@/components/modal/PostDeleteModal";
 import styles from "./singlePage.module.css";
 import { SinglePageClientProps } from "@/types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import CodeBlock from "@/components/codeBlock/CodeBlock";
+import { FaEllipsisH } from "react-icons/fa";
+export interface CodeProps {
+  node?: any;
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+  [key: string]: any;
+}
 
 const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-
-  // 작성자인지 확인
   const isAuthor: boolean = session?.user?.email === data?.user?.email;
   const isAuthenticated: boolean = status === "authenticated";
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const theme = document.documentElement.getAttribute("data-theme");
+    setIsDark(theme === "dark");
+  }, []);
 
   const handleDelete = async () => {
     if (!slug) return;
@@ -47,59 +62,50 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
       <div className={styles.infoContainer}>
         <div className={styles.textContainer}>
           <h1 className={styles.title}>{data.title}</h1>
-
           <div className={styles.userContainer}>
-            <div className={styles.user}>
-              <div className={styles.userTextContainer}>
-                <span className={styles.date}>
-                  {new Date(data.createdAt).toLocaleString("ko-KR", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-
-                {/* 작성자에게만 액션 메뉴 표시 */}
-                {isAuthenticated && isAuthor && (
-                  <>
-                    <div className={styles.status}>
-                      {data.isPublished ? (
-                        <span className={styles.published}>공개</span>
-                      ) : (
-                        <span className={styles.unpublished}>비공개</span>
-                      )}
-                    </div>
-                    <div className={styles.menuContainer}>
-                      <button
-                        className={styles.menuButton}
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        aria-label="포스트 메뉴 열기"
-                      >
-                        ⋮
+            <span className={styles.date}>
+              {new Date(data.createdAt).toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            {isAuthenticated && isAuthor && (
+              <>
+                <div className={styles.status}>
+                  {data.isPublished ? (
+                    <span className={styles.published}>공개</span>
+                  ) : (
+                    <span className={styles.unpublished}>비공개</span>
+                  )}
+                </div>
+                <div className={styles.menuContainer}>
+                  <button
+                    className={styles.menuButton}
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label="포스트 메뉴 열기"
+                  >
+                    <FaEllipsisH />
+                  </button>
+                  {menuOpen && (
+                    <div className={styles.menu}>
+                      <button className={styles.menuItem} onClick={handleEdit}>
+                        수정하기
                       </button>
-                      {menuOpen && (
-                        <div className={styles.menu}>
-                          <button className={styles.menuItem} onClick={handleEdit}>
-                            수정하기
-                          </button>
-                          <button
-                            className={styles.menuItem}
-                            onClick={() => setIsDeleteModalOpen(true)}
-                          >
-                            삭제하기
-                          </button>
-                        </div>
-                      )}
+                      <button
+                        className={styles.menuItem}
+                        onClick={() => setIsDeleteModalOpen(true)}
+                      >
+                        삭제하기
+                      </button>
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-
-          {/* 태그 표시 */}
           {data?.tags && data.tags.length > 0 && (
             <div className={styles.tagContainer}>
               {data.tags.map((tag) => (
@@ -116,14 +122,53 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
         </div>
       </div>
 
-      {/* 포스트 콘텐츠 */}
       <div className={styles.content}>
         <div className={styles.post}>
-          <div className="ql-editor" dangerouslySetInnerHTML={{ __html: data.desc }} />
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              code({ inline, node, className, children, ...props }: CodeProps) {
+                const match = /language-(\w+)/.exec(className || "");
+                const language = match ? match[1] : "";
+                const codeString = String(children).replace(/\n$/, "");
+                const isInlineCode =
+                  inline === true ||
+                  (!className && !codeString.includes("\n") && codeString.length < 100);
+
+                if (isInlineCode) {
+                  return (
+                    <code
+                      className={className}
+                      style={{
+                        background: isDark ? "#2d2d2d" : "silver",
+                        color: isDark ? "#e2e8f0" : "#1a202c",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        fontSize: "0.9em",
+                        fontWeight: "500",
+                        fontFamily:
+                          '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+                      }}
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  );
+                }
+                console.log("Rendering as code block");
+                return (
+                  <CodeBlock language={language} isDark={isDark}>
+                    {codeString}
+                  </CodeBlock>
+                );
+              },
+            }}
+          >
+            {data.desc}
+          </ReactMarkdown>
         </div>
       </div>
-
-      {/* 삭제 확인 모달 */}
       <PostDeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
