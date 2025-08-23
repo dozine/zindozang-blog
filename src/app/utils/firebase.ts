@@ -7,12 +7,12 @@ import { initializeApp } from "firebase/app";
 
 import type { FirebaseApp, FirebaseOptions } from "firebase/app";
 const firebaseConfig: FirebaseOptions = {
-  apiKey: process.env.FIREBASE,
-  authDomain: "blog-4a03c.firebaseapp.com",
-  projectId: "blog-4a03c",
-  storageBucket: "blog-4a03c.firebasestorage.app",
-  messagingSenderId: "819595885607",
-  appId: "1:819595885607:web:ceb346c9e38425b460a202",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
 };
 
 // Initialize Firebase

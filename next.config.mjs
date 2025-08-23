@@ -12,6 +12,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.firebasestorage.app", // 추가
+      },
+      {
+        protocol: "https",
         hostname: "picsum.photos",
       },
     ],
@@ -52,8 +56,7 @@ const nextConfig = {
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               font-src 'self' https://fonts.gstatic.com;
               img-src 'self' data: https: blob: https://firebasestorage.googleapis.com https://lh3.googleusercontent.com https://picsum.photos;
- 
-              connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://vitals.vercel-analytics.com https://va.vercel-scripts.com;
+              connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://vitals.vercel-analytics.com https://va.vercel-scripts.com https://firebasestorage.googleapis.com https://*.firebasestorage.app;
               frame-src 'self';
               object-src 'none';
               base-uri 'self';
