@@ -10,8 +10,8 @@
 }
 
 .input {
-  padding: 50px 10px;
-  font-size: 64px;
+  padding: 10px;
+  font-size: 30px;
   border: none;
   outline: none;
   background-color: transparent;
@@ -22,18 +22,70 @@
   color: #b3b3b1;
 }
 
-.editor {
+/* .editorContainer {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 20px;
-  height: 700px;
-  position: relative;
+  min-height: 500px;
+  max-height: 80vh;
 }
 
-.textArea {
+
+.editorContainer :global(.w-md-editor) {
+  background-color: var(--soft-bg);
+  color: var(--soft-textColor);
+  font-family: inherit;
   width: 100%;
-  height: 100%;
+
+  border-radius: 8px;
 }
+
+.editorContainer :global(.w-md-editor-toolbar) {
+  background-color: var(--soft-bg);
+}
+
+
+.editorContainer :global(.w-md-editor-toolbar li button) {
+  color: var(--textColor);
+}
+
+
+.editorContainer :global(.w-md-editor-text-input) {
+  background-color: var(--soft-bg);
+  color: var(--textColor);
+  font-size: 16px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.editorContainer :global(.w-md-editor-fullscreen) {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  z-index: 1000; 
+}
+
+.editorContainer :global(.wmde-markdown) {
+  background-color: var(--bg);
+  color: var(--textColor);
+  padding: 10px;
+}
+
+.editorContainer :global(.wmde-markdown pre) {
+  background-color: var(--soft-bg);
+  color: var(--textColor);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.editorContainer :global(.wmde-markdown blockquote) {
+  border-left: 4px solid var(--soft-textColor);
+  color: var(--soft-textColor);
+  padding-left: 10px;
+  margin-left: 0;
+} */
 
 .publish {
   position: fixed;
@@ -57,7 +109,6 @@
   color: var(--textColor);
 }
 
-/* 모바일 반응형 스타일 */
 @media screen and (max-width: 768px) {
   .input {
     padding: 30px 5px;
@@ -73,4 +124,15 @@
     right: 20px;
     padding: 8px 16px;
   }
+}
+
+.imageUploader {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--soft-textColor);
+}
+.editorContainer :global(.w-md-editor-text-input pre) {
+  white-space: pre-wrap !important;
 }
