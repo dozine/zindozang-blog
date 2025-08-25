@@ -9,8 +9,10 @@ import { SinglePageClientProps } from "@/types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import remarkBreaks from "remark-breaks";
 import CodeBlock from "@/components/codeBlock/CodeBlock";
 import { FaEllipsisH } from "react-icons/fa";
+
 export interface CodeProps {
   node?: any;
   inline?: boolean;
@@ -57,6 +59,39 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
     router.push(`/write?edit=true&slug=${slug}`);
   };
 
+  // 줄바꿈 전처리 함수
+  // const processContent = (content: string) => {
+  //   const codeBlocks: string[] = [];
+  //   let processedContent = content.replace(/```[\s\S]*?```/g, (match) => {
+  //     codeBlocks.push(match);
+  //     return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  //   });
+
+  //   const inlineCodes: string[] = [];
+  //   processedContent = processedContent.replace(/`[^`]+`/g, (match) => {
+  //     inlineCodes.push(match);
+  //     return `__INLINE_CODE_${inlineCodes.length - 1}__`;
+  //   });
+  //   processedContent = processedContent
+  //     .replace(/\n\n+/g, "\n\n")
+  //     .replace(/(?<!\n)\n(?!\n)/g, "  \n");
+
+  //   inlineCodes.forEach((code, index) => {
+  //     processedContent = processedContent.replace(
+  //       `__INLINE_CODE_${index}__`,
+  //       code
+  //     );
+  //   });
+
+  //   codeBlocks.forEach((code, index) => {
+  //     processedContent = processedContent.replace(
+  //       `__CODE_BLOCK_${index}__`,
+  //       code
+  //     );
+  //   });
+
+  //   return processedContent;
+  // };
   return (
     <div className={styles.container}>
       <div className={styles.infoContainer}>
@@ -125,7 +160,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
       <div className={styles.content}>
         <div className={styles.post}>
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[remarkGfm, remarkBreaks as any]}
             rehypePlugins={[rehypeRaw]}
             components={{
               code({ inline, node, className, children, ...props }: CodeProps) {
@@ -134,8 +169,9 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                 const codeString = String(children).replace(/\n$/, "");
                 const isInlineCode =
                   inline === true ||
-                  (!className && !codeString.includes("\n") && codeString.length < 100);
-
+                  (!className &&
+                    !codeString.includes("\n") &&
+                    codeString.length < 100);
                 if (isInlineCode) {
                   return (
                     <code
@@ -156,7 +192,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                     </code>
                   );
                 }
-                console.log("Rendering as code block");
+
                 return (
                   <CodeBlock language={language} isDark={isDark}>
                     {codeString}
@@ -165,6 +201,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
               },
             }}
           >
+            {/* {processContent(data.desc)} */}
             {data.desc}
           </ReactMarkdown>
         </div>
