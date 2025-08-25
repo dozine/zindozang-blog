@@ -49,8 +49,8 @@
   min-width: 0;
 }
 .post pre {
-  white-space: pre; /* ✅ 코드 줄바꿈 방지 */
-  overflow-x: auto; /* ✅ 코드 스크롤 */
+  white-space: pre;
+  overflow-x: auto;
   max-width: 100%;
 }
 
@@ -59,6 +59,22 @@
   height: auto;
   display: block;
   margin: 1rem 0;
+}
+
+.post ul,
+.post ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.post li {
+  margin: 0.25em 0;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.post {
+  overflow-wrap: break-word;
 }
 
 .description p {
