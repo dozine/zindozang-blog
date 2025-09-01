@@ -11,7 +11,7 @@ React Quill을 활용한 에디터 기능, 카테고리 및 태그 필터링 기
 기존 CSR 방식에서 SSR을 도입하여 초기 로딩 성늘 및 SEO를 대폭 개선했습니다. 또한 이미지 로딩 최적화를 통해 사용자 경험을 한층 더 향상 시켰습니다. Vercel을 통해 배포되었습니다.
 
 - 주요 기능: 에디터, 게시글 CRUD, 이미지 업로드, 카테고리/태그 필터링
-- 기술 스택: Next.js 15, React, TypeScript, Prisma, MongoDB, Firebase, module.css, SSR
+- 기술 스택: Next.js 15, React, TypeScript, Prisma, MongoDB, Firebase, module.css
 
 ---
 
@@ -71,15 +71,19 @@ React Quill을 활용한 에디터 기능, 카테고리 및 태그 필터링 기
 - 문제: CSR 환경에서 Firebase 초기화 타이밍 이슈
 - 해결: 클라이언트 사이드 전용 코드로 Firebase 로직 분리
 
-### 에디터 기능 - React-Quill
+### Markdown 기반 전환
 
-- 문제: React-Quill이 기본 서버 컴포넌트 환경(Next.js 15)에서 동작하지 않음
-- 해결: `react-quill-new` 포크 버전으로 교체하여 해결
+- 문제: 기존 React-Quill은 Next.js 15 SSR 환경과 호환성 문제 무거운 번들 사이즈 에디터/렌더링 커스터마이징 한계 때문에 장기적으로 유지보수가 어려움
+- 해결:
 
-### 이미지 사이즈 조절 기능
+  - WritePage → @uiw/react-md-editor 도입 (Markdown 기반 작성 지원)
+  - PostPage → 클라이언트 컴포넌트에서 react-markdown으로 렌더링
 
-- 문제: `quill-image-resize-module-react` 사용 시 SSR 이슈 발생
-- 해결: 동적 import 방식으로 Quill 인스턴스를 클라이언트에서만 로드
+- 성과:
+
+  - 작성/조회가 분리되어 더 가벼운 구조 확보
+  - SSR 환경과 호환성 강화
+  - 개발자 친화적인 Markdown 워크플로우 확립
 
 ### 태그 설정 이슈
 
@@ -133,8 +137,3 @@ React Quill을 활용한 에디터 기능, 카테고리 및 태그 필터링 기
 - 에디터 커스터마이징을 추가로 개선하고 싶음
 - tag컴포넌트에서 중복 선택이 안되는 오류 개선이 필요함
 - ***
-
-## 다음 리팩토링 계획
-
-- 테스트 코드(Jest) 작성
-- MDX 지원, 전반적인 스타일 개선
