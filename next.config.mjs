@@ -52,12 +52,12 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://vercel.live https://va.vercel-scripts.com;
-              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://vercel.live https://va.vercel-scripts.com https://utteranc.es;
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://github.githubassets.com;
               font-src 'self' https://fonts.gstatic.com;
-              img-src 'self' data: https: blob: https://firebasestorage.googleapis.com https://lh3.googleusercontent.com https://picsum.photos;
-              connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://vitals.vercel-analytics.com https://va.vercel-scripts.com https://firebasestorage.googleapis.com https://*.firebasestorage.app;
-              frame-src 'self';
+              img-src 'self' data: https: blob: https://firebasestorage.googleapis.com https://lh3.googleusercontent.com https://picsum.photos  https://avatars.githubusercontent.com https://github.githubassets.com;
+              connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://vitals.vercel-analytics.com https://va.vercel-scripts.com https://firebasestorage.googleapis.com https://*.firebasestorage.app https://api.github.com;
+              frame-src 'self' https://utteranc.es;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
