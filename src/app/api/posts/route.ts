@@ -1,5 +1,5 @@
-import { getAuthSession } from "@/app/utils/auth";
-import prisma from "@/app/utils/connect";
+import { getAuthSession } from "@/lib/services/authService";
+import prisma from "@/lib/db/prisma";
 import { PostWithFormattedTags } from "@/types";
 import { Post, PostTag, Prisma, Tag, User } from "@prisma/client";
 import { headers } from "next/headers";
@@ -37,7 +37,9 @@ export const GET = async (req: NextRequest) => {
   const page: number = pageParam ? parseInt(pageParam, 10) : 1;
   const skip: number = Math.max(0, POST_PER_PAGE * (page - 1));
 
-  const selectedTags: string[] = tagsParam ? tagsParam.split(".").filter((tag) => tag !== "") : [];
+  const selectedTags: string[] = tagsParam
+    ? tagsParam.split(".").filter((tag) => tag !== "")
+    : [];
   let where: Prisma.PostWhereInput = {
     isPublished: true,
     ...(cat && { catSlug: cat }),
@@ -105,7 +107,10 @@ export const GET = async (req: NextRequest) => {
     });
   } catch (err: any) {
     console.log(err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      { status: 500 }
+    );
   }
 };
 
@@ -133,13 +138,20 @@ export const POST = async (req: NextRequest) => {
 
     const body: CreatePostBody = await req.json();
     const { tags: tagIds, isPublished, ...postData } = body;
-    const safeImg: string[] = Array.isArray(body.img) ? body.img : body.img ? [body.img] : [];
+    const safeImg: string[] = Array.isArray(body.img)
+      ? body.img
+      : body.img
+        ? [body.img]
+        : [];
 
     if (!body.slug || !body.title) {
-      return new NextResponse(JSON.stringify({ message: "Missing slug or title" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse(
+        JSON.stringify({ message: "Missing slug or title" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -178,17 +190,18 @@ export const POST = async (req: NextRequest) => {
         include: { user: true; tags: { include: { tag: true } } };
       }>;
 
-      const createdPostWithRelations: PostWithRelations | null = await tx.post.findUnique({
-        where: { id: post.id },
-        include: {
-          user: true,
-          tags: {
-            include: {
-              tag: true,
+      const createdPostWithRelations: PostWithRelations | null =
+        await tx.post.findUnique({
+          where: { id: post.id },
+          include: {
+            user: true,
+            tags: {
+              include: {
+                tag: true,
+              },
             },
           },
-        },
-      });
+        });
       if (!createdPostWithRelations) {
         throw new Error("Created post not found after transaction");
       }
@@ -206,6 +219,9 @@ export const POST = async (req: NextRequest) => {
     });
   } catch (err) {
     console.log("Error creating post:", err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      { status: 500 }
+    );
   }
 };

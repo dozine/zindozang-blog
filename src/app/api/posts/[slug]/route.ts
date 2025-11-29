@@ -1,11 +1,14 @@
-import { getAuthSession } from "@/app/utils/auth";
-import prisma from "@/app/utils/connect";
+import { getAuthSession } from "@/lib/services/authService";
+import prisma from "@/lib/db/prisma";
 import { PostWithFormattedTags, UpdatePostBody } from "@/types";
 import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 //GET SINGLE POST
-export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug: string }> }) => {
+export const GET = async (
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) => {
   const { slug } = await params;
   const session = await getAuthSession();
   if (!slug || slug === "undefined") {
@@ -27,7 +30,10 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       });
     }
 
-    if (!postExists.isPublished && session?.user.email !== postExists.user.email) {
+    if (
+      !postExists.isPublished &&
+      session?.user.email !== postExists.user.email
+    ) {
       return new NextResponse(JSON.stringify({ message: "Unauthorized" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
@@ -51,10 +57,13 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
     });
   } catch (err: any) {
     console.log("Error", err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 };
 
@@ -103,29 +112,41 @@ export const DELETE = async (
     });
   } catch (err: any) {
     console.error("Errror deleting post:", err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 };
 
-export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug: string }> }) => {
+export const PUT = async (
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) => {
   try {
     const session = await getAuthSession();
     if (!session?.user?.email) {
-      return new NextResponse(JSON.stringify({ message: "Not Authenticated" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse(
+        JSON.stringify({ message: "Not Authenticated" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const { slug } = await params;
     if (!slug || slug === "undefined") {
-      return new NextResponse(JSON.stringify({ message: "Invalid post slug" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse(
+        JSON.stringify({ message: "Invalid post slug" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const body: UpdatePostBody = await req.json();
@@ -137,10 +158,13 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
         : [];
 
     if (!title?.trim() || !desc?.trim()) {
-      return new NextResponse(JSON.stringify({ message: "Title and description are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse(
+        JSON.stringify({ message: "Title and description are required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const post = await prisma.post.findUnique({
@@ -257,22 +281,31 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
     // Prisma 에러 처리
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        return new NextResponse(JSON.stringify({ message: "Duplicate entry detected" }), {
-          status: 409,
-          headers: { "Content-Type": "application/json" },
-        });
+        return new NextResponse(
+          JSON.stringify({ message: "Duplicate entry detected" }),
+          {
+            status: 409,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
       }
       if (error.code === "P2025") {
-        return new NextResponse(JSON.stringify({ message: "Record not found" }), {
-          status: 404,
-          headers: { "Content-Type": "application/json" },
-        });
+        return new NextResponse(
+          JSON.stringify({ message: "Record not found" }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
       }
     }
 
-    return new NextResponse(JSON.stringify({ message: "Internal server error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new NextResponse(
+      JSON.stringify({ message: "Internal server error" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 };
