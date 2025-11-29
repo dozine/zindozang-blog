@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import PostDeleteModal from "@/components/modal/PostDeleteModal";
@@ -21,6 +21,8 @@ export interface CodeProps {
   [key: string]: any;
 }
 
+const UTTERANCES_REPO = "dozine/blog-comments";
+
 const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -29,10 +31,32 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const isAuthor: boolean = session?.user?.email === data?.user?.email;
   const isAuthenticated: boolean = status === "authenticated";
   const [isDark, setIsDark] = useState(false);
+  const commentsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const theme = document.documentElement.getAttribute("data-theme");
     setIsDark(theme === "dark");
+  }, []);
+
+  useEffect(() => {
+    if (!commentsRef.current) return;
+
+    const container = commentsRef.current;
+
+    const existingScript = container.querySelector(
+      "script[src='https://utteranc.es/client.js']"
+    );
+    if (existingScript) return;
+
+    const script = document.createElement("script");
+    script.src = "https://utteranc.es/client.js";
+    script.setAttribute("repo", UTTERANCES_REPO);
+    script.setAttribute("issue-term", "pathname");
+    script.setAttribute("theme", isDark ? "github-dark" : "github-light");
+    script.setAttribute("crossorigin", "anonymous");
+    script.async = true;
+
+    container.appendChild(script);
   }, []);
 
   const handleDelete = async () => {
@@ -169,7 +193,9 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                 const codeString = String(children).replace(/\n$/, "");
                 const isInlineCode =
                   inline === true ||
-                  (!className && !codeString.includes("\n") && codeString.length < 100);
+                  (!className &&
+                    !codeString.includes("\n") &&
+                    codeString.length < 100);
                 if (isInlineCode) {
                   return (
                     <code
@@ -199,11 +225,16 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
               },
             }}
           >
-            {/* {processContent(data.desc)} */}
             {data.desc}
           </ReactMarkdown>
         </div>
       </div>
+      <div
+        ref={commentsRef}
+        style={{
+          marginTop: "3rem",
+        }}
+      />
       <PostDeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
