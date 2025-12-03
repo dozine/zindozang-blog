@@ -1,54 +1,32 @@
 "use client";
 import { useSession } from "next-auth/react";
 import styles from "./tagList.module.css";
-import { useState } from "react";
 import DeleteTagModal from "../tagModal/DeleteTagModal";
+import { useTagActions } from "@/hooks/tag/useTagAction";
 
 const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }) => {
-  const { data: session, status } = useSession();
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const { status } = useSession();
 
-  const handleDelete = async (tagId: string): Promise<{ success: boolean; error?: string }> => {
-    if (!tagId) return { success: false, error: "태그 ID가 없습니다." };
-
-    try {
-      const res = await fetch(`/api/tags/${tagId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "태그 삭제 실패");
-      }
-
-      // 부모 컴포넌트에 삭제 알림
-      if (onTagDelete) {
-        onTagDelete(tagId);
-      }
-
-      alert("태그가 성공적으로 삭제되었습니다.");
-      setIsDeleteModalOpen(false);
-      setMenuOpen(false);
-      return { success: true };
-    } catch (error: any) {
-      console.error("태그 삭제 오류:", error);
-      alert(`태그 삭제 실패: ${error.message}`);
-      return { success: false, error: error.message || "태그 삭제 실패" };
-    }
-  };
+  const {
+    menuOpen,
+    toggleMenu,
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSuccessDelete,
+  } = useTagActions(onTagDelete);
 
   return (
     <div className={styles.container}>
       {status === "authenticated" && (
         <div className={styles.menuContainer}>
           <div className={styles.menuWrapper}>
-            <button className={styles.menuButton} onClick={() => setMenuOpen(!menuOpen)}>
+            <button className={styles.menuButton} onClick={toggleMenu}>
               태그 관리
             </button>
             {menuOpen && (
               <div className={styles.menu}>
-                <button onClick={() => setIsDeleteModalOpen(true)}>삭제하기</button>
+                <button onClick={openDeleteModal}>삭제하기</button>
               </div>
             )}
           </div>
@@ -76,8 +54,8 @@ const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }) => {
 
       <DeleteTagModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onDelete={handleDelete}
+        onClose={closeDeleteModal}
+        onSuccessDelete={handleSuccessDelete}
         tags={tags}
       />
     </div>

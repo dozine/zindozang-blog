@@ -1,52 +1,41 @@
 "use client";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React from "react";
 import Modal from "../modal/Modal";
+import { TagWithPostCount } from "@/types/tag"; // 적절한 태그 타입 import
+import { useDeleteTagModal } from "@/hooks/tag/useDeleteTagModal";
 
-const DeleteTagModal = ({ isOpen, onClose, onDelete, tags }) => {
-  const [selectedTagId, setSelectedTagId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+interface DeleteTagModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccessDelete: (deletedTagId: string) => void;
+  tags: TagWithPostCount[];
+}
 
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedTagId("");
-      setError("");
-    }
-  }, [isOpen]);
+const DeleteTagModal = ({
+  isOpen,
+  onClose,
+  onSuccessDelete,
+  tags,
+}: DeleteTagModalProps) => {
+  const {
+    selectedTagId,
+    isLoading,
+    error,
 
-  const handleDeleteSubmit = async (): Promise<void> => {
-    if (!selectedTagId) {
-      setError("삭제할 태그를 선택해주세요.");
-      return;
-    }
-    setError("");
-    setIsLoading(true);
+    handleTagSelectChange,
+    handleDeleteSubmit,
+  } = useDeleteTagModal(isOpen, onClose);
 
-    try {
-      const result = await onDelete(selectedTagId);
-      if (result?.success === false) {
-        setError(result.error || "삭제 중 오류가 발생했습니다.");
-      } else {
-        setSelectedTagId("");
-        onClose();
-      }
-    } catch (err: any) {
-      setError(err.message || "삭제 중 오류가 발생했습니다.");
-      console.error("태그 삭제 오류:", err);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSubmit = () => {
+    handleDeleteSubmit(onSuccessDelete);
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h3>삭제할 태그를 선택해주세요</h3>
+      <h3>🗑️ 삭제할 태그를 선택해주세요</h3>
       <select
         value={selectedTagId}
-        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-          setSelectedTagId(e.target.value);
-          setError("");
-        }}
+        onChange={handleTagSelectChange}
         style={{
           width: "100%",
           marginTop: "1rem",
@@ -82,15 +71,30 @@ const DeleteTagModal = ({ isOpen, onClose, onDelete, tags }) => {
         }}
       >
         <button
-          onClick={handleDeleteSubmit}
+          onClick={handleSubmit}
           disabled={!selectedTagId || isLoading}
           style={{
             cursor: !selectedTagId || isLoading ? "not-allowed" : "pointer",
+            padding: "8px 16px",
+            background: "#e53e3e",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
           }}
         >
           {isLoading ? "처리중..." : "삭제"}
         </button>
-        <button onClick={onClose}>취소</button>
+        <button
+          onClick={onClose}
+          style={{
+            padding: "8px 16px",
+            background: "#ccc",
+            border: "none",
+            borderRadius: "4px",
+          }}
+        >
+          취소
+        </button>
       </div>
     </Modal>
   );
