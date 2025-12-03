@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import PostDeleteModal from "@/components/modal/PostDeleteModal";
@@ -12,6 +12,8 @@ import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
 import CodeBlock from "@/components/codeBlock/CodeBlock";
 import { FaEllipsisH } from "react-icons/fa";
+import { usePostActions } from "@/hooks/post/usePostAction";
+import { useUtterances } from "@/hooks/useUtterances";
 
 export interface CodeProps {
   node?: any;
@@ -26,96 +28,26 @@ const UTTERANCES_REPO = "dozine/blog-comments";
 const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const isAuthor: boolean = session?.user?.email === data?.user?.email;
   const isAuthenticated: boolean = status === "authenticated";
-  const [isDark, setIsDark] = useState(false);
-  const commentsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const theme = document.documentElement.getAttribute("data-theme");
-    setIsDark(theme === "dark");
-  }, []);
-
-  useEffect(() => {
-    if (!commentsRef.current) return;
-
-    const container = commentsRef.current;
-
-    const existingScript = container.querySelector(
-      "script[src='https://utteranc.es/client.js']"
-    );
-    if (existingScript) return;
-
-    const script = document.createElement("script");
-    script.src = "https://utteranc.es/client.js";
-    script.setAttribute("repo", UTTERANCES_REPO);
-    script.setAttribute("issue-term", "pathname");
-    script.setAttribute("theme", isDark ? "github-dark" : "github-light");
-    script.setAttribute("crossorigin", "anonymous");
-    script.async = true;
-
-    container.appendChild(script);
-  }, []);
-
-  const handleDelete = async () => {
-    if (!slug) return;
-    try {
-      const res = await fetch(`/api/posts/${slug}`, {
-        method: "DELETE",
-        cache: "no-store",
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.message || "Failed to delete post");
-      alert("삭제되었습니다.");
-      router.push("/blog");
-      router.refresh();
-    } catch (err: any) {
-      console.error("삭제 오류", err);
-      alert("삭제 중 오류가 발생했습니다.");
-    } finally {
-      setIsDeleteModalOpen(false);
-    }
+  const handlePostDeleteSuccess = () => {
+    router.push("/blog");
+    router.refresh();
   };
 
-  const handleEdit = () => {
-    router.push(`/write?edit=true&slug=${slug}`);
-  };
+  const {
+    menuOpen,
+    toggleMenu,
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleEdit,
+    handleDelete,
+  } = usePostActions(slug, handlePostDeleteSuccess);
 
-  // 줄바꿈 전처리 함수
-  // const processContent = (content: string) => {
-  //   const codeBlocks: string[] = [];
-  //   let processedContent = content.replace(/```[\s\S]*?```/g, (match) => {
-  //     codeBlocks.push(match);
-  //     return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-  //   });
+  const isDark = useUtterances(UTTERANCES_REPO, slug);
 
-  //   const inlineCodes: string[] = [];
-  //   processedContent = processedContent.replace(/`[^`]+`/g, (match) => {
-  //     inlineCodes.push(match);
-  //     return `__INLINE_CODE_${inlineCodes.length - 1}__`;
-  //   });
-  //   processedContent = processedContent
-  //     .replace(/\n\n+/g, "\n\n")
-  //     .replace(/(?<!\n)\n(?!\n)/g, "  \n");
-
-  //   inlineCodes.forEach((code, index) => {
-  //     processedContent = processedContent.replace(
-  //       `__INLINE_CODE_${index}__`,
-  //       code
-  //     );
-  //   });
-
-  //   codeBlocks.forEach((code, index) => {
-  //     processedContent = processedContent.replace(
-  //       `__CODE_BLOCK_${index}__`,
-  //       code
-  //     );
-  //   });
-
-  //   return processedContent;
-  // };
   return (
     <div className={styles.container}>
       <div className={styles.infoContainer}>
@@ -143,7 +75,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                 <div className={styles.menuContainer}>
                   <button
                     className={styles.menuButton}
-                    onClick={() => setMenuOpen(!menuOpen)}
+                    onClick={toggleMenu}
                     aria-label="포스트 메뉴 열기"
                   >
                     <FaEllipsisH />
@@ -155,7 +87,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                       </button>
                       <button
                         className={styles.menuItem}
-                        onClick={() => setIsDeleteModalOpen(true)}
+                        onClick={openDeleteModal}
                       >
                         삭제하기
                       </button>
@@ -230,14 +162,14 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
         </div>
       </div>
       <div
-        ref={commentsRef}
+        id="comments-container"
         style={{
           marginTop: "3rem",
         }}
       />
       <PostDeleteModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={closeDeleteModal}
         onDelete={handleDelete}
       />
     </div>
