@@ -1,7 +1,22 @@
+import { Category } from "@prisma/client";
+
 interface CategoryResult {
   success: boolean;
   error?: string;
   category?: { id: string; title: string; slug: string };
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch("/api/categories", { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error("카테고리를 불러올 수 없습니다.");
+    }
+    return await res.json();
+  } catch (error: any) {
+    console.error("API 카테고리 목록 조회 오류:", error);
+    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+  }
 }
 
 export async function addCategory(title: string): Promise<CategoryResult> {

@@ -4,6 +4,8 @@ import styles from "./postSettingModal.module.css";
 import { PostSettingModalProps } from "@/types";
 import { Category, Tag } from "@prisma/client";
 import { TagWithPostCount } from "@/types/tag";
+import { createTag } from "@/lib/services/tagService";
+
 const PostSettingModal = ({
   isOpen,
   onClose,
@@ -58,10 +60,8 @@ const PostSettingModal = ({
     if (process.env.NODE_ENV !== "test") {
       tagInputRef.current?.focus();
     }
-    // 테스트 환경이
   };
 
-  // 새 태그 생성 함수
   const createNewTag = async (): Promise<void> => {
     if (!tagInput.trim()) return;
     if (tags.length >= 5) {
@@ -70,35 +70,40 @@ const PostSettingModal = ({
     }
 
     try {
-      const res = await fetch("/api/tags", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: tagInput.trim() }),
-      });
+      const result = await createTag(tagInput);
 
-      if (!res.ok) {
-        const errorData = await res.json();
+      if (result.success && result.tag) {
+        const newTagWithCount: TagWithPostCount = {
+          ...result.tag,
+          _count: { posts: 0 },
+        };
+        addTag(newTagWithCount);
+        setAvailableTags([...availableTags, newTagWithCount]);
+      } else if (result.existingTag) {
+        const existingTagWithCount: TagWithPostCount = {
+          ...result.existingTag,
+          _count: { posts: 0 },
+        };
 
-        if (res.status === 409) {
-          const existingTag = availableTags.find(
-            (tag) => tag.name.toLowerCase() === tagInput.trim().toLowerCase()
-          );
-          if (existingTag) {
-            addTag(existingTag);
-            return;
-          }
+        const foundTag = availableTags.find(
+          (t) => t.id === existingTagWithCount.id
+        );
+
+        if (foundTag) {
+          addTag(foundTag);
+        } else {
+          addTag(existingTagWithCount);
+          setAvailableTags([...availableTags, existingTagWithCount]);
         }
-        throw new Error(errorData.message || "태그 생성에 실패했습니다.");
+      } else if (result.error) {
+        throw new Error(result.error);
       }
-
-      const newTag: TagWithPostCount = await res.json();
-      addTag(newTag);
-      setAvailableTags([...availableTags, newTag]);
     } catch (err: any) {
       console.error("태그 생성 실패:", err);
       alert(err.message);
+    } finally {
+      setTagInput("");
+      setShowTagSuggestions(false);
     }
   };
 
@@ -118,7 +123,9 @@ const PostSettingModal = ({
           <select
             className={styles.select}
             value={catSlug}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => setCatSlug(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setCatSlug(e.target.value)
+            }
           >
             <option value="">카테고리 선택</option>
             {categories.map((cat: Category) => (
@@ -136,7 +143,9 @@ const PostSettingModal = ({
               <input
                 ref={tagInputRef}
                 type="text"
-                placeholder={tags.length >= 5 ? "태그 최대 5개" : "태그 입력 (최대 5개)"}
+                placeholder={
+                  tags.length >= 5 ? "태그 최대 5개" : "태그 입력 (최대 5개)"
+                }
                 className={styles.tagInput}
                 value={tagInput}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -162,23 +171,28 @@ const PostSettingModal = ({
               )}
             </div>
 
-            {/* 태그 제안 목록 */}
             {showTagSuggestions && filteredTags.length > 0 && (
               <div className={styles.tagSuggestions}>
                 {filteredTags.slice(0, 5).map((tag: TagWithPostCount) => (
-                  <div key={tag.id} className={styles.tagSuggestion} onClick={() => addTag(tag)}>
+                  <div
+                    key={tag.id}
+                    className={styles.tagSuggestion}
+                    onClick={() => addTag(tag)}
+                  >
                     {tag.name}
                   </div>
                 ))}
               </div>
             )}
 
-            {/* 선택된 태그 표시 */}
             <div className={styles.selectedTags}>
               {tags.map((tag: Tag) => (
                 <span key={tag.id} className={styles.tagBadge}>
                   {tag.name}
-                  <button className={styles.removeTagButton} onClick={() => removeTag(tag.id)}>
+                  <button
+                    className={styles.removeTagButton}
+                    onClick={() => removeTag(tag.id)}
+                  >
                     ×
                   </button>
                 </span>
@@ -194,11 +208,15 @@ const PostSettingModal = ({
               type="checkbox"
               aria-label="공개 설정"
               checked={isPublished}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setIsPublished(e.target.checked)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setIsPublished(e.target.checked)
+              }
               className={styles.toggleInput}
             />
             <span className={styles.toggleSlider}></span>
-            <span className={styles.toggleText}>{isPublished ? "공개됨" : "비공개"}</span>
+            <span className={styles.toggleText}>
+              {isPublished ? "공개됨" : "비공개"}
+            </span>
           </label>
         </div>
 
