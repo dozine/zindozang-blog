@@ -13,26 +13,25 @@ export function useTagSelection() {
 
       const currentTags: string[] = params.get("tags")
         ? params
-            .get("tags")
+            .get("tags")!
             .split(".")
             .filter((t) => t !== "")
         : [];
 
-      if (!currentTags.includes(tagName)) {
-        currentTags.push(tagName);
+      let newTags: string[];
+
+      // 태그가 이미 선택되어 있으면 제거
+      if (currentTags.includes(tagName)) {
+        newTags = currentTags.filter((t) => t !== tagName);
       } else {
-        const filtered = currentTags.filter((t) => t !== tagName);
-
-        if (filtered.length === 0) {
-          params.delete("tags");
-        } else {
-          params.set("tags", filtered.join("."));
-        }
-
-        if (currentTags.length === filtered.length) return;
+        newTags = [...currentTags, tagName];
       }
 
-      params.set("tags", currentTags.join("."));
+      if (newTags.length === 0) {
+        params.delete("tags");
+      } else {
+        params.set("tags", newTags.join("."));
+      }
 
       params.set("page", "1");
 
