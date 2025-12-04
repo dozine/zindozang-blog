@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Tag } from "@prisma/client";
-import { getAllTags } from "@/lib/data/tag"; // 분리된 데이터 함수 import
+import { fetchAvailableTags } from "@/lib/services/tagService";
 
 interface UseFetchTagsResult {
   tags: Tag[];
@@ -19,7 +19,7 @@ export function useFetchTags(): UseFetchTagsResult {
       setLoading(true);
       setError(null);
       try {
-        const allTags = await getAllTags();
+        const allTags = await fetchAvailableTags();
         setTags(allTags);
       } catch (err: any) {
         const errorMessage =
