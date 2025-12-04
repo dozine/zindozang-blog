@@ -1,10 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ref, uploadBytesResumable, getDownloadURL, getStorage } from "firebase/storage";
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  getStorage,
+} from "firebase/storage";
 
 import styles from "./ImageUploader.module.css";
-import { app } from "@/app/utils/firebase";
+import { app } from "@/lib/external/firebase";
 
 interface ImageUploaderProps {
   onImageUploaded?: (url: string | string[]) => void;
@@ -39,7 +44,9 @@ const ImageUploader = ({
     fileInputRef.current?.click();
   };
 
-  const createMultipleSizes = async (file: File): Promise<SizedImageResult[]> => {
+  const createMultipleSizes = async (
+    file: File
+  ): Promise<SizedImageResult[]> => {
     const sizes = [
       { name: "card", width: 400, height: 300 },
       { name: "medium", width: 800, height: 600 },
@@ -136,18 +143,24 @@ const ImageUploader = ({
             (snapshot) => {
               const progress =
                 (i / imageSizes.length +
-                  snapshot.bytesTransferred / snapshot.totalBytes / imageSizes.length) *
+                  snapshot.bytesTransferred /
+                    snapshot.totalBytes /
+                    imageSizes.length) *
                 100;
               setProgress(Math.round(progress));
             },
             (error) => {
               console.error("업로드 오류:", error);
-              setUploadError("이미지 업로드 중 오류가 발생했습니다: " + error.message);
+              setUploadError(
+                "이미지 업로드 중 오류가 발생했습니다: " + error.message
+              );
               reject(error);
             },
             async () => {
               try {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                const downloadURL = await getDownloadURL(
+                  uploadTask.snapshot.ref
+                );
                 uploadedUrls[sizeName] = downloadURL;
                 resolve();
               } catch (err: any) {
@@ -159,7 +172,11 @@ const ImageUploader = ({
         });
       }
 
-      const urlArray: string[] = [uploadedUrls.card, uploadedUrls.medium, uploadedUrls.large];
+      const urlArray: string[] = [
+        uploadedUrls.card,
+        uploadedUrls.medium,
+        uploadedUrls.large,
+      ];
 
       onImageUploaded?.(urlArray);
       setProgress(100);
@@ -177,7 +194,11 @@ const ImageUploader = ({
 
   return (
     <div className={styles.container}>
-      <button className={styles.plusButton} onClick={handlePlusButtonClick} disabled={uploading}>
+      <button
+        className={styles.plusButton}
+        onClick={handlePlusButtonClick}
+        disabled={uploading}
+      >
         <Image src="/plus.png" alt="Add content" width={24} height={24} />
       </button>
       <input
@@ -191,7 +212,10 @@ const ImageUploader = ({
         <div className={styles.uploadStatus}>
           <p>업로드 중 ... </p>
           <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+            <div
+              className={styles.progressFill}
+              style={{ width: `${progress}%` }}
+            />
           </div>
           <span>{progress}%</span>
         </div>

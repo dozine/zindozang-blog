@@ -1,67 +1,34 @@
 "use client";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React from "react";
 import Modal from "../modal/Modal";
-import { DeleteCategoryModalProps } from "@/types";
 import { Category } from "@prisma/client";
+import { useDeleteCategoryModal } from "@/hooks/category/useDeleteCategoryModal";
 
 const DeleteCategoryModal = ({
   isOpen,
   onClose,
-  onDelete,
+  onSuccess,
   categories,
-}: DeleteCategoryModalProps) => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedCategoryId("");
-      setError("");
-    }
-  }, [isOpen]);
-
-  const handleDeleteSubmit = async (): Promise<void> => {
-    if (!selectedCategoryId) {
-      setError("삭제할 카테고리를 선택해주세요.");
-      return;
-    }
-
-    // 선택한 카테고리가 uncategorized인지 확인
-    const selectedCategory = categories?.find((cat) => cat.id === selectedCategoryId);
-
-    if (selectedCategory?.slug === "uncategorized") {
-      setError("'미분류' 카테고리는 삭제할 수 없습니다.");
-      return;
-    }
-
-    setError("");
-    setIsLoading(true);
-    try {
-      const result = await onDelete(selectedCategoryId);
-      if (result?.success === false) {
-        setError(result.error || "삭제 중 오류가 발생했습니다.");
-      } else {
-        setSelectedCategoryId("");
-        onClose();
-      }
-    } catch (err: any) {
-      setError("삭제 중 오류가 발생했습니다.");
-      console.error("카테고리 삭제 오류:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => Promise<void>;
+  categories: Category[];
+}) => {
+  const {
+    selectedCategoryId,
+    isLoading,
+    error,
+    handleCategorySelectChange,
+    handleDeleteSubmit,
+  } = useDeleteCategoryModal({ onSuccess, onClose, isOpen, categories });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <h3>삭제할 카테고리를 선택해주세요</h3>
       <select
         value={selectedCategoryId}
-        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-          setSelectedCategoryId(e.target.value);
-          setError(""); // 새 선택 시 오류 메시지 초기화
-        }}
+        onChange={handleCategorySelectChange}
         style={{
           width: "100%",
           marginTop: "1rem",
@@ -99,10 +66,11 @@ const DeleteCategoryModal = ({
         }}
       >
         <button
-          onClick={handleDeleteSubmit}
+          onClick={handleDeleteSubmit} // 💡 훅 핸들러 사용
           disabled={!selectedCategoryId || isLoading}
           style={{
-            cursor: !selectedCategoryId || isLoading ? "not-allowed" : "pointer",
+            cursor:
+              !selectedCategoryId || isLoading ? "not-allowed" : "pointer",
           }}
         >
           {isLoading ? "처리중..." : "삭제"}
