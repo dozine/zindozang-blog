@@ -1,20 +1,35 @@
+import prisma from "@/lib/db/prisma";
 import { Category } from "@prisma/client";
 
-export async function getAllCategories(): Promise<Category[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!baseUrl) {
-    console.error("NEXT_PUBLIC_API_BASE_URL이 설정되지 않았습니다.");
-    return [];
-  }
-  try {
-    const res = await fetch(`${baseUrl}/api/categories`, {
-      next: { revalidate: 60 },
+const ensureUncategorizedCategory = async (): Promise<Category> => {
+  const uncategorized = await prisma.category.findUnique({
+    where: { slug: "uncategorized" },
+  });
+
+  if (!uncategorized) {
+    return await prisma.category.create({
+      data: {
+        slug: "uncategorized",
+        title: "미분류",
+        img: null,
+      },
     });
-    if (!res.ok) {
-      console.error("Failed to fetch categories:", res.status, res.statusText);
-      throw new Error("카테고리를 불러오는데 실패했습니다.");
-    }
-    return (await res.json()) as Category[];
+  }
+
+  return uncategorized;
+};
+
+export async function getAllCategories(): Promise<Category[]> {
+  try {
+    await ensureUncategorizedCategory();
+
+    const categories = await prisma.category.findMany({
+      orderBy: {
+        title: "asc",
+      },
+    });
+
+    return categories;
   } catch (error) {
     console.error("카테고리 데이터 가져오기 오류:", error);
     return [];
