@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:ci": "jest --ci"
+    "test:ci": "jest --ci",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -78,6 +80,19 @@
     "prisma": "^6.5.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "whatwg-fetch": "^3.6.20"
+    "whatwg-fetch": "^3.6.20",
+    "storybook": "^10.1.4",
+    "@storybook/nextjs-vite": "^10.1.4",
+    "@chromatic-com/storybook": "^4.1.3",
+    "@storybook/addon-vitest": "^10.1.4",
+    "@storybook/addon-a11y": "^10.1.4",
+    "@storybook/addon-docs": "^10.1.4",
+    "@storybook/addon-onboarding": "^10.1.4",
+    "vite": "^7.2.6",
+    "eslint-plugin-storybook": "^10.1.4",
+    "vitest": "^4.0.15",
+    "playwright": "^1.57.0",
+    "@vitest/browser-playwright": "^4.0.15",
+    "@vitest/coverage-v8": "^4.0.15"
   }
 }
