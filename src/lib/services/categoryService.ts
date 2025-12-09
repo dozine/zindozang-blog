@@ -56,9 +56,7 @@ export async function addCategory(title: string): Promise<CategoryResult> {
   }
 }
 
-export async function deleteCategory(
-  categoryId: string
-): Promise<CategoryResult> {
+export async function deleteCategory(categoryId: string): Promise<CategoryResult> {
   try {
     const res = await fetch(`/api/categories?id=${categoryId}`, {
       method: "DELETE",

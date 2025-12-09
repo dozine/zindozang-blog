@@ -1,21 +1,9 @@
 import Card from "@/components/card/Card";
 import Pagination from "@/components/pagination/Pagination";
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  mockPostDefault,
-  mockPostLongDesc,
-  mockPostNoImage,
-} from "./mock/postData";
+import { mockPostDefault, mockPostLongDesc, mockPostNoImage } from "./mock/postData";
 
-const CardListStory = ({
-  posts,
-  count,
-  page,
-}: {
-  posts: any[];
-  count: number;
-  page: number;
-}) => {
+const CardListStory = ({ posts, count, page }: { posts: any[]; count: number; page: number }) => {
   const POSTS_PER_PAGE = 10;
   const totalPages = Math.max(1, Math.ceil(count / POSTS_PER_PAGE));
 

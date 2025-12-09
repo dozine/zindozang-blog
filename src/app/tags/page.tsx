@@ -11,9 +11,7 @@ const TagsPage = async ({
   const params = await searchParams;
   const page: number = Number(params.page) || 1;
   const rawTags: string = params.tags || "";
-  const tags: string[] = rawTags
-    ? rawTags.split(".").filter((tag) => tag !== "")
-    : [];
+  const tags: string[] = rawTags ? rawTags.split(".").filter((tag) => tag !== "") : [];
 
   const allTags: TagWithPostCount[] = await getAllTags();
   return (

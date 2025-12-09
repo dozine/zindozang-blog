@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import React, { useState } from "react";
 import Modal from "../components/modal/Modal";
 
-const fn = (...args: any[]) =>
-  console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
 
 type PostDeleteModalStoryArgs = {
   isOpen: boolean;
@@ -35,9 +34,7 @@ const TestablePostDeleteModal = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <h3>정말 이 포스트를 삭제하시겠습니까?</h3>
       <p>이 작업은 되돌릴 수 없습니다.</p>
-      {mockError && (
-        <p style={{ color: "red", marginTop: "10px" }}>오류: {mockError}</p>
-      )}
+      {mockError && <p style={{ color: "red", marginTop: "10px" }}>오류: {mockError}</p>}
 
       <div
         style={{

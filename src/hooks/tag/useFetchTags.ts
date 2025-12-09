@@ -22,8 +22,7 @@ export function useFetchTags(): UseFetchTagsResult {
         const allTags = await fetchAvailableTags();
         setTags(allTags);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "태그 불러오기 오류가 발생했습니다.";
+        const errorMessage = err.message || "태그 불러오기 오류가 발생했습니다.";
         console.error("태그 불러오기 오류", err);
         setError(errorMessage);
       } finally {

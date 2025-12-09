@@ -27,13 +27,10 @@ export function useDeleteCategoryModal({
     }
   }, [isOpen]);
 
-  const handleCategorySelectChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      setSelectedCategoryId(e.target.value);
-      setError(null);
-    },
-    []
-  );
+  const handleCategorySelectChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategoryId(e.target.value);
+    setError(null);
+  }, []);
 
   const handleDeleteSubmit = useCallback(async (): Promise<void> => {
     if (!selectedCategoryId) {
@@ -41,9 +38,7 @@ export function useDeleteCategoryModal({
       return;
     }
 
-    const selectedCategory = categories?.find(
-      (cat) => cat.id === selectedCategoryId
-    );
+    const selectedCategory = categories?.find((cat) => cat.id === selectedCategoryId);
 
     if (selectedCategory?.slug === "uncategorized") {
       setError("'미분류' 카테고리는 삭제할 수 없습니다.");

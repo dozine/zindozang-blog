@@ -14,8 +14,7 @@ import { useModal } from "@/hooks/useModal";
 const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
   const { status } = useSession();
 
-  const { categories, error, isLoading, refreshCategories } =
-    useFetchCategories(initialCategories);
+  const { categories, error, isLoading, refreshCategories } = useFetchCategories(initialCategories);
   const {
     sliderRef,
     scrollLeftHandler,
@@ -49,10 +48,7 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
       {status === "authenticated" && (
         <div className={styles.menuContainer}>
           <div className={styles.menuWrapper}>
-            <button
-              className={styles.menuButton}
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
+            <button className={styles.menuButton} onClick={() => setMenuOpen(!menuOpen)}>
               카테고리 관리
             </button>
             {menuOpen && (
@@ -99,10 +95,7 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
           onTouchMove={handleTouchMove}
         >
           <div className={styles.categories}>
-            <Link
-              href="/blog"
-              className={`${styles.category} ${styles.allCategory}`}
-            >
+            <Link href="/blog" className={`${styles.category} ${styles.allCategory}`}>
               <span className={styles.categoryText}>All</span>
             </Link>
             {categories.map((item) => {

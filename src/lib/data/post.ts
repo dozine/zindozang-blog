@@ -33,9 +33,7 @@ type FormattedPost = Omit<PostWithRelations, "tags" | "user"> & {
   };
 };
 
-export async function getPostData(
-  slug: string
-): Promise<FormattedPostResponse | null> {
+export async function getPostData(slug: string): Promise<FormattedPostResponse | null> {
   const decodedSlug = decodeURIComponent(slug);
   console.log("getPostData called with slug:", slug);
   console.log("Decoded slug:", decodedSlug);
@@ -71,10 +69,7 @@ export async function getPostData(
       return null;
     }
 
-    if (
-      !postExists.isPublished &&
-      session?.user.email !== postExists.user.email
-    ) {
+    if (!postExists.isPublished && session?.user.email !== postExists.user.email) {
       console.error("Unauthorized access to unpublished post");
       return null;
     }

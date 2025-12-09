@@ -5,11 +5,7 @@ import styles from "./tagsPage.module.css";
 import { TagsPageClientProp, TagWithPostCount } from "@/types/tag";
 import { useTagSelection } from "@/hooks/tag/useTagSelection";
 
-const TagsPageClient = ({
-  initialPage,
-  initialTags,
-  allTags,
-}: TagsPageClientProp) => {
+const TagsPageClient = ({ initialPage, initialTags, allTags }: TagsPageClientProp) => {
   const { handleTagClick, getSelectedTags } = useTagSelection();
 
   const [tags, setTags] = useState<TagWithPostCount[]>(allTags);

@@ -122,18 +122,7 @@ export const usePostEditor = () => {
       setIsSubmitting(false);
       closeModal();
     }
-  }, [
-    isEditing,
-    editSlug,
-    title,
-    value,
-    media,
-    catSlug,
-    tags,
-    isPublished,
-    router,
-    closeModal,
-  ]);
+  }, [isEditing, editSlug, title, value, media, catSlug, tags, isPublished, router, closeModal]);
 
   return {
     status,

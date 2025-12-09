@@ -6,10 +6,7 @@ interface UsePostDeleteModalProps {
   onClose: () => void;
 }
 
-export function usePostDeleteModal({
-  onDelete,
-  onClose,
-}: UsePostDeleteModalProps) {
+export function usePostDeleteModal({ onDelete, onClose }: UsePostDeleteModalProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 

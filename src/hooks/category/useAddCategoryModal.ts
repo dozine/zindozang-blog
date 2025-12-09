@@ -8,11 +8,7 @@ interface UseAddCategoryModalProps {
   isOpen: boolean;
 }
 
-export function useAddCategoryModal({
-  onSuccess,
-  onClose,
-  isOpen,
-}: UseAddCategoryModalProps) {
+export function useAddCategoryModal({ onSuccess, onClose, isOpen }: UseAddCategoryModalProps) {
   const [title, setTitle] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

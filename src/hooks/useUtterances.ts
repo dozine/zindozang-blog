@@ -18,9 +18,7 @@ export function useUtterances(repo: string, issueTerm: string): boolean {
 
     const container = containerRef.current;
     if (!container) return;
-    const existingScript = container.querySelector(
-      "script[src='https://utteranc.es/client.js']"
-    );
+    const existingScript = container.querySelector("script[src='https://utteranc.es/client.js']");
     if (existingScript) return;
 
     const script = document.createElement("script");

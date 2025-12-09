@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import Modal from "../components/modal/Modal";
 import { Category } from "@prisma/client";
 
-const fn = (...args: any[]) =>
-  console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
 
 const mockCategories: Category[] = [
   {
@@ -56,9 +55,7 @@ const TestableCategoryDeleteModal = ({
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
 
-  const handleCategorySelectChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleCategorySelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategoryId(e.target.value);
   };
 
@@ -118,8 +115,7 @@ const TestableCategoryDeleteModal = ({
           onClick={handleDeleteSubmit}
           disabled={!selectedCategoryId || mockIsLoading}
           style={{
-            cursor:
-              !selectedCategoryId || mockIsLoading ? "not-allowed" : "pointer",
+            cursor: !selectedCategoryId || mockIsLoading ? "not-allowed" : "pointer",
           }}
         >
           {mockIsLoading ? "처리중..." : "삭제"}
@@ -130,9 +126,7 @@ const TestableCategoryDeleteModal = ({
   );
 };
 
-const InteractiveDeleteCategoryModalWrapper = (
-  args: DeleteCategoryModalStoryArgs
-) => {
+const InteractiveDeleteCategoryModalWrapper = (args: DeleteCategoryModalStoryArgs) => {
   const [isOpen, setIsOpen] = useState(args.initialOpen || false);
   const [categories] = useState<Category[]>(args.categories);
 
@@ -162,8 +156,7 @@ const InteractiveDeleteCategoryModalWrapper = (
         }}
       >
         <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
-          현재 카테고리 수:{" "}
-          {categories.filter((c) => c.slug !== "uncategorized").length}개
+          현재 카테고리 수: {categories.filter((c) => c.slug !== "uncategorized").length}개
         </p>
         <button
           onClick={handleOpen}

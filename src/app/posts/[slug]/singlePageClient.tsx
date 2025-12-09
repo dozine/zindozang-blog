@@ -85,10 +85,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                       <button className={styles.menuItem} onClick={handleEdit}>
                         수정하기
                       </button>
-                      <button
-                        className={styles.menuItem}
-                        onClick={openDeleteModal}
-                      >
+                      <button className={styles.menuItem} onClick={openDeleteModal}>
                         삭제하기
                       </button>
                     </div>
@@ -125,9 +122,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                 const codeString = String(children).replace(/\n$/, "");
                 const isInlineCode =
                   inline === true ||
-                  (!className &&
-                    !codeString.includes("\n") &&
-                    codeString.length < 100);
+                  (!className && !codeString.includes("\n") && codeString.length < 100);
                 if (isInlineCode) {
                   return (
                     <code
