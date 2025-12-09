@@ -1,6 +1,6 @@
 import Card from "@/components/card/Card";
 import Pagination from "@/components/pagination/Pagination";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { mockPostDefault, mockPostLongDesc, mockPostNoImage } from "./mock/postData";
 
 const CardListStory = ({ posts, count, page }: { posts: any[]; count: number; page: number }) => {
