@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # 전체 Git 히스토리 가져오기
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -23,17 +23,46 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm run test:ci -- --passWithNoTests
 
-  deploy-preview:
+      - name: Test Storybook build
+        run: npm run build-storybook
+
+  chromatic-test:
     needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Chromatic Visual Tests (Currently Commented Out)
+        # uses: chromaui/action@v1
+        # with:
+        #   projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+        #   token: ${{ secrets.GITHUB_TOKEN }}
+        #   exitZeroOnChanges: true
+        run: echo "Chromatic VRT is currently commented out for portfolio demonstration."
+
+  deploy-preview:
+    needs: [test] # , chromatic-test]
     if: success() && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # 전체 Git 히스토리 가져오기
+          fetch-depth: 0
 
       - name: Deploy to Vercel (Preview)
         uses: amondnet/vercel-action@v20
@@ -45,13 +74,13 @@ jobs:
           vercel-args: ""
 
   deploy-production:
-    needs: test
+    needs: [test] # , chromatic-test]
     if: success() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # 전체 Git 히스토리 가져오기
+          fetch-depth: 0
 
       - name: Deploy to Vercel (Production)
         uses: amondnet/vercel-action@v20
