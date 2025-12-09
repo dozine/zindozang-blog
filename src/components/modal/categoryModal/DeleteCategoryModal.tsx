@@ -15,13 +15,8 @@ const DeleteCategoryModal = ({
   onSuccess: () => Promise<void>;
   categories: Category[];
 }) => {
-  const {
-    selectedCategoryId,
-    isLoading,
-    error,
-    handleCategorySelectChange,
-    handleDeleteSubmit,
-  } = useDeleteCategoryModal({ onSuccess, onClose, isOpen, categories });
+  const { selectedCategoryId, isLoading, error, handleCategorySelectChange, handleDeleteSubmit } =
+    useDeleteCategoryModal({ onSuccess, onClose, isOpen, categories });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -69,8 +64,7 @@ const DeleteCategoryModal = ({
           onClick={handleDeleteSubmit} // 💡 훅 핸들러 사용
           disabled={!selectedCategoryId || isLoading}
           style={{
-            cursor:
-              !selectedCategoryId || isLoading ? "not-allowed" : "pointer",
+            cursor: !selectedCategoryId || isLoading ? "not-allowed" : "pointer",
           }}
         >
           {isLoading ? "처리중..." : "삭제"}

@@ -16,39 +16,43 @@ const compat = new FlatCompat({
 
 const compatConfig = [...compat.extends("next/core-web-vitals")];
 
-const eslintConfig = [...compatConfig, {
-  files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
-  ignores: ["node_modules/**", ".next/**", "out/**", "public/**", "dist/**"],
-  plugins: {
-    prettier: prettierPlugin,
-    import: importPlugin,
-  },
-  rules: {
-    "prettier/prettier": [
-      "error",
-      {
-        semi: true,
-        tabWidth: 2,
-        printWidth: 100,
-        singleQuote: false,
-        trailingComma: "es5",
-        jsxBracketSameLine: false,
-      },
-    ],
+const eslintConfig = [
+  ...compatConfig,
+  {
+    files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
+    ignores: ["node_modules/**", ".next/**", "out/**", "public/**", "dist/**"],
+    plugins: {
+      prettier: prettierPlugin,
+      import: importPlugin,
+    },
+    rules: {
+      "prettier/prettier": [
+        "error",
+        {
+          semi: true,
+          tabWidth: 2,
+          printWidth: 100,
+          singleQuote: false,
+          trailingComma: "es5",
+          jsxBracketSameLine: false,
+        },
+      ],
 
-    "no-unused-vars": "warn",
-    "no-console": "warn",
-    "import/no-unresolved": "error",
-  },
+      "no-unused-vars": "warn",
+      "no-console": "warn",
+      "import/no-unresolved": "error",
+    },
 
-  settings: {
-    "import/resolver": {
-      alias: {
-        map: [["@", "./src"]],
-        extensions: [".js", ".jsx", ".ts", ".tsx"],
+    settings: {
+      "import/resolver": {
+        alias: {
+          map: [["@", "./src"]],
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
+        },
       },
     },
   },
-}, ...storybook.configs["flat/recommended"]];
+  ...storybook.configs["flat/recommended"],
+];
 
 export default eslintConfig;

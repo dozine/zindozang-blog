@@ -2,8 +2,7 @@ import Modal from "@/components/modal/Modal";
 import type { Meta, StoryObj } from "@storybook/react";
 import React, { useState, ChangeEvent } from "react";
 
-const fn = (...args: any[]) =>
-  console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
 
 type AddCategoryModalStoryArgs = {
   isOpen: boolean;
@@ -44,29 +43,20 @@ const TestableAddCategoryModal = ({
         type="text"
         placeholder="카테고리 이름"
         value={title}
-        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          setTitle(e.target.value)
-        }
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
         style={{ width: "100%", padding: "8px", marginBottom: "0.5rem" }}
         disabled={mockIsLoading}
       />
-      {mockError && (
-        <p style={{ color: "red", fontSize: "0.875rem" }}>{mockError}</p>
-      )}
+      {mockError && <p style={{ color: "red", fontSize: "0.875rem" }}>{mockError}</p>}
 
-      <button
-        onClick={handleSubmit}
-        disabled={mockIsLoading || title.trim() === ""}
-      >
+      <button onClick={handleSubmit} disabled={mockIsLoading || title.trim() === ""}>
         {mockIsLoading ? "처리 중" : "추가"}
       </button>
     </Modal>
   );
 };
 
-const InteractiveAddCategoryModalWrapper = (
-  args: AddCategoryModalStoryArgs
-) => {
+const InteractiveAddCategoryModalWrapper = (args: AddCategoryModalStoryArgs) => {
   const [isOpen, setIsOpen] = useState(args.initialOpen || false);
 
   const { mockIsLoading, mockError, onSuccess, onClose } = args;
@@ -212,10 +202,7 @@ export const Closed: Story = {
   },
   render: (args) => (
     <div style={{ padding: "20px", fontSize: "1rem", color: "#1f2937" }}>
-      <p>
-        모달이 닫힌 상태입니다. `isOpen`이 `false`로 설정되어 모달이 보이지
-        않습니다.
-      </p>
+      <p>모달이 닫힌 상태입니다. `isOpen`이 `false`로 설정되어 모달이 보이지 않습니다.</p>
       <TestableAddCategoryModal {...args} />
     </div>
   ),

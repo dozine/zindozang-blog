@@ -4,11 +4,7 @@ import Modal from "../components/modal/Modal";
 
 const mockModalContent = (
   <div style={{ padding: "20px", fontSize: "1rem", color: "#1f2937" }}>
-    <h2
-      style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "10px" }}
-    >
-      모달 내용
-    </h2>
+    <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "10px" }}>모달 내용</h2>
     <p>Storybook에서 props로 전달된 자식 요소입니다.</p>
     <p style={{ marginTop: "10px", color: "#6b7280" }}>
       배경을 클릭하거나 'X' 버튼을 눌러 모달을 닫아보세요.
@@ -91,10 +87,7 @@ export const Closed: Story = {
   },
   render: (args) => (
     <div style={{ padding: "20px", fontSize: "1rem", color: "#1f2937" }}>
-      <p>
-        모달이 닫힌 상태입니다. `isOpen`이 `false`로 설정되어 모달이 보이지
-        않습니다.
-      </p>
+      <p>모달이 닫힌 상태입니다. `isOpen`이 `false`로 설정되어 모달이 보이지 않습니다.</p>
       <Modal {...args} />
     </div>
   ),

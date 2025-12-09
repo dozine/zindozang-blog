@@ -13,13 +13,10 @@ export function useDeleteTagModal(isOpen: boolean, onClose: () => void) {
     }
   }, [isOpen]);
 
-  const handleTagSelectChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      setSelectedTagId(e.target.value);
-      setError("");
-    },
-    []
-  );
+  const handleTagSelectChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTagId(e.target.value);
+    setError("");
+  }, []);
 
   const handleDeleteSubmit = useCallback(
     async (onSuccessCallback: (tagId: string) => void) => {

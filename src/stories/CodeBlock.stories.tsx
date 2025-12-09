@@ -7,8 +7,7 @@ const meta: Meta<typeof CodeBlock> = {
   argTypes: {
     language: {
       control: "text",
-      description:
-        "하이라이팅할 코드 언어 (예: javascript, typescript, python)",
+      description: "하이라이팅할 코드 언어 (예: javascript, typescript, python)",
       defaultValue: "javascript",
     },
     children: {

@@ -7,11 +7,7 @@ const SinglePageClient = dynamic(() => import("./singlePageClient"), {
   loading: () => <p>로딩 중...</p>,
 });
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const data = await getPostData(slug as string);
 
@@ -23,17 +19,11 @@ export async function generateMetadata({
 
   return {
     title: data.title,
-    description: data.desc
-      ? data.desc.substring(0, 160).replace(/<[^>]*>/g, "")
-      : "",
+    description: data.desc ? data.desc.substring(0, 160).replace(/<[^>]*>/g, "") : "",
   };
 }
 
-const SinglePage = async ({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) => {
+const SinglePage = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params;
 
   const data = await getPostData(slug as string);

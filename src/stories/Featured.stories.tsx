@@ -13,15 +13,13 @@ const mockPosts: Featuredost[] = [
     id: 2,
     title: "리액트 Hooks 완전 정복",
     desc: "React Hooks의 핵심 개념과 주요 사용법을 깊이 있게 다룹니다. useState, useEffect 등.",
-    image:
-      "https://via.placeholder.com/1200x500/007bff/ffffff?text=React+Hooks",
+    image: "https://via.placeholder.com/1200x500/007bff/ffffff?text=React+Hooks",
   },
   {
     id: 3,
     title: "CSS Grid를 활용한 레이아웃",
     desc: "Flexbox와는 다른 강력한 CSS Grid 시스템을 이해하고 실무에 적용하는 방법을 배웁니다.",
-    image:
-      "https://via.placeholder.com/1200x500/28a745/ffffff?text=CSS+Grid+Layout",
+    image: "https://via.placeholder.com/1200x500/28a745/ffffff?text=CSS+Grid+Layout",
   },
 ];
 
@@ -57,8 +55,7 @@ export const MultiplePosts: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "여러 개의 추천 게시물이 있을 때 슬라이더의 동작을 테스트합니다.",
+        story: "여러 개의 추천 게시물이 있을 때 슬라이더의 동작을 테스트합니다.",
       },
     },
   },

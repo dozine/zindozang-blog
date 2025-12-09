@@ -13,9 +13,7 @@ const PostDeleteModal = ({ isOpen, onClose, onDelete }) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <h3>정말 이 포스트를 삭제하시겠습니까?</h3>
       <p>이 작업은 되돌릴 수 없습니다.</p>
-      {error && (
-        <p style={{ color: "red", marginTop: "10px" }}>오류: {error}</p>
-      )}
+      {error && <p style={{ color: "red", marginTop: "10px" }}>오류: {error}</p>}
 
       <div
         style={{

@@ -74,9 +74,7 @@ export const AuthenticatedUser: Story = {
   },
   decorators: [
     (Story) => (
-      <SessionProvider
-        session={{ user: { name: "Test User" }, expires: "2025-12-31" }}
-      >
+      <SessionProvider session={{ user: { name: "Test User" }, expires: "2025-12-31" }}>
         <div style={{ padding: "20px" }}>
           <Story />
         </div>

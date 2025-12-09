@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import Modal from "../components/modal/Modal";
 import { TagWithPostCount } from "@/types/tag";
 
-const fn = (...args: any[]) =>
-  console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
 
 const mockTags: TagWithPostCount[] = [
   {
@@ -245,8 +244,7 @@ const meta: Meta<DeleteTagModalStoryArgs> = {
   args: {
     tags: mockTags,
     onClose: fn,
-    onSuccessDelete: (deletedTagId: string) =>
-      fn("태그 삭제 성공", deletedTagId),
+    onSuccessDelete: (deletedTagId: string) => fn("태그 삭제 성공", deletedTagId),
     mockIsLoading: false,
     mockError: null,
     initialOpen: false,
@@ -376,10 +374,7 @@ export const Closed: Story = {
   },
   render: (args) => (
     <div style={{ padding: "20px", fontSize: "1rem", color: "#1f2937" }}>
-      <p>
-        모달이 닫힌 상태입니다. `isOpen`이 `false`로 설정되어 모달이 보이지
-        않습니다.
-      </p>
+      <p>모달이 닫힌 상태입니다. `isOpen`이 `false`로 설정되어 모달이 보이지 않습니다.</p>
       <TestableDeleteTagModal {...args} />
     </div>
   ),

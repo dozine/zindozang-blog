@@ -10,9 +10,7 @@ interface UseFetchCategoriesResult {
   refreshCategories: () => Promise<void>; // 수동 리프레시 함수 제공
 }
 
-export function useFetchCategories(
-  initialCategories: Category[]
-): UseFetchCategoriesResult {
+export function useFetchCategories(initialCategories: Category[]): UseFetchCategoriesResult {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(

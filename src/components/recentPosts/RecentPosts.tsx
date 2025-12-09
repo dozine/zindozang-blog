@@ -1,11 +1,7 @@
 import React from "react";
 import styles from "./recentPosts.module.css";
 import Card from "../card/Card";
-import {
-  PostApiResponse,
-  PostWithFormattedTags,
-  RecentPostsProps,
-} from "@/types";
+import { PostApiResponse, PostWithFormattedTags, RecentPostsProps } from "@/types";
 import Link from "next/link";
 import { getPosts } from "@/lib/data/post";
 

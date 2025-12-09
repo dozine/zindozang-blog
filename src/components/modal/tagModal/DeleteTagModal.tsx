@@ -11,12 +11,7 @@ interface DeleteTagModalProps {
   tags: TagWithPostCount[];
 }
 
-const DeleteTagModal = ({
-  isOpen,
-  onClose,
-  onSuccessDelete,
-  tags,
-}: DeleteTagModalProps) => {
+const DeleteTagModal = ({ isOpen, onClose, onSuccessDelete, tags }: DeleteTagModalProps) => {
   const {
     selectedTagId,
     isLoading,

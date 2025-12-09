@@ -29,9 +29,7 @@ export const usePostDataLoader = ({
   onNavigate,
 }: PostDataLoaderProps): PostDataLoaderResult => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [postToEdit, setPostToEdit] = useState<PostWithFormattedTags | null>(
-    null
-  );
+  const [postToEdit, setPostToEdit] = useState<PostWithFormattedTags | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [availableTags, setAvailableTags] = useState<TagWithPostCount[]>([]);
 
@@ -58,13 +56,10 @@ export const usePostDataLoader = ({
     const loadAllData = async () => {
       setIsLoading(true);
 
-      let postPromise: Promise<PostWithFormattedTags | null> =
-        Promise.resolve(null);
+      let postPromise: Promise<PostWithFormattedTags | null> = Promise.resolve(null);
       if (isEditing && editSlug) {
         postPromise = fetchPostBySlug(editSlug).catch((err) => {
-          onPostLoadErrorRef.current(
-            err.message || "게시글을 불러올 수 없습니다."
-          );
+          onPostLoadErrorRef.current(err.message || "게시글을 불러올 수 없습니다.");
           return null;
         });
       }
@@ -81,10 +76,7 @@ export const usePostDataLoader = ({
       ]);
 
       try {
-        const [postResult, [catData, tagData]] = await Promise.all([
-          postPromise,
-          metadataPromise,
-        ]);
+        const [postResult, [catData, tagData]] = await Promise.all([postPromise, metadataPromise]);
 
         if (postResult) setPostToEdit(postResult);
         setCategories(catData);

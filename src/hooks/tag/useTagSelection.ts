@@ -43,9 +43,7 @@ export function useTagSelection() {
   const getSelectedTags = useCallback(
     (initialTags: string[]): string[] => {
       const rawTags: string | null = searchParams.get("tags");
-      return rawTags
-        ? rawTags.split(".").filter((tag) => tag !== "")
-        : initialTags;
+      return rawTags ? rawTags.split(".").filter((tag) => tag !== "") : initialTags;
     },
     [searchParams]
   );

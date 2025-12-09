@@ -34,10 +34,7 @@ const MenuTags = () => {
       {hasMoreTags && (
         <div className={styles.viewMoreContainer}>
           {showAll ? (
-            <button
-              className={styles.viewMoreBtn}
-              onClick={() => setShowAll(false)}
-            >
+            <button className={styles.viewMoreBtn} onClick={() => setShowAll(false)}>
               접기
             </button>
           ) : (

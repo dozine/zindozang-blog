@@ -1,10 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import Card from "../components/card/Card";
-import {
-  mockPostDefault,
-  mockPostNoImage,
-  mockPostLongDesc,
-} from "@/stories/mock/postData";
+import { mockPostDefault, mockPostNoImage, mockPostLongDesc } from "@/stories/mock/postData";
 
 const meta: Meta<typeof Card> = {
   title: "Components/Card/Card",
