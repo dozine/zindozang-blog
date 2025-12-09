@@ -1,7 +1,7 @@
 "use client";
 import React, { ChangeEvent } from "react";
-import Modal from "../modal/Modal";
 import { useAddCategoryModal } from "@/hooks/category/useAddCategoryModal";
+import Modal from "../Modal";
 
 const AddCategoryModal = ({
   isOpen,

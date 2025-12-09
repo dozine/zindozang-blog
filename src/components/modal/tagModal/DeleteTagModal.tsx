@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Modal from "../modal/Modal";
+import Modal from "../Modal";
 import { TagWithPostCount } from "@/types/tag"; // 적절한 태그 타입 import
 import { useDeleteTagModal } from "@/hooks/tag/useDeleteTagModal";
 
