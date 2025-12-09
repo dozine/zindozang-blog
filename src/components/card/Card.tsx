@@ -22,7 +22,7 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
           <div className={styles.titleContainer}>
             <h1 className={styles.title}>{item.title}</h1>
           </div>
-          <p>
+          <p className={styles.desc}>
             {(() => {
               if (!item.desc) return "";
               const descText = extractTextFromMarkdown(item.desc);

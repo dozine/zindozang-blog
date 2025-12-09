@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import PostDeleteModal from "@/components/modal/PostDeleteModal";
+import PostDeleteModal from "@/components/modal/postModal/PostDeleteModal";
 import styles from "./singlePage.module.css";
 import { SinglePageClientProps } from "@/types";
 import ReactMarkdown from "react-markdown";

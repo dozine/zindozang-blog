@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import styles from "./tagList.module.css";
-import DeleteTagModal from "../tagModal/DeleteTagModal";
+import DeleteTagModal from "../modal/tagModal/DeleteTagModal";
 import { useTagActions } from "@/hooks/tag/useTagAction";
 
 const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }) => {

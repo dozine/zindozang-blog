@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Modal from "../modal/Modal";
+import Modal from "../Modal";
 import { Category } from "@prisma/client";
 import { useDeleteCategoryModal } from "@/hooks/category/useDeleteCategoryModal";
 

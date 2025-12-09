@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import styles from "./categoryList.module.css";
-import AddCategoryModal from "../categoryModal/AddCategoryModal";
-import DeleteCategoryModal from "../categoryModal/DeleteCategoryModal";
+import AddCategoryModal from "../modal/categoryModal/AddCategoryModal";
+import DeleteCategoryModal from "../modal/categoryModal/DeleteCategoryModal";
 import { CategoryListClientProps } from "@/types";
 import { useHorizontalScroll } from "@/hooks/category/useHorizontalScroll";
 import { useFetchCategories } from "@/hooks/category/useFetchCategories";
