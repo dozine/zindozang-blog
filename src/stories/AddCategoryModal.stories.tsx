@@ -1,5 +1,5 @@
 import Modal from "@/components/modal/Modal";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React, { useState, ChangeEvent } from "react";
 
 const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
@@ -216,7 +216,7 @@ export const EmptyInput: Story = {
   render: (args) => (
     <div style={{ padding: "20px" }}>
       <p style={{ marginBottom: "10px", color: "#666", fontSize: "14px" }}>
-        ℹ️ 입력 필드가 비어있을 때 "추가" 버튼이 비활성화되는지 확인하세요.
+        ℹ️ 입력 필드가 비어있을 때 추가 버튼이 비활성화되는지 확인하세요.
       </p>
       <InteractiveAddCategoryModalWrapper {...args} />
     </div>
@@ -233,7 +233,7 @@ export const LongCategoryName: Story = {
       <p style={{ marginBottom: "10px", color: "#666", fontSize: "14px" }}>
         ℹ️ 매우 긴 카테고리 이름을 입력했을 때 UI가 어떻게 보이는지 확인하세요.
         <br />
-        예: "이것은 매우 긴 카테고리 이름 테스트입니다 UI가 잘 처리하는지 확인"
+        예: 이것은 매우 긴 카테고리 이름 테스트입니다 UI가 잘 처리하는지 확인해주세요.
       </p>
       <InteractiveAddCategoryModalWrapper {...args} />
     </div>

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SessionProvider } from "next-auth/react";
 import { Category } from "@prisma/client";
 import CategoryListClient from "@/components/categoryList/CategoryListClient";

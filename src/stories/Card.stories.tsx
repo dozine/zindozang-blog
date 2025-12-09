@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Card from "../components/card/Card";
 import { mockPostDefault, mockPostNoImage, mockPostLongDesc } from "@/stories/mock/postData";
 

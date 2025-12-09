@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Featuredost } from "@/types";
 import Featured from "@/components/featured/Featured";
 

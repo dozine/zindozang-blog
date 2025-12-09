@@ -1,5 +1,5 @@
 import Navbar from "@/components/navbar/Navbar";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SessionProvider } from "next-auth/react";
 
 const meta: Meta<typeof Navbar> = {

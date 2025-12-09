@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React from "react";
 import TagList from "@/components/tagList/TagList";
 import { SessionProvider } from "next-auth/react";
