@@ -50,9 +50,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body
-        className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable}`}
-      >
+      <body className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable}`}>
         <AuthProvider>
           <ThemeContextProvider>
             <ThemeProvider>
