@@ -9,18 +9,6 @@ import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -59,9 +47,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSansKr.variable} ${nanumGothic.variable}`}
-      >
+      <body className={` ${notoSansKr.variable} ${nanumGothic.variable}`}>
         <AuthProvider>
           <ThemeContextProvider>
             <ThemeProvider>

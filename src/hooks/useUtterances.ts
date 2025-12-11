@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState, useRef } from "react";
 
 const UTTERANCES_CONTAINER_ID = "comments-container";
