@@ -1,12 +1,6 @@
-import dynamic from "next/dynamic";
 import { Category } from "@prisma/client";
-import { CategoryListClientProps } from "@/types";
-import { getAllCategories } from "@/lib/data/category"; // 💡 분리된 데이터 함수 import
-
-const CategoryListClient = dynamic<CategoryListClientProps>(
-  () => import("./CategoryListClient"),
-  {}
-);
+import { getAllCategories } from "@/lib/data/category";
+import CategoryListClient from "./CategoryListClient";
 
 const CategoryListServer = async () => {
   const categories: Category[] = await getAllCategories();
