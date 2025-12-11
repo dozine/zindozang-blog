@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Noto_Sans_KR, Nanum_Gothic } from "next/font/google";
+import { Noto_Sans_KR, Nanum_Gothic } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
@@ -8,7 +8,7 @@ import AuthProvider from "@/providers/AuthProvider";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Metadata } from "next";
-
+import LocalFont from "next/font/local";
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -21,6 +21,14 @@ const nanumGothic = Nanum_Gothic({
   weight: ["400", "700"],
   variable: "--font-nanum-gothic",
   display: "swap",
+});
+
+const satoshi = LocalFont({
+  src: "../../public/fonts/satoshi/Satoshi-Bold.woff2",
+  weight: "700",
+  style: "normal",
+  variable: "--font-satoshi",
+  display: "optional",
 });
 
 export const metadata: Metadata = {
@@ -39,15 +47,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta httpEquiv="Cross-Origin-Opener-Policy" content="same-origin" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-
         <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body className={` ${notoSansKr.variable} ${nanumGothic.variable}`}>
+      <body className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable}`}>
         <AuthProvider>
           <ThemeContextProvider>
             <ThemeProvider>
