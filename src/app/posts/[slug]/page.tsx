@@ -1,11 +1,6 @@
-import React from "react";
 import { notFound } from "next/navigation";
-import dynamic from "next/dynamic";
 import { getPostData } from "@/lib/data/post";
-
-const SinglePageClient = dynamic(() => import("./singlePageClient"), {
-  loading: () => <p>로딩 중...</p>,
-});
+import SinglePageClient from "./singlePageClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

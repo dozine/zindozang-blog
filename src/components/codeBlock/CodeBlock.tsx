@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
-interface CodeProps {
+export interface CodeProps {
   node?: any;
   inline?: boolean;
   className?: string;
@@ -12,7 +12,7 @@ interface CodeProps {
   [key: string]: any;
 }
 
-interface CodeBlockProps {
+export interface CodeBlockProps {
   language?: string;
   children: string;
   isDark?: boolean;

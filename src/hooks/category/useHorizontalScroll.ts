@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, MouseEvent, TouchEvent } from "react";
+import { useRef, useState, MouseEvent, TouchEvent, useEffect } from "react";
 
 interface UseHorizontalScrollResult {
   sliderRef: React.RefObject<HTMLDivElement>;
@@ -13,6 +13,7 @@ interface UseHorizontalScrollResult {
 }
 
 export function useHorizontalScroll(): UseHorizontalScrollResult {
+  const animationFrameRef = useRef<number | null>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [startX, setStartX] = useState<number>(0);
@@ -40,9 +41,20 @@ export function useHorizontalScroll(): UseHorizontalScrollResult {
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!isDragging || !sliderRef.current) return;
     e.preventDefault();
+
     const x = e.pageX - sliderRef.current.offsetLeft;
     const walk = (x - startX) * 2;
-    sliderRef.current.scrollLeft = scrollLeft - walk;
+    const newScrollLeft = scrollLeft - walk;
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(() => {
+      if (sliderRef.current) {
+        sliderRef.current.scrollLeft = newScrollLeft;
+      }
+    });
   };
 
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
@@ -54,10 +66,29 @@ export function useHorizontalScroll(): UseHorizontalScrollResult {
 
   const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
     if (!isDragging || !sliderRef.current) return;
+
     const x = e.touches[0].pageX - sliderRef.current.offsetLeft;
     const walk = (x - startX) * 2;
-    sliderRef.current.scrollLeft = scrollLeft - walk;
+    const newScrollLeft = scrollLeft - walk;
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animationFrameRef.current = requestAnimationFrame(() => {
+      if (sliderRef.current) {
+        sliderRef.current.scrollLeft = newScrollLeft;
+      }
+    });
   };
+
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
   return {
     sliderRef,

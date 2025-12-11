@@ -1,20 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import PostDeleteModal from "@/components/modal/postModal/PostDeleteModal";
 import styles from "./singlePage.module.css";
-import { SinglePageClientProps } from "@/types";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
-import remarkBreaks from "remark-breaks";
-import CodeBlock from "@/components/codeBlock/CodeBlock";
+import { FormattedPostResponse } from "@/types";
 import { FaEllipsisH } from "react-icons/fa";
 import { usePostActions } from "@/hooks/post/usePostAction";
 import { useUtterances } from "@/hooks/useUtterances";
+import PostContent from "@/components/post/PostContent";
 
+export interface SinglePageClientProps {
+  data: FormattedPostResponse;
+  slug: string;
+}
 export interface CodeProps {
   node?: any;
   inline?: boolean;
@@ -30,7 +30,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const { data: session, status } = useSession();
   const isAuthor: boolean = session?.user?.email === data?.user?.email;
   const isAuthenticated: boolean = status === "authenticated";
-
+  const isDark = useUtterances(UTTERANCES_REPO, slug);
   const handlePostDeleteSuccess = () => {
     router.push("/blog");
     router.refresh();
@@ -45,8 +45,9 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
     handleEdit,
     handleDelete,
   } = usePostActions(slug, handlePostDeleteSuccess);
-
-  const isDark = useUtterances(UTTERANCES_REPO, slug);
+  const renderedContent = useMemo(() => {
+    return <PostContent desc={data.desc} isDark={isDark} />;
+  }, [data.desc, isDark]);
 
   return (
     <div className={styles.container}>
@@ -111,55 +112,13 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.post}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkBreaks as any]}
-            rehypePlugins={[rehypeRaw]}
-            components={{
-              code({ inline, node, className, children, ...props }: CodeProps) {
-                const match = /language-(\w+)/.exec(className || "");
-                const language = match ? match[1] : "";
-                const codeString = String(children).replace(/\n$/, "");
-                const isInlineCode =
-                  inline === true ||
-                  (!className && !codeString.includes("\n") && codeString.length < 100);
-                if (isInlineCode) {
-                  return (
-                    <code
-                      className={className}
-                      style={{
-                        background: isDark ? "#2d2d2d" : "silver",
-                        color: isDark ? "#e2e8f0" : "#1a202c",
-                        padding: "2px 6px",
-                        borderRadius: "4px",
-                        fontSize: "0.9em",
-                        fontWeight: "500",
-                        fontFamily:
-                          '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
-                      }}
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                }
-
-                return (
-                  <CodeBlock language={language} isDark={isDark}>
-                    {codeString}
-                  </CodeBlock>
-                );
-              },
-            }}
-          >
-            {data.desc}
-          </ReactMarkdown>
-        </div>
+        <div className={styles.post}>{renderedContent}</div>
       </div>
       <div
         id="comments-container"
         style={{
           marginTop: "3rem",
+          minHeight: "400px",
         }}
       />
       <PostDeleteModal
