@@ -1,8 +1,4 @@
-export interface VisitorStats {
-  todayVisitors: number;
-  totalVisitors: number;
-  counted?: boolean;
-}
+import { VisitorStats } from "@/types";
 
 export const visitorService = {
   trackVisitor: async (): Promise<VisitorStats> => {

@@ -1,9 +1,15 @@
 import prisma from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+const SITE_STATS_ID = "main";
+
 export async function POST(req: NextRequest) {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const today = `${year}-${month}-${day}`;
     const hasVisited = req.cookies.get("visited");
 
     if (hasVisited) {
@@ -12,7 +18,7 @@ export async function POST(req: NextRequest) {
       });
 
       const siteStats = await prisma.siteStats.findUnique({
-        where: { id: "main" },
+        where: { id: SITE_STATS_ID },
       });
 
       return NextResponse.json({
@@ -30,9 +36,9 @@ export async function POST(req: NextRequest) {
       });
 
       const siteStats = await tx.siteStats.upsert({
-        where: { id: "main" },
+        where: { id: SITE_STATS_ID },
         update: { totalVisitors: { increment: 1 } },
-        create: { id: "main", totalVisitors: 1 },
+        create: { id: SITE_STATS_ID, totalVisitors: 1 },
       });
 
       return {
@@ -58,21 +64,29 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("Visitor tracking error:", error);
-    return NextResponse.json({ error: "Failed to track visitor" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to track visitor" },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET() {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const today = `${year}-${month}-${day}`;
 
-    const todayVisitor = await prisma.visitor.findUnique({
-      where: { date: today },
-    });
-
-    const siteStats = await prisma.siteStats.findUnique({
-      where: { id: "main" },
-    });
+    const [todayVisitor, siteStats] = await Promise.all([
+      prisma.visitor.findUnique({
+        where: { date: today },
+      }),
+      prisma.siteStats.findUnique({
+        where: { id: SITE_STATS_ID },
+      }),
+    ]);
 
     return NextResponse.json({
       todayVisitors: todayVisitor?.count || 0,
