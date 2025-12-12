@@ -46,7 +46,6 @@ model User {
   accounts      Account[]
   sessions      Session[]
   Post          Post[]
-  Comments      Comment[]
 }
 
 model VerificationToken {
@@ -84,7 +83,6 @@ model Post {
   cat       Category  @relation(fields: [catSlug], references: [slug])
   userEmail String
   user      User      @relation(fields: [userEmail], references: [email])
-  comments  Comment[]
   tags PostTag[]
 }
 
@@ -98,12 +96,20 @@ model PostTag {
   @@unique([postId, tagId])
 }
 
-model Comment {
+
+
+model Visitor {
   id        String   @id @default(cuid()) @map("_id")
+  date      String   // YYYY-MM-DD 형식
+  count     Int      @default(0)
   createdAt DateTime @default(now())
-  desc      String
-  userEmail String
-  user      User     @relation(fields: [userEmail], references: [email])
-  postSlug  String
-  post      Post     @relation(fields: [postSlug], references: [slug])
+  updatedAt DateTime @updatedAt
+
+  @@unique([date])
+}
+
+model SiteStats {
+  id           String   @id @default(cuid()) @map("_id")
+  totalVisitors Int     @default(0)
+  lastUpdated  DateTime @updatedAt
 }

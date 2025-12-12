@@ -6,6 +6,11 @@
   position: relative;
 }
 
+.logoContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
 .logo {
   flex: 1;
   text-align: left;

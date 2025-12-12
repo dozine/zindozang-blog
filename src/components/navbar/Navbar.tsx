@@ -3,7 +3,8 @@ import React from "react";
 import styles from "./navbar.module.css";
 import Link from "next/link";
 import ThemeToggle from "../themeToggle/ThemeToggle";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import VisitorTracker from "../visitorTracker/visitorTracker";
 
 const Navbar = () => {
   const [open, setOpen] = React.useState(false);
@@ -11,9 +12,12 @@ const Navbar = () => {
 
   return (
     <div className={styles.container}>
-      <Link href="/" className={styles.logo}>
-        zindozang
-      </Link>
+      <div className={styles.logoContainer}>
+        <Link href="/" className={styles.logo}>
+          zindozang
+        </Link>
+        <VisitorTracker />
+      </div>
       <div className={styles.links}>
         <Link href="/tags" className={styles.link}>
           Tags
@@ -21,16 +25,12 @@ const Navbar = () => {
         <Link href="/" className={styles.link}>
           About
         </Link>
-        {status === "unauthenticated" ? (
-          <Link href="/login" className={styles.link}>
-            Login
-          </Link>
-        ) : (
+        {status === "authenticated" && (
           <>
             <Link href="/write" className={styles.link}>
               Write
             </Link>
-            <Link href="/logout" className={styles.link}>
+            <Link href="/logout" className={styles.link} onClick={() => signOut()}>
               Logout
             </Link>
           </>
