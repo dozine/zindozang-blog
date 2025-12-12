@@ -30,11 +30,7 @@ const Navbar = () => {
             <Link href="/write" className={styles.link}>
               Write
             </Link>
-            <Link
-              href="/logout"
-              className={styles.link}
-              onClick={() => signOut()}
-            >
+            <Link href="/logout" className={styles.link} onClick={() => signOut()}>
               Logout
             </Link>
           </>
@@ -48,35 +44,19 @@ const Navbar = () => {
         <ThemeToggle />
         {open && (
           <div className={styles.responsiveMenu}>
-            <Link
-              href="/tags"
-              className={styles.burgerLink}
-              onClick={() => setOpen(false)}
-            >
+            <Link href="/tags" className={styles.burgerLink} onClick={() => setOpen(false)}>
               Tags
             </Link>
-            <Link
-              href="/"
-              className={styles.burgerLink}
-              onClick={() => setOpen(false)}
-            >
+            <Link href="/" className={styles.burgerLink} onClick={() => setOpen(false)}>
               About
             </Link>
             {status === "unauthenticated" ? (
-              <Link
-                href="/login"
-                className={styles.burgerLink}
-                onClick={() => setOpen(false)}
-              >
+              <Link href="/login" className={styles.burgerLink} onClick={() => setOpen(false)}>
                 Login
               </Link>
             ) : (
               <>
-                <Link
-                  href="/write"
-                  className={styles.burgerLink}
-                  onClick={() => setOpen(false)}
-                >
+                <Link href="/write" className={styles.burgerLink} onClick={() => setOpen(false)}>
                   Write
                 </Link>
                 <span

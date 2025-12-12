@@ -29,16 +29,12 @@ export default function VisitorTracker() {
     <div className={styles.container}>
       <div className={styles.stat}>
         <span className={styles.label}>Today</span>
-        <span className={styles.count}>
-          {stats.todayVisitors.toLocaleString()}
-        </span>
+        <span className={styles.count}>{stats.todayVisitors.toLocaleString()}</span>
       </div>
       <div className={styles.divider}></div>
       <div className={styles.stat}>
         <span className={styles.label}>Total</span>
-        <span className={styles.count}>
-          {stats.totalVisitors.toLocaleString()}
-        </span>
+        <span className={styles.count}>{stats.totalVisitors.toLocaleString()}</span>
       </div>
     </div>
   );
