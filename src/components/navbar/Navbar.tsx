@@ -3,7 +3,7 @@ import React from "react";
 import styles from "./navbar.module.css";
 import Link from "next/link";
 import ThemeToggle from "../themeToggle/ThemeToggle";
-import { useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const Navbar = () => {
   const [open, setOpen] = React.useState(false);
@@ -44,24 +44,47 @@ const Navbar = () => {
         <ThemeToggle />
         {open && (
           <div className={styles.responsiveMenu}>
-            <Link href="/tags" className={styles.burgerLink} onClick={() => setOpen(false)}>
+            <Link
+              href="/tags"
+              className={styles.burgerLink}
+              onClick={() => setOpen(false)}
+            >
               Tags
             </Link>
-            <Link href="/" className={styles.burgerLink} onClick={() => setOpen(false)}>
+            <Link
+              href="/"
+              className={styles.burgerLink}
+              onClick={() => setOpen(false)}
+            >
               About
             </Link>
             {status === "unauthenticated" ? (
-              <Link href="/login" className={styles.burgerLink} onClick={() => setOpen(false)}>
+              <Link
+                href="/login"
+                className={styles.burgerLink}
+                onClick={() => setOpen(false)}
+              >
                 Login
               </Link>
             ) : (
               <>
-                <Link href="/write" className={styles.burgerLink} onClick={() => setOpen(false)}>
+                <Link
+                  href="/write"
+                  className={styles.burgerLink}
+                  onClick={() => setOpen(false)}
+                >
                   Write
                 </Link>
-                <Link href="/logout" className={styles.burgerLink} onClick={() => setOpen(false)}>
+                <span
+                  className={styles.burgerLink}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    signOut();
+                    setOpen(false);
+                  }}
+                >
                   Logout
-                </Link>
+                </span>
               </>
             )}
           </div>

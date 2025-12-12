@@ -44,7 +44,7 @@
 
 .responsiveMenu {
   position: fixed;
-  top: 70px;
+  top: 100px;
   left: 0;
   right: 0;
   background-color: var(--bg);
@@ -79,6 +79,9 @@
 }
 
 @media screen and (max-width: 768px) {
+  .burger {
+    display: flex;
+  }
   .logo {
     font-size: 24px;
   }
