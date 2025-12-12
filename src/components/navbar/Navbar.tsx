@@ -30,9 +30,9 @@ const Navbar = () => {
             <Link href="/write" className={styles.link}>
               Write
             </Link>
-            <Link href="/logout" className={styles.link} onClick={() => signOut()}>
+            <span className={styles.link} onClick={() => signOut()}>
               Logout
-            </Link>
+            </span>
           </>
         )}
 
