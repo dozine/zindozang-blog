@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { visitorService, VisitorStats } from "@/lib/services/visitorService";
+import { visitorService } from "@/lib/services/visitorService";
+import { VisitorStats } from "@/types";
 
 export const useVisitorTracker = () => {
   const [stats, setStats] = useState<VisitorStats>({
