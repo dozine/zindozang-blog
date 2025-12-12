@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import PostDeleteModal from "@/components/modal/postModal/PostDeleteModal";
 import styles from "./singlePage.module.css";
 import { FormattedPostResponse } from "@/types";
-import { FaEllipsisH } from "react-icons/fa";
+import { FaEllipsisH, FaEye } from "react-icons/fa";
 import { usePostActions } from "@/hooks/post/usePostAction";
 import { useUtterances } from "@/hooks/useUtterances";
 import PostContent from "@/components/post/PostContent";
@@ -95,6 +95,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
               </>
             )}
           </div>
+
           {data?.tags && data.tags.length > 0 && (
             <div className={styles.tagContainer}>
               {data.tags.map((tag) => (
@@ -108,6 +109,10 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
               ))}
             </div>
           )}
+          <span className={styles.views}>
+            <FaEye className={styles.viewIcon} />
+            {`${data.views || 0}`}
+          </span>
         </div>
       </div>
 

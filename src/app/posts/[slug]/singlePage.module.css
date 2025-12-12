@@ -180,6 +180,17 @@
   color: gray;
   font-weight: bold;
 }
+.views {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: darkgray;
+  font-size: 14px;
+}
+.viewIcon {
+  margin-right: 5px;
+  font-size: 14px;
+}
 
 @media screen and (max-width: 1536px) {
   .title {
