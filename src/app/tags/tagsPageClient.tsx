@@ -1,18 +1,19 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import TagList from "@/components/tagList/TagList";
 import styles from "./tagsPage.module.css";
-import { TagsPageClientProp, TagWithPostCount } from "@/types/tag";
+import { TagWithPostCount } from "@/types/tag";
 import { useTagSelection } from "@/hooks/tag/useTagSelection";
 
-const TagsPageClient = ({ initialPage, initialTags, allTags }: TagsPageClientProp) => {
-  const { handleTagClick, getSelectedTags } = useTagSelection();
+interface TagsPageClientProps {
+  allTags: TagWithPostCount[];
+  selectedTags: string[];
+}
 
+const TagsPageClient = ({ allTags, selectedTags }: TagsPageClientProps) => {
+  const { handleTagClick } = useTagSelection();
   const [tags, setTags] = useState<TagWithPostCount[]>(allTags);
 
-  const selectedTags: string[] = getSelectedTags(initialTags);
-
-  const page: number = initialPage;
   const handleTagDelete = (deletedTagId: string) => {
     setTags((prevTags) => prevTags.filter((tag) => tag.id !== deletedTagId));
   };

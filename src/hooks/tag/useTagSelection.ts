@@ -40,16 +40,7 @@ export function useTagSelection() {
     [searchParams, router]
   );
 
-  const getSelectedTags = useCallback(
-    (initialTags: string[]): string[] => {
-      const rawTags: string | null = searchParams.get("tags");
-      return rawTags ? rawTags.split(".").filter((tag) => tag !== "") : initialTags;
-    },
-    [searchParams]
-  );
-
   return {
     handleTagClick,
-    getSelectedTags,
   };
 }
