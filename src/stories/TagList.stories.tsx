@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import React from "react";
 import TagList from "@/components/tagList/TagList";
 import { SessionProvider } from "next-auth/react";
-import { mockTags } from "./mock/tagData";
+import { mockTagswithCounts } from "./mock/tagData";
 
 const meta: Meta<typeof TagList> = {
   title: "Components/TagList/TagList",
@@ -40,10 +39,10 @@ type Story = StoryObj<typeof TagList>;
 
 export const Default: Story = {
   args: {
-    tags: mockTags,
+    tags: mockTagswithCounts,
     selectedTags: [],
-    onTagClick: { action: "onTagClick" },
-    onTagDelete: { action: "onTagDelete" },
+    onTagClick: { action: "onTagClick" } as any,
+    onTagDelete: { action: "onTagDelete" } as any,
   },
   decorators: [
     (Story) => (
@@ -74,7 +73,9 @@ export const AuthenticatedUser: Story = {
   },
   decorators: [
     (Story) => (
-      <SessionProvider session={{ user: { name: "Test User" }, expires: "2025-12-31" }}>
+      <SessionProvider
+        session={{ user: { name: "Test User" }, expires: "2025-12-31" }}
+      >
         <div style={{ padding: "20px" }}>
           <Story />
         </div>
