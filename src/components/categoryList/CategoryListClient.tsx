@@ -39,6 +39,10 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
     closeModal: closeDeleteModal,
   } = useModal(false);
 
+  if (error) {
+    return <div>오류 발생 : {error} </div>;
+  }
+
   if (isLoading && categories.length === 0) {
     return <div className={styles.loading}>카테고리 로딩 중...</div>;
   }
@@ -72,8 +76,6 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
           </div>
         </div>
       )}
-
-      {(error || error) && <div className={styles.error}>{error}</div>}
 
       <div className={styles.sliderContainer}>
         <button

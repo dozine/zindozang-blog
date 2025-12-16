@@ -10,15 +10,13 @@ const TagsPage = async ({
 }) => {
   const params = await searchParams;
   const page: number = Number(params.page) || 1;
-  const rawTags: string = params.tags || "";
-  const tags: string[] = rawTags ? rawTags.split(".").filter((tag) => tag !== "") : [];
-
+  const selectedTags = params.tags?.split(".").filter(Boolean) || [];
   const allTags: TagWithPostCount[] = await getAllTags();
   return (
     <div className={styles.container}>
-      <TagsPageClient initialTags={tags} initialPage={page} allTags={allTags} />
+      <TagsPageClient selectedTags={selectedTags} allTags={allTags} />
       <div className={styles.content}>
-        <CardList page={page} tags={tags} />
+        <CardList page={page} tags={selectedTags} />
       </div>
     </div>
   );

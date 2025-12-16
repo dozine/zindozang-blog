@@ -3,8 +3,16 @@ import { useSession } from "next-auth/react";
 import styles from "./tagList.module.css";
 import DeleteTagModal from "../modal/tagModal/DeleteTagModal";
 import { useTagActions } from "@/hooks/tag/useTagAction";
+import { TagWithPostCount } from "@/types/tag";
 
-const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }) => {
+interface TagListProps {
+  tags: TagWithPostCount[];
+  selectedTags: string[];
+  onTagClick: (tagName: string) => void;
+  onTagDelete: (tagId: string) => void;
+}
+
+const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }: TagListProps) => {
   const { status } = useSession();
 
   const {
