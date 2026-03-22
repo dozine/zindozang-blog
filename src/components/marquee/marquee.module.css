@@ -1,0 +1,56 @@
+.wrapper {
+  overflow: hidden;
+  border-top: 1px solid #444;
+  border-bottom: 1px solid #444;
+  padding: 12px 0;
+  margin: 48px 0;
+  /* 양쪽 fade out */
+  /* -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  ); */
+}
+
+.track {
+  display: flex;
+  gap: 32px;
+  width: max-content;
+  animation: scroll 18s linear infinite;
+}
+
+.track:hover {
+  animation-play-state: paused;
+}
+
+.item {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #444;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.item:hover {
+  color: #f9a03f;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

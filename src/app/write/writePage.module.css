@@ -2,24 +2,29 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
   margin-top: 20px;
   padding: 0 20px;
-  max-width: 1200px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
 .input {
-  padding: 10px;
-  font-size: 30px;
+  padding: 16px 0;
+  font-size: 32px;
+  font-family: var(--font-noto-sans-kr), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   border: none;
+  border-bottom: 1px solid #e0e0e0;
   outline: none;
   background-color: transparent;
-  color: var(--textColor);
+  color: #111;
+  margin-bottom: 24px;
 }
 
 .input::placeholder {
-  color: #b3b3b1;
+  color: #ddd;
 }
 
 .publish {
@@ -70,4 +75,74 @@
 }
 .editorContainer :global(.w-md-editor-text-input pre) {
   white-space: pre-wrap !important;
+}
+
+.imagePreviewList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.imagePreviewItem {
+  position: relative;
+  width: 120px;
+  height: 80px;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.imagePreviewItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imagePreviewInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 6px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.imagePreviewIndex {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: monospace;
+}
+
+.imagePreviewThumb {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f9a03f;
+  text-transform: uppercase;
+}
+
+.imagePreviewRemove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.imagePreviewRemove:hover {
+  background: rgba(220, 50, 50, 0.8);
 }

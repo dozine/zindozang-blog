@@ -27,23 +27,6 @@ export interface SizedImageResult {
   sizeName: "card" | "medium" | "large";
 }
 
-export interface PostSettingModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  catSlug: string;
-  setCatSlug: (slug: string) => void;
-  isPublished: boolean;
-  setIsPublished: (published: boolean) => void;
-  tagInput: string;
-  setTagInput: (input: string) => void;
-  tags: Tag[];
-  setTags: (tags: Tag[]) => void;
-  categories: Category[];
-  availableTags: TagWithPostCount[];
-  setAvailableTags: (tags: TagWithPostCount[]) => void;
-  onPublish: () => void;
-}
-
 export interface PaginationProps {
   page: number;
   totalPages: number;

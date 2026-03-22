@@ -1,4 +1,11 @@
-import { Noto_Sans_KR, Nanum_Gothic } from "next/font/google";
+import {
+  Noto_Sans_KR,
+  Nanum_Gothic,
+  Noto_Serif_KR,
+  Bebas_Neue,
+  Cormorant_Garamond,
+  Syne,
+} from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
@@ -31,6 +38,34 @@ const satoshi = LocalFont({
   display: "optional",
 });
 
+const notoSerifKR = Noto_Serif_KR({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-noto-serif-kr",
+  display: "swap",
+});
+
+const bebasNeue = Bebas_Neue({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-bebas",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-syne",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Blog App",
   description: "The best blog app!",
@@ -50,7 +85,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable}`}>
+      <body
+        className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable} ${notoSerifKR.variable} ${bebasNeue.variable} ${cormorant.variable} ${syne.variable}`}
+      >
         <AuthProvider>
           <ThemeContextProvider>
             <ThemeProvider>

@@ -1,12 +1,11 @@
 "use client";
-import React from "react";
 import styles from "./writePage.module.css";
 import { useRouter } from "next/navigation";
-import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
 import { ICommand } from "@uiw/react-md-editor";
 import dynamic from "next/dynamic";
 import { usePostEditor } from "@/hooks/write/useWritePage";
+import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -28,7 +27,6 @@ const WritePage = () => {
     categories,
     availableTags,
     triggerImageUpload,
-
     setTitle,
     setValue,
     setMedia,
@@ -36,13 +34,16 @@ const WritePage = () => {
     setTags,
     setIsPublished,
     setTagInput,
+    setUploadedImages,
     closeModal,
     setTriggerImageUpload,
-
     handlePublishClick,
     handleFinalPublish,
     handleImageUploaded,
     resetImageUploadTrigger,
+    uploadedImages,
+    thumbnailImg,
+    setThumbnailImg,
   } = usePostEditor();
 
   const customCommands: ICommand[] = [
@@ -68,6 +69,67 @@ const WritePage = () => {
       ),
       execute: () => {
         setTriggerImageUpload(true);
+      },
+    },
+    {
+      name: "image-grid-2",
+      keyCommand: "image-grid-2",
+      buttonProps: { "aria-label": "2열 이미지 그리드" },
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <rect x="3" y="3" width="8" height="18" rx="1" />
+          <rect x="13" y="3" width="8" height="18" rx="1" />
+        </svg>
+      ),
+      execute: (state, api) => {
+        api.replaceSelection(
+          `<div class="img-grid-2">
+
+![](이미지URL1)
+
+![](이미지URL2)
+
+</div>`,
+        );
+      },
+    },
+    {
+      name: "image-grid-3",
+      keyCommand: "image-grid-3",
+      buttonProps: { "aria-label": "3열 이미지 그리드" },
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <rect x="2" y="3" width="6" height="18" rx="1" />
+          <rect x="9" y="3" width="6" height="18" rx="1" />
+          <rect x="16" y="3" width="6" height="18" rx="1" />
+        </svg>
+      ),
+      execute: (state, api) => {
+        api.replaceSelection(
+          `<div class="img-grid-3">
+
+![](이미지URL1)
+
+![](이미지URL2)
+
+![](이미지URL3)
+
+</div>`,
+        );
       },
     },
   ];
@@ -96,38 +158,37 @@ const WritePage = () => {
         onUploadTriggered={resetImageUploadTrigger}
       />
 
-      {media && typeof media === "string" && (
-        <div className={styles.imagePreview}>
-          <img
-            src={media}
-            alt="업로드된 이미지"
-            style={{
-              maxWidth: "300px",
-              maxHeight: "200px",
-              objectFit: "cover",
-              borderRadius: "8px",
-              border: "1px solid var(--soft-textColor)",
-            }}
-          />
-          <button
-            onClick={() => setMedia("")}
-            style={{
-              position: "absolute",
-              top: "5px",
-              right: "5px",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "none",
-              borderRadius: "50%",
-              width: "24px",
-              height: "24px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ✕
-          </button>
+      {uploadedImages.length > 0 && (
+        <div className={styles.imagePreviewList}>
+          {uploadedImages.map((url, i) => (
+            <div key={i} className={styles.imagePreviewItem}>
+              <img src={url} alt={`uploaded-${i}`} />
+              <div className={styles.imagePreviewInfo}>
+                <span className={styles.imagePreviewIndex}>#{i + 1}</span>
+                {thumbnailImg === url && (
+                  <span className={styles.imagePreviewThumb}>썸네일</span>
+                )}
+              </div>
+              <button
+                className={styles.imagePreviewRemove}
+                onClick={() => {
+                  const next = uploadedImages.filter((_, idx) => idx !== i);
+                  setUploadedImages(next); // 이게 빠져 있어요
+                  if (thumbnailImg === url) {
+                    setThumbnailImg(next[0] || "");
+                  }
+                  setValue((prev) =>
+                    prev
+                      .replace(`\n\n![image](${url})\n\n`, "")
+                      .replace(`![image](${url})`, "")
+                      .replace(`![](${url})`, ""),
+                  );
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -160,6 +221,9 @@ const WritePage = () => {
           availableTags={availableTags}
           setAvailableTags={() => {}}
           onPublish={handleFinalPublish}
+          uploadedImages={uploadedImages}
+          thumbnailImg={thumbnailImg}
+          setThumbnailImg={setThumbnailImg}
         />
       )}
     </div>
