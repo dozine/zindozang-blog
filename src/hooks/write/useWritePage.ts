@@ -29,6 +29,8 @@ export const usePostEditor = () => {
   });
 
   const [media, setMedia] = useState<string | string[] | null>("");
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [thumbnailImg, setThumbnailImg] = useState<string>("");
   const [value, setValue] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -39,14 +41,16 @@ export const usePostEditor = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [tagInput, setTagInput] = useState<string>("");
-
   const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
 
   useEffect(() => {
     if (postToEdit) {
       setTitle(postToEdit.title);
       setValue(postToEdit.desc);
-      setMedia(postToEdit.img || "");
+      const imgs = postToEdit.img || [];
+      setMedia(Array.isArray(imgs) ? imgs[0] || "" : imgs);
+      setUploadedImages(Array.isArray(imgs) ? imgs : imgs ? [imgs] : []);
+      setThumbnailImg(Array.isArray(imgs) ? imgs[0] || "" : imgs || "");
       setCatSlug(postToEdit.catSlug || "");
       setIsPublished(Boolean(postToEdit.isPublished));
       setTags(postToEdit.tags || []);
@@ -69,8 +73,16 @@ export const usePostEditor = () => {
     } else {
       imageUrl = url;
     }
+
     const markdownImage = `\n\n![image](${imageUrl})\n\n`;
     setValue((prevValue) => prevValue + markdownImage);
+
+    setUploadedImages((prev) => {
+      const next = [...prev, imageUrl];
+      if (next.length === 1) setThumbnailImg(imageUrl);
+      return next;
+    });
+
     setMedia(imageUrl);
   }, []);
 
@@ -94,7 +106,7 @@ export const usePostEditor = () => {
         const updateBody: UpdatePostBody = {
           title,
           desc: value,
-          img: media,
+          img: thumbnailImg ? [thumbnailImg] : [],
           catSlug: finalCatSlug,
           tags: tagIds,
           isPublished,
@@ -106,7 +118,7 @@ export const usePostEditor = () => {
         const createBody = {
           title,
           desc: value,
-          img: Array.isArray(media) ? media : media ? [media] : [],
+          img: thumbnailImg ? [thumbnailImg] : [],
           slug: slugify(title),
           catSlug: finalCatSlug,
           tags: tagIds,
@@ -122,36 +134,47 @@ export const usePostEditor = () => {
       setIsSubmitting(false);
       closeModal();
     }
-  }, [isEditing, editSlug, title, value, media, catSlug, tags, isPublished, router, closeModal]);
+  }, [
+    isEditing,
+    editSlug,
+    title,
+    value,
+    thumbnailImg,
+    catSlug,
+    tags,
+    isPublished,
+    router,
+    closeModal,
+  ]);
 
   return {
     status,
     loading: isDataLoading,
     isEditing,
-
     title,
     value,
     media,
+    uploadedImages,
+    setUploadedImages,
+    thumbnailImg,
     catSlug,
     tags,
     isPublished,
     tagInput,
     showSettingsModal,
     triggerImageUpload,
-
     categories,
     availableTags,
-
     setTitle,
     setValue,
     setMedia,
+    setThumbnailImg,
     setCatSlug,
     setTags,
     setIsPublished,
     setTagInput,
     closeModal,
     setTriggerImageUpload,
-
     handlePublishClick,
     handleFinalPublish,
     handleImageUploaded,

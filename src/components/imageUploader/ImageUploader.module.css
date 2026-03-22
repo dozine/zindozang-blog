@@ -110,15 +110,21 @@
 }
 
 .progressBar {
-  width: 150px;
-  height: 5px;
-  background-color: var(--soft-bg);
-  border-radius: 5px;
+  width: 100px;
+  height: 2px;
+  background-color: #e0e0e0;
+  border-radius: 1px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background-color: var(--textColor);
+  background-color: #f9a03f;
   transition: width 0.3s ease-in-out;
+}
+
+.uploadError {
+  font-size: 11px;
+  color: #d32f2f;
+  letter-spacing: 0.03em;
 }

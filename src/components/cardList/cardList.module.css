@@ -2,6 +2,19 @@
   flex: 5;
 }
 
-.title {
-  margin: 50px 0px;
+.posts {
+  display: grid;
+  gap: 0;
+}
+
+@media screen and (min-width: 640px) {
+  .posts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .posts {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

@@ -12,7 +12,12 @@ interface TagListProps {
   onTagDelete: (tagId: string) => void;
 }
 
-const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }: TagListProps) => {
+const TagList = ({
+  tags,
+  selectedTags = [],
+  onTagClick,
+  onTagDelete,
+}: TagListProps) => {
   const { status } = useSession();
 
   const {
@@ -41,23 +46,34 @@ const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }: TagListPr
         </div>
       )}
 
-      <div className={styles.tagGrid}>
-        {tags && tags.length > 0 ? (
-          tags.map((tag) => {
-            const isActive = selectedTags.includes(tag.name);
-            return (
-              <button
-                key={tag.id || tag.name}
-                onClick={() => onTagClick && onTagClick(tag.name)}
-                className={`${styles.tag} ${isActive ? styles.activeTag : ""}`}
-              >
-                {tag.name} ({tag._count?.posts ?? 0})
-              </button>
-            );
-          })
-        ) : (
-          <p>사용 가능한 태그가 없습니다.</p>
-        )}
+      <div className={styles.tagRow}>
+        {/* 왼쪽 레이블 */}
+        <div className={styles.label}>
+          <span>Tags</span>
+        </div>
+
+        {/* 구분선 */}
+        <div className={styles.divider} />
+
+        {/* 오른쪽 태그 목록 */}
+        <div className={styles.tagGrid}>
+          {tags && tags.length > 0 ? (
+            tags.map((tag) => {
+              const isActive = selectedTags.includes(tag.name);
+              return (
+                <button
+                  key={tag.id || tag.name}
+                  onClick={() => onTagClick && onTagClick(tag.name)}
+                  className={`${styles.tag} ${isActive ? styles.activeTag : ""}`}
+                >
+                  {tag.name} ({tag._count?.posts ?? 0})
+                </button>
+              );
+            })
+          ) : (
+            <p className={styles.noTags}>사용 가능한 태그가 없습니다.</p>
+          )}
+        </div>
       </div>
 
       <DeleteTagModal
@@ -69,5 +85,4 @@ const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }: TagListPr
     </div>
   );
 };
-
 export default TagList;

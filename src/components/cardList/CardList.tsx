@@ -5,7 +5,7 @@ import Card from "../card/Card";
 import { CardListProps, PostWithFormattedTags } from "@/types";
 import { getPosts } from "@/lib/data/post";
 
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 9;
 
 const CardList = async ({ page, cat, tags }: CardListProps) => {
   const data = await getPosts({ page, cat, tags, postPerPage: POSTS_PER_PAGE });
@@ -18,13 +18,10 @@ const CardList = async ({ page, cat, tags }: CardListProps) => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}></h1>
       <div className={styles.posts}>
         {posts.length > 0 ? (
           posts.map((item, index) => (
-            <div key={item.id}>
-              <Card key={item.id} item={item} priority={index < 3} />
-            </div>
+            <Card key={item.id} item={item} priority={index < 3} />
           ))
         ) : (
           <p>POST가 없습니다.</p>

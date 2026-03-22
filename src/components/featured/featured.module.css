@@ -1,220 +1,220 @@
 .container {
-  margin: 50px 0 70px;
-  position: relative;
+  margin: 40px 0 0;
 }
 
-.featuredTitle {
-  font-size: 24px;
-  margin-bottom: 35px;
-  color: --textColor;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-.titleAccent {
-  font-weight: 600;
-  position: relative;
-  display: inline-block;
-}
-
-.titleAccent::after {
-  content: "";
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-  width: 100%;
-  height: 6px;
-  background-color: rgba(87, 196, 255, 0.3);
-  z-index: -1;
-}
-
-.sliderWrapper {
-  position: relative;
-  margin-bottom: 30px;
-}
-
-.slider {
-  overflow: hidden;
-}
-
-.slideContainer {
-  outline: none;
-}
-
-.slide {
-  display: flex !important;
+.header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 50px;
-  padding: 20px 10px 40px;
-  margin: 0 auto;
+  padding: 8px 0;
+  margin-bottom: 0;
 }
 
-.imgContainer {
-  flex: 1;
-  min-width: 300px;
+.headerLeft,
+.headerRight {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #111;
+}
+
+/* ── 메인 그리드 ── */
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr;
+  grid-template-rows: auto auto auto;
+  border-left: 1px solid #111;
+  border-top: 1px solid #111;
+}
+
+.cell {
   position: relative;
-  aspect-ratio: 16 / 9;
-  border-radius: 4px;
+  border-right: 1px solid #111;
+  border-bottom: 1px solid #111;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.image {
-  object-fit: cover;
-  transition: transform 0.8s ease;
+/* A: 큰 이미지 — 좌측 전체 높이 */
+.cellA {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  min-height: 500px;
 }
 
-.slide:hover .image {
-  transform: scale(1.03);
-}
-
-.categoryTag {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  background-color: rgba(255, 255, 255, 0.85);
-  color: #333;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  z-index: 2;
-  border-radius: 2px;
-  text-transform: uppercase;
-}
-
-.textContainer {
-  flex: 1;
+/* B: 메인 타이포 */
+.cellB {
+  grid-column: 2 / 4;
+  grid-row: 1;
+  padding: 32px 28px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 10px 0;
+  gap: 12px;
+  background-color: #fdfaf5;
 }
 
-.postTitle {
-  font-size: 36px;
+.label {
+  font-size: 10px;
   font-weight: 700;
-  color: #222;
-  line-height: 1.2;
-  letter-spacing: -0.3px;
+  letter-spacing: 0.2em;
+  color: #aaa;
   margin: 0;
-  position: relative;
-  display: inline-block;
 }
 
-.postDesc {
-  font-size: 17px;
+.headline {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(48px, 5vw, 80px);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  color: #111;
+  margin: 0;
+}
+
+.sub {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #888;
+  margin: 0;
+}
+
+/* C: 정보 블록 */
+.cellC {
+  grid-column: 2;
+  grid-row: 2;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: #fdfaf5;
+}
+
+.infoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.infoLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #aaa;
+}
+
+.infoValue {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #111;
+}
+
+/* D: 작은 이미지 */
+.cellD {
+  grid-column: 3;
+  grid-row: 2;
+  min-height: 180px;
+}
+
+/* E: 작은 이미지 */
+.cellE {
+  grid-column: 2;
+  grid-row: 3;
+  min-height: 160px;
+}
+
+/* F: 하단 텍스트 + 버튼 */
+.cellF {
+  grid-column: 3;
+  grid-row: 3;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #111;
+}
+
+.footerText {
+  font-family: var(--font-cormorant), serif;
+  font-size: 16px;
+  font-weight: 300;
   line-height: 1.6;
-  color: #555;
+  color: #fff;
+  font-style: italic;
   margin: 0;
-  max-width: 90%;
 }
 
-.button {
+.enterButton {
   display: inline-flex;
   align-items: center;
-  background: transparent;
-  border: none;
-  color: #333;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 0;
-  margin-top: 10px;
-  cursor: pointer;
-  position: relative;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  padding-bottom: 3px;
   align-self: flex-start;
+  transition: opacity 0.2s ease;
 }
 
-.button::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: #333;
-  transition: transform 0.3s ease;
-  transform-origin: right;
+.enterButton:hover {
+  opacity: 0.6;
 }
 
-.button:hover::after {
-  transform: scaleX(0);
-}
-
-.arrow {
-  margin-left: 8px;
-  transition: transform 0.3s ease;
-  display: inline-block;
-}
-
-.button:hover .arrow {
-  transform: translateX(5px);
-}
-
-@media screen and (max-width: 1024px) {
-  .imgContainer {
-    width: 90%;
-    max-width: 600px;
-  }
-
-  .textContainer {
-    width: 90%;
-    max-width: 600px;
-    text-align: center;
-    align-items: center;
-  }
-
-  .postDesc {
-    max-width: 100%;
-  }
-
-  .button {
-    align-self: center;
-    margin-top: 15px;
-  }
-}
-
+/* ── 반응형 ── */
 @media screen and (max-width: 768px) {
-  .slide {
-    flex-direction: column;
-    gap: 30px;
-    padding: 15px 0 35px;
-  }
-  .featuredTitle {
-    font-size: 24px;
-    text-align: center;
+  .grid {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .postTitle {
-    font-size: 26px;
+  .cellA {
+    grid-column: 1 / 3;
+    grid-row: 1;
+    min-height: 300px;
   }
 
-  .postDesc {
-    font-size: 16px;
+  .cellB {
+    grid-column: 1 / 3;
+    grid-row: 2;
+  }
+
+  .cellC {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .cellD {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .cellE {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .cellF {
+    grid-column: 2;
+    grid-row: 4;
   }
 }
 
-@media screen and (max-width: 640px) {
-  .featuredTitle {
-    font-size: 24px;
+@media screen and (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
   }
 
-  .postTitle {
-    font-size: 22px;
+  .cellA {
+    grid-column: 1;
+    min-height: 260px;
   }
 
-  .imgContainer {
-    width: 100%;
-  }
-
-  .textContainer {
-    width: 100%;
-  }
-
-  .categoryTag {
-    top: 10px;
-    left: 10px;
-    padding: 4px 8px;
-    font-size: 12px;
+  .cellB,
+  .cellC,
+  .cellD,
+  .cellE,
+  .cellF {
+    grid-column: 1;
+    grid-row: auto;
   }
 }

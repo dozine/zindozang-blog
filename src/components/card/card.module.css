@@ -1,152 +1,122 @@
 .container {
-  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 2px;
+  background-color: #fdfaf5;
+  border: none;
   overflow: hidden;
-  transition: all 0.3s ease;
-  height: auto;
-  position: relative;
+  height: 100%;
+  min-height: 600px;
+  gap: 36px;
+  padding: 50px 50px 60px; /* 컨테이너 자체에 패딩 */
+  outline: 1px solid #444;
 }
 
-.container:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+/* 날짜 · 카테고리 — 패딩 제거 */
+.detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 10px;
 }
 
+.date {
+  font-size: 11px;
+  color: #444;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.category {
+  font-size: x-small;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #444;
+  font-weight: 100;
+  border: 1px solid #444;
+  padding: 2px 6px;
+  border-radius: 25px;
+}
+
+.titleContainer {
+  margin-top: 2px;
+}
+
+.title {
+  font-size: 17px;
+  font-family: var(--font-syne), var(--font-noto-sans-kr), sans-serif;
+  line-height: 1.45;
+  color: #111;
+  font-weight: 500;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  letter-spacing: -0.02em; /* 타이틀 자간 살짝 좁게 — 더 단단해 보임 */
+}
+
+.desc {
+  font-size: 13px;
+  color: #555; /* #777 → #555 로 대비 올림 */
+  line-height: 1.65;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: auto; /* 태그를 항상 하단에 */
+  padding-top: 8px;
+}
+
+.tag {
+  font-size: 11px;
+  color: #999;
+  border: 1px solid #e0e0e0;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: transparent;
+}
 .imageContainer {
   width: 100%;
-  height: 220px;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
+  flex-shrink: 0;
+  background-color: #f0ede8;
+  border-radius: 2px;
+  margin-bottom: 12px;
 }
 
 .image {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.6s ease;
 }
 
-.container:hover .image {
-  transform: scale(1.04);
+.imagePlaceholder {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  min-height: 0; /* flex 컨텍스트에서 aspect-ratio 강제 적용 */
+  background-color: #f0ede8;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
 }
 
+/* 텍스트 — 패딩 제거 */
 .textContainer {
-  padding: 20px 25px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background-color: #fff;
-}
-
-.categoryWrapper {
-  margin-bottom: 5px;
-}
-
-.category {
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #555;
-  font-weight: 400;
-  border-bottom: 2px solid #f9a03f;
-  padding-bottom: 2px;
-}
-
-.title {
-  font-size: 18px;
-  line-height: 1.3;
-  color: #333;
-  font-weight: bold;
-  margin: 0;
-  position: relative;
-}
-
-.desc {
-  font-size: 15px;
-  color: #666;
-  line-height: 1.6;
-  margin: 0;
-  font-weight: 400;
-}
-
-.tagContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 3px;
-}
-
-.tag {
-  font-size: 12px;
-  color: #777;
-  background-color: #f5f5f5;
-  padding: 3px 8px;
-  border-radius: 2px;
-}
-
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 5px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.date {
-  font-size: 13px;
-  color: #999;
-  font-weight: 400;
-}
-
-.readMore {
-  font-size: 13px;
-  color: #333;
-  font-weight: 500;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.readMore:after {
-  content: "→";
-  margin-left: 4px;
-  transition: transform 0.3s ease;
-  display: inline-block;
-}
-
-.container:hover .readMore:after {
-  transform: translateX(3px);
-}
-
-/* 태블릿 이상에서는 이미지와 텍스트 가로 배치 */
-@media screen and (min-width: 768px) {
-  .container {
-    flex-direction: row;
-    height: 230px;
-  }
-
-  .imageContainer {
-    width: 280px;
-    height: 100%;
-    flex-shrink: 0;
-  }
-
-  .textContainer {
-    flex: 1;
-    justify-content: space-between;
-  }
-}
-
-/* 모바일에서는 이미지 위로 */
-@media screen and (max-width: 767px) {
-  .imageContainer {
-    height: 180px;
-  }
-
-  .titleContainer h1 {
-    font-size: 20px;
-  }
+  gap: 6px;
+  overflow: hidden;
 }

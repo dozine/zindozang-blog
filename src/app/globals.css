@@ -14,7 +14,8 @@
 body {
   width: 100%;
   overflow-x: hidden;
-  font-family: var(--font-noto-sans-kr), sans-serif;
+  font-family: var(--font-syne), var(--font-noto-sans-kr), sans-serif;
+  background-color: var(--bg);
 }
 
 html,
@@ -59,20 +60,27 @@ a {
 @media screen and (min-width: 479px) {
   .wrapper {
     max-width: 640px;
-    padding: 0 2;
+    padding: 0 20px;
   }
 }
 
 @media screen and (min-width: 768px) {
   .wrapper {
     max-width: 840px;
-    padding: 0 40px;
+    padding: 0 20px;
   }
 }
 
 @media screen and (min-width: 1024px) {
   .wrapper {
-    max-width: 1024px;
-    padding: 0 80px;
+    max-width: 1000px;
+    padding: 0 20px;
+  }
+}
+
+@media screen and (min-width: 1440px) {
+  .wrapper {
+    max-width: 1400px;
+    padding: 0 20px;
   }
 }

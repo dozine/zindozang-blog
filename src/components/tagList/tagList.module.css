@@ -1,264 +1,171 @@
-/* .container {
-  margin: 2rem 0;
-}
-
-.title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.tagGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.tag {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
-  background-color: #f3f4f6;
-  color: #4b5563;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.tag:hover {
-  background-color: #e5e7eb;
-  color: #111827;
-  transform: translateY(-2px);
-}
-
-.menuContainer {
-  position: relative;
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 10px;
-}
-
-.menuButton {
-  position: relative;
-  border: none;
-  background-color: transparent;
-  color: darkgray;
-  cursor: pointer;
-}
-
-.menuWrapper {
-  position: relative;
-}
-
-.menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu button {
-  display: block;
-  width: 100px;
-  padding: 8px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-}
-
-.menu button:hover {
-  background: #f5f5f5;
-}
-
-.deleteButton {
-  color: red;
-}
-
-
-@media (max-width: 640px) {
-  .tagGrid {
-    gap: 0.5rem;
-  }
-
-  .tag {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-  }
-} */
-
 .container {
-  margin: 2rem 0;
-  position: relative;
+  width: 100%;
+  margin: 20px 0;
 }
 
-.loading,
-.error,
-.noTags {
-  font-family: monospace;
-  font-size: 14px;
-  letter-spacing: -0.5px;
-  color: #555;
-  border-left: 3px solid #333;
-  padding-left: 12px;
-  margin: 15px 0;
+/* ── 전체 행 레이아웃 ── */
+.tagRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
 }
 
-.error {
-  color: #d32f2f;
-  border-left-color: #d32f2f;
+/* ── 왼쪽 레이블 ── */
+.label {
+  flex-shrink: 0;
+  padding-right: 20px;
+  padding-top: 2px; /* 태그 텍스트와 수직 정렬 */
 }
 
+.label span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #444;
+  white-space: nowrap;
+}
+
+/* ── 구분선 ── */
+.divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 20px;
+  background-color: #ddd;
+  margin-right: 20px;
+  margin-top: 2px;
+}
+
+/* ── 오른쪽 태그 영역 ── */
 .tagGrid {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
 }
 
+/* ── 태그 칩 ── */
 .tag {
   display: inline-block;
-  padding: 8px 14px;
-  background-color: #f3f4f6;
-  color: #333;
-  border: 1px solid #e0e0e0;
-  border-radius: 2px;
-  font-size: 14px;
+  padding: 4px 12px;
+  background-color: #fdfaf5;
+  color: #444;
+  border: 1px solid #444;
+  border-radius: 100px;
+  font-size: 10px;
   font-weight: 500;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
   position: relative;
   overflow: hidden;
-  text-decoration: none;
-  cursor: pointer;
 }
 
-.tag::before {
+.tag::after {
   content: "";
   position: absolute;
-  left: 0;
   bottom: 0;
+  left: 0;
   width: 100%;
-  height: 2px;
-  background-color: #f9a03f;
-  transform: translateX(-101%);
-  transition: transform 0.3s ease;
+  height: 3px;
+  background: #f9a03f;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s ease;
 }
 
 .tag:hover {
+  border-color: #ddd;
   transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
-.tag:hover::before {
-  transform: translateX(0);
+.tag:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .activeTag {
   background-color: #333;
-  color: white;
+  color: #fff;
   border-color: #333;
 }
 
-.activeTag::before {
-  background-color: white;
-  transform: translateX(0);
+.activeTag::after {
+  background-color: #f9a03f;
+  transform: scaleX(1);
 }
 
+/* ── 관리 메뉴 ── */
 .menuContainer {
-  position: relative;
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 15px;
-}
-
-.menuButton {
-  position: relative;
-  border: none;
-  background-color: transparent;
-  color: #555;
-  cursor: pointer;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 0;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.menuButton:hover {
-  color: #000;
-}
-
-.menuButton::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -2px;
-  width: 100%;
-  height: 1px;
-  background-color: #555;
-  transition: background-color 0.2s ease;
-}
-
-.menuButton:hover::after {
-  background-color: #000;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 .menuWrapper {
   position: relative;
+}
+
+.menuButton {
+  border: none;
+  background-color: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 5px 8px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.menuButton:hover {
+  color: #555;
+  background-color: #f5f5f5;
 }
 
 .menu {
   position: absolute;
   top: calc(100% + 5px);
-  left: 0;
+  right: 0;
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 2px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  z-index: 10;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  z-index: 20;
   display: flex;
   flex-direction: column;
-  min-width: 100px;
   overflow: hidden;
 }
 
 .menu button {
-  display: block;
-  width: 100%;
+  width: 120px;
   padding: 10px 14px;
   background: none;
   border: none;
   text-align: left;
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.2s ease;
+  color: #666;
+  transition: all 0.2s ease;
 }
 
 .menu button:hover {
-  background: #f5f5f5;
+  background: #f9f9f9;
+  color: #333;
 }
 
-.deleteButton {
-  color: #d32f2f;
-}
-
-/* 반응형 디자인 */
 @media (max-width: 640px) {
-  .tagGrid {
-    gap: 6px;
+  .label {
+    padding-right: 14px;
+  }
+
+  .divider {
+    margin-right: 14px;
   }
 
   .tag {
-    padding: 6px 10px;
-    font-size: 12px;
+    padding: 3px 10px;
+    font-size: 10px;
   }
 }

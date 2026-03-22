@@ -15,11 +15,11 @@ const BlogPage = async ({
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>{cat ? `${cat}` : "Blog"}</h1>
+      <h1 className={styles.title}>{cat ? cat.toUpperCase() : "BLOG"}</h1>
       <CategoryList />
       <div className={styles.content}>
         <CardList page={page} cat={cat} tags={tags} />
-        <Menu />
+        {/* <Menu /> */}
       </div>
     </div>
   );
