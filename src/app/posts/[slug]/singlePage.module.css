@@ -1,53 +1,176 @@
 .container {
-  max-width: 1000px;
+  max-width: 720px;
   width: 100%;
   margin: 0 auto;
 }
 
+/* ── 헤더 전체 ── */
 .infoContainer {
-  display: flex;
-  align-items: center;
-  gap: 50px;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 1rem;
-  margin-bottom: 2rem;
   margin-top: 5rem;
-}
-
-.textContainer {
-  flex: 1;
-}
-
-.title {
-  margin-bottom: 20px;
-  text-align: left;
-  font-family:
-    "Pretendard", "Apple SD Gothic Neo", "맑은 고딕", "Malgun Gothic",
-    sans-serif;
-  font-size: 30x;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.userContainer {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  /* border-bottom: 1px solid #e0e0e0; */
   display: flex;
-  flex-direction: row;
-  gap: 10px;
-  color: var(--softTextColor);
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* ── 제목 ── */
+.title {
+  font-size: 30px;
+  font-weight: 600;
+  font-family: var(--font-noto-serif-kr), serif;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: #111;
+  margin: 0;
+}
+
+/* ── 날짜 · 상태 · 메뉴 행 ── */
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date {
+  font-size: 12px;
+  font-family: var(--font-noto-serif-kr), serif;
+  color: #444;
+  letter-spacing: 0.03em;
+}
+
+.metaRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.published,
+.unpublished {
+  font-size: 11px;
+  color: #aaa;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── 메뉴 버튼 ── */
+.menuContainer {
+  position: relative;
+}
+
+.menuButton {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.menuButton:hover {
+  background: #f5f5f5;
+  color: #555;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.menuItem {
+  width: 110px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: background 0.2s ease;
+}
+
+.menuItem:hover {
+  background: #f9f9f9;
+  color: #222;
+}
+
+/* ── 태그 · 조회수 행 ── */
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 카테고리/태그 리스트와 동일한 칩 스타일 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background-color: #fdfaf5;
+  color: #444;
+  border: 1px solid #444;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.tag:hover {
+  border-color: #aaa;
+  transform: translateY(-1px);
+}
+
+.views {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ccc;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.viewIcon {
+  font-size: 12px;
+}
+
+/* ── 본문 ── */
 .content {
   display: flex;
-  gap: 50px;
 }
 
 .post {
-  flex: 5;
+  flex: 1;
   margin-top: 20px;
   min-width: 0;
+  overflow-wrap: break-word;
 }
+
 .post pre {
   white-space: pre;
   overflow-x: auto;
@@ -73,146 +196,13 @@
   word-break: break-word;
 }
 
-.post {
-  overflow-wrap: break-word;
-}
-
-.description p {
-  font-size: 20px;
-  font-weight: 300;
-  margin-bottom: 20px;
-}
-
-.description img {
-  max-width: 100%;
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 24px 0;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.menuContainer {
-  position: relative;
-}
-
-.menuButton {
-  width: 32px;
-  height: 32px;
-  border: none;
-  font-size: 12px;
-  cursor: pointer;
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu {
-  position: absolute;
-  top: 30px;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu button {
-  display: block;
-  width: 100px;
-  padding: 8px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-}
-
-.menu button:hover {
-  background: #f5f5f5;
-}
-
-.deleteButton {
-  color: red;
-}
-
-/* 기존 CSS에 이 부분을 추가하세요 */
-
-.tagContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-  margin-bottom: 16px;
-}
-
-.tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  background-color: #f0f0f0;
-  color: #666;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tag:hover {
-  background-color: #e0e0e0;
-  color: #333;
-}
-
-.status {
-  margin-top: 4px;
-  font-size: 14px;
-}
-
-.published {
-  color: gray;
-  font-weight: bold;
-}
-
-.unpublished {
-  color: gray;
-  font-weight: bold;
-}
-.views {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  color: darkgray;
-  font-size: 14px;
-}
-.viewIcon {
-  margin-right: 5px;
-  font-size: 14px;
-}
-
-@media screen and (max-width: 1536px) {
-  .title {
-    font-size: 30px;
-  }
-}
-@media screen and (max-width: 1280px) {
-  .title {
-    font-size: 30px;
-  }
-}
-@media screen and (max-width: 1024px) {
-  .imageContainer {
-    display: block;
-  }
-}
+/* ── 반응형 ── */
 @media screen and (max-width: 640px) {
   .title {
-    font-size: 30px;
+    font-size: 24px;
   }
 
-  .description p {
-    font-size: 18px;
+  .infoContainer {
+    margin-top: 3rem;
   }
 }

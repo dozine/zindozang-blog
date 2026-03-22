@@ -14,11 +14,10 @@ import { useModal } from "@/hooks/useModal";
 const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
   const { status } = useSession();
 
-  const { categories, error, isLoading, refreshCategories } = useFetchCategories(initialCategories);
+  const { categories, error, isLoading, refreshCategories } =
+    useFetchCategories(initialCategories);
   const {
     sliderRef,
-    scrollLeftHandler,
-    scrollRightHandler,
     handleMouseDown,
     handleMouseUp,
     handleMouseMove,
@@ -52,14 +51,16 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
       {status === "authenticated" && (
         <div className={styles.menuContainer}>
           <div className={styles.menuWrapper}>
-            <button className={styles.menuButton} onClick={() => setMenuOpen(!menuOpen)}>
+            <button
+              className={styles.menuButton}
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
               카테고리 관리
             </button>
             {menuOpen && (
               <div className={styles.menu}>
                 <button onClick={openAddModal}>추가하기</button>
                 <button onClick={openDeleteModal}>삭제하기</button>
-
                 <AddCategoryModal
                   isOpen={isAddModalOpen}
                   onClose={closeAddModal}
@@ -78,13 +79,11 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
       )}
 
       <div className={styles.sliderContainer}>
-        <button
-          className={`${styles.navButton} ${styles.navButtonLeft}`}
-          onClick={scrollLeftHandler}
-          aria-label="이전카테고리"
-        >
-          <span className={styles.navArrow}>←</span>
-        </button>
+        {/* 왼쪽 레이블 */}
+        <div className={styles.label}>
+          <span>Categories</span>
+        </div>
+        <div className={styles.divider} />
         <div
           className={styles.categoriesSlider}
           ref={sliderRef}
@@ -97,31 +96,25 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
           onTouchMove={handleTouchMove}
         >
           <div className={styles.categories}>
-            <Link href="/blog" className={`${styles.category} ${styles.allCategory}`}>
+            <Link
+              href="/blog"
+              className={`${styles.category} ${styles.allCategory}`}
+            >
               <span className={styles.categoryText}>All</span>
             </Link>
-            {categories.map((item) => {
-              return (
-                <Link
-                  href={`/blog?cat=${item.slug}`}
-                  className={`${styles.category} ${
-                    item.slug === "uncategorized" ? styles.uncategorized : ""
-                  }`}
-                  key={item.id}
-                >
-                  <span className={styles.categoryText}>{item.title}</span>
-                </Link>
-              );
-            })}
+            {categories.map((item) => (
+              <Link
+                href={`/blog?cat=${item.slug}`}
+                className={`${styles.category} ${
+                  item.slug === "uncategorized" ? styles.uncategorized : ""
+                }`}
+                key={item.id}
+              >
+                <span className={styles.categoryText}>{item.title}</span>
+              </Link>
+            ))}
           </div>
         </div>
-        <button
-          className={`${styles.navButton} ${styles.navButtonRight}`}
-          onClick={scrollRightHandler}
-          aria-label="다음 카테고리"
-        >
-          <span className={styles.navArrow}>→</span>
-        </button>
       </div>
     </div>
   );

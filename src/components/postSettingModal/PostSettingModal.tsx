@@ -1,10 +1,29 @@
 "use client";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./postSettingModal.module.css";
-import { PostSettingModalProps } from "@/types";
 import { Category, Tag } from "@prisma/client";
 import { TagWithPostCount } from "@/types/tag";
 import { createTag } from "@/lib/services/tagService";
+
+export interface PostSettingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  catSlug: string;
+  setCatSlug: (slug: string) => void;
+  isPublished: boolean;
+  setIsPublished: (published: boolean) => void;
+  tagInput: string;
+  setTagInput: (input: string) => void;
+  tags: Tag[];
+  setTags: (tags: Tag[]) => void;
+  categories: Category[];
+  availableTags: TagWithPostCount[];
+  setAvailableTags: (tags: TagWithPostCount[]) => void;
+  onPublish: () => void;
+  uploadedImages: string[];
+  thumbnailImg: string;
+  setThumbnailImg: (url: string) => void;
+}
 
 const PostSettingModal = ({
   isOpen,
@@ -21,6 +40,9 @@ const PostSettingModal = ({
   availableTags,
   setAvailableTags,
   onPublish,
+  uploadedImages,
+  thumbnailImg,
+  setThumbnailImg,
 }: PostSettingModalProps) => {
   const [filteredTags, setFilteredTags] = useState<TagWithPostCount[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState<boolean>(false);
@@ -37,7 +59,7 @@ const PostSettingModal = ({
       const filtered = availableTags.filter(
         (tag) =>
           tag.name.toLowerCase().includes(tagInput.toLowerCase()) &&
-          !tags.some((selectedTag) => selectedTag.id === tag.id)
+          !tags.some((selectedTag) => selectedTag.id === tag.id),
       );
       setFilteredTags(filtered);
     } else {
@@ -50,11 +72,9 @@ const PostSettingModal = ({
       alert("태그는 최대 5개까지만 추가할 수 있습니다.");
       return;
     }
-
     if (tag && !tags.some((t) => t.id === tag.id)) {
       setTags([...tags, tag]);
     }
-
     setTagInput("");
     setShowTagSuggestions(false);
     if (process.env.NODE_ENV !== "test") {
@@ -68,10 +88,8 @@ const PostSettingModal = ({
       alert("태그는 최대 5개까지만 추가할 수 있습니다.");
       return;
     }
-
     try {
       const result = await createTag(tagInput);
-
       if (result.success && result.tag) {
         const newTagWithCount: TagWithPostCount = {
           ...result.tag,
@@ -84,9 +102,9 @@ const PostSettingModal = ({
           ...result.existingTag,
           _count: { posts: 0 },
         };
-
-        const foundTag = availableTags.find((t) => t.id === existingTagWithCount.id);
-
+        const foundTag = availableTags.find(
+          (t) => t.id === existingTagWithCount.id,
+        );
         if (foundTag) {
           addTag(foundTag);
         } else {
@@ -116,12 +134,38 @@ const PostSettingModal = ({
       <div className={styles.modalContent}>
         <h2 className={styles.modalTitle}>게시 설정</h2>
 
+        {/* 썸네일 선택 */}
+        {uploadedImages && uploadedImages.length > 0 && (
+          <div className={styles.settingSection}>
+            <h3>썸네일 선택</h3>
+            <div className={styles.thumbnailGrid}>
+              {uploadedImages.map((url, i) => (
+                <div
+                  key={i}
+                  className={`${styles.thumbnailItem} ${
+                    thumbnailImg === url ? styles.thumbnailSelected : ""
+                  }`}
+                  onClick={() => setThumbnailImg(url)}
+                >
+                  <img src={url} alt={`thumbnail-${i}`} />
+                  {thumbnailImg === url && (
+                    <span className={styles.thumbnailCheck}>✓</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 카테고리 */}
         <div className={styles.settingSection}>
           <h3>카테고리</h3>
           <select
             className={styles.select}
             value={catSlug}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => setCatSlug(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setCatSlug(e.target.value)
+            }
           >
             <option value="">카테고리 선택</option>
             {categories.map((cat: Category) => (
@@ -132,6 +176,7 @@ const PostSettingModal = ({
           </select>
         </div>
 
+        {/* 태그 */}
         <div className={styles.settingSection}>
           <h3>태그 설정</h3>
           <div className={styles.tagsContainer}>
@@ -139,7 +184,9 @@ const PostSettingModal = ({
               <input
                 ref={tagInputRef}
                 type="text"
-                placeholder={tags.length >= 5 ? "태그 최대 5개" : "태그 입력 (최대 5개)"}
+                placeholder={
+                  tags.length >= 5 ? "태그 최대 5개" : "태그 입력 (최대 5개)"
+                }
                 className={styles.tagInput}
                 value={tagInput}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +215,11 @@ const PostSettingModal = ({
             {showTagSuggestions && filteredTags.length > 0 && (
               <div className={styles.tagSuggestions}>
                 {filteredTags.slice(0, 5).map((tag: TagWithPostCount) => (
-                  <div key={tag.id} className={styles.tagSuggestion} onClick={() => addTag(tag)}>
+                  <div
+                    key={tag.id}
+                    className={styles.tagSuggestion}
+                    onClick={() => addTag(tag)}
+                  >
                     {tag.name}
                   </div>
                 ))}
@@ -179,7 +230,10 @@ const PostSettingModal = ({
               {tags.map((tag: Tag) => (
                 <span key={tag.id} className={styles.tagBadge}>
                   {tag.name}
-                  <button className={styles.removeTagButton} onClick={() => removeTag(tag.id)}>
+                  <button
+                    className={styles.removeTagButton}
+                    onClick={() => removeTag(tag.id)}
+                  >
                     ×
                   </button>
                 </span>
@@ -188,6 +242,7 @@ const PostSettingModal = ({
           </div>
         </div>
 
+        {/* 공개 설정 */}
         <div className={styles.settingSection}>
           <h3>공개 설정</h3>
           <label className={styles.toggleLabel}>
@@ -195,11 +250,15 @@ const PostSettingModal = ({
               type="checkbox"
               aria-label="공개 설정"
               checked={isPublished}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setIsPublished(e.target.checked)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setIsPublished(e.target.checked)
+              }
               className={styles.toggleInput}
             />
             <span className={styles.toggleSlider}></span>
-            <span className={styles.toggleText}>{isPublished ? "공개됨" : "비공개"}</span>
+            <span className={styles.toggleText}>
+              {isPublished ? "공개됨" : "비공개"}
+            </span>
           </label>
         </div>
 

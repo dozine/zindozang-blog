@@ -1,0 +1,152 @@
+.post-content-container {
+  font-size: 16px;
+  font-family: var(--font-noto-serif-kr), serif;
+  line-height: 1.8;
+  color: #333;
+  word-break: break-word;
+}
+
+/* 제목 */
+.post-content-container h1,
+.post-content-container h2,
+.post-content-container h3,
+.post-content-container h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  margin: 2em 0 0.6em;
+  color: #111;
+}
+
+.post-content-container h1 {
+  font-size: 1.75em;
+}
+.post-content-container h2 {
+  font-size: 1.4em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eee;
+}
+.post-content-container h3 {
+  font-size: 1.15em;
+}
+.post-content-container h4 {
+  font-size: 1em;
+}
+
+/* 본문 */
+.post-content-container p {
+  margin: 0 0 1.2em;
+}
+
+/* 링크 */
+.post-content-container a {
+  color: #f9a03f;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s;
+}
+.post-content-container a:hover {
+  opacity: 0.75;
+}
+
+/* 인용 */
+.post-content-container blockquote {
+  margin: 1.5em 0;
+  padding: 0.8em 1.2em;
+  border-left: 3px solid #ddd;
+  color: #777;
+  font-style: italic;
+  background: #fafafa;
+}
+.post-content-container blockquote p {
+  margin: 0;
+}
+
+/* 목록 */
+.post-content-container ul,
+.post-content-container ol {
+  margin: 0 0 1.2em;
+  padding-left: 1.5em;
+}
+.post-content-container li {
+  margin: 0.3em 0;
+  line-height: 1.7;
+}
+.post-content-container li > ul,
+.post-content-container li > ol {
+  margin: 0.3em 0 0;
+}
+
+/* 구분선 */
+.post-content-container hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 2.5em 0;
+}
+
+/* 이미지 */
+.post-content-container img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em 0;
+  border-radius: 2px;
+}
+
+/* 테이블 */
+.post-content-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.9em;
+}
+.post-content-container th,
+.post-content-container td {
+  padding: 8px 14px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+.post-content-container th {
+  background: #f7f7f7;
+  font-weight: 600;
+  color: #333;
+}
+.post-content-container tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+/* 이미지 그리드 */
+.post-content-container .img-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 1.5em 0;
+}
+
+.post-content-container .img-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 1.5em 0;
+}
+
+.post-content-container .img-grid-2 p,
+.post-content-container .img-grid-3 p {
+  margin: 0;
+}
+
+.post-content-container .img-grid-2 img,
+.post-content-container .img-grid-3 img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 2px;
+}
+
+@media screen and (max-width: 640px) {
+  .post-content-container .img-grid-2,
+  .post-content-container .img-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}

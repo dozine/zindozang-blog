@@ -19,6 +19,12 @@ const Navbar = () => {
         <VisitorTracker />
       </div>
       <div className={styles.links}>
+        <Link href="/" className={styles.link}>
+          Home
+        </Link>
+        <Link href="/blog" className={styles.link}>
+          Blog
+        </Link>
         <Link href="/tags" className={styles.link}>
           Tags
         </Link>
@@ -44,19 +50,43 @@ const Navbar = () => {
         <ThemeToggle />
         {open && (
           <div className={styles.responsiveMenu}>
-            <Link href="/tags" className={styles.burgerLink} onClick={() => setOpen(false)}>
+            <Link
+              href="/blog
+            "
+              className={styles.burgerLink}
+              onClick={() => setOpen(false)}
+            >
+              Blog
+            </Link>
+            <Link
+              href="/tags"
+              className={styles.burgerLink}
+              onClick={() => setOpen(false)}
+            >
               Tags
             </Link>
-            <Link href="/" className={styles.burgerLink} onClick={() => setOpen(false)}>
+            <Link
+              href="/"
+              className={styles.burgerLink}
+              onClick={() => setOpen(false)}
+            >
               About
             </Link>
             {status === "unauthenticated" ? (
-              <Link href="/login" className={styles.burgerLink} onClick={() => setOpen(false)}>
+              <Link
+                href="/login"
+                className={styles.burgerLink}
+                onClick={() => setOpen(false)}
+              >
                 Login
               </Link>
             ) : (
               <>
-                <Link href="/write" className={styles.burgerLink} onClick={() => setOpen(false)}>
+                <Link
+                  href="/write"
+                  className={styles.burgerLink}
+                  onClick={() => setOpen(false)}
+                >
                   Write
                 </Link>
                 <span

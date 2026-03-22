@@ -3,6 +3,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
 import CodeBlock, { CodeProps } from "@/components/codeBlock/CodeBlock";
+import "./markdown.css";
 
 interface PostContentProps {
   desc: string;
@@ -22,22 +23,22 @@ const PostContent = ({ desc, isDark }: PostContentProps) => {
             const codeString = String(children).replace(/\n$/, "");
             const isInlineCode =
               inline === true ||
-              (!className && !codeString.includes("\n") && codeString.length < 100);
+              (!className &&
+                !codeString.includes("\n") &&
+                codeString.length < 100);
 
             if (isInlineCode) {
               return (
                 <code
-                  className={className}
                   style={{
-                    // 💡 isDark props를 사용하여 스타일 적용
-                    background: isDark ? "#2d2d2d" : "silver",
-                    color: isDark ? "#e2e8f0" : "#1a202c",
+                    background: isDark ? "#2a2a2a" : "#f0ede8",
+                    color: isDark ? "#e2e8f0" : "#c7522a",
                     padding: "2px 6px",
-                    borderRadius: "4px",
-                    fontSize: "0.9em",
-                    fontWeight: "500",
+                    borderRadius: "3px",
+                    fontSize: "0.88em",
                     fontFamily:
-                      '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+                      '"SF Mono", Monaco, "Cascadia Code", Consolas, monospace',
+                    border: `1px solid ${isDark ? "#444" : "#e0dbd4"}`,
                   }}
                   {...props}
                 >

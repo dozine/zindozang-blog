@@ -52,27 +52,27 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   return (
     <div className={styles.container}>
       <div className={styles.infoContainer}>
-        <div className={styles.textContainer}>
-          <h1 className={styles.title}>{data.title}</h1>
-          <div className={styles.userContainer}>
-            <span className={styles.date}>
-              {new Date(data.createdAt).toLocaleString("ko-KR", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
+        <h1 className={styles.title}>{data.title}</h1>
+        <div className={styles.metaRow}>
+          <span className={styles.date}>
+            {new Date(data.createdAt).toLocaleString("ko-KR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+          <div className={styles.metaRight}>
             {isAuthenticated && isAuthor && (
               <>
-                <div className={styles.status}>
-                  {data.isPublished ? (
-                    <span className={styles.published}>공개</span>
-                  ) : (
-                    <span className={styles.unpublished}>비공개</span>
-                  )}
-                </div>
+                <span
+                  className={
+                    data.isPublished ? styles.published : styles.unpublished
+                  }
+                >
+                  {data.isPublished ? "공개" : "비공개"}
+                </span>
                 <div className={styles.menuContainer}>
                   <button
                     className={styles.menuButton}
@@ -86,7 +86,10 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                       <button className={styles.menuItem} onClick={handleEdit}>
                         수정하기
                       </button>
-                      <button className={styles.menuItem} onClick={openDeleteModal}>
+                      <button
+                        className={styles.menuItem}
+                        onClick={openDeleteModal}
+                      >
                         삭제하기
                       </button>
                     </div>
@@ -95,7 +98,8 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
               </>
             )}
           </div>
-
+        </div>
+        <div className={styles.bottomRow}>
           {data?.tags && data.tags.length > 0 && (
             <div className={styles.tagContainer}>
               {data.tags.map((tag) => (
