@@ -9,13 +9,7 @@ const ZindozangLogo = ({ size = "100%" }: { size?: number | string }) => {
     >
       <defs>
         {/* 🏴‍☠️ [하드코어 브루탈리즘 포스터 필터 - 그대로 유지] */}
-        <filter
-          id="brutalist-poster"
-          x="-20%"
-          y="-20%"
-          width="140%"
-          height="140%"
-        >
+        <filter id="brutalist-poster" x="-20%" y="-20%" width="140%" height="140%">
           <feTurbulence
             type="fractalNoise"
             baseFrequency="0.95"
@@ -36,12 +30,7 @@ const ZindozangLogo = ({ size = "100%" }: { size?: number | string }) => {
             numOctaves="3"
             result="grain-source"
           />
-          <feBlend
-            in="displaced"
-            in2="grain-source"
-            mode="color-burn"
-            result="grained"
-          />
+          <feBlend in="displaced" in2="grain-source" mode="color-burn" result="grained" />
           <feGaussianBlur in="grained" stdDeviation="0.3" />
         </filter>
       </defs>
@@ -71,13 +60,7 @@ const ZindozangLogo = ({ size = "100%" }: { size?: number | string }) => {
       {/* 🟠 [수정] 주황색 포인트 공 
           - 정정사각형 Z의 첫 번째 꺾임 축 축선(200, 76)으로 완벽하게 싱크 이동 
           - 거친 포스터 필터 적용 */}
-      <circle
-        cx="200"
-        cy="76"
-        r="8.5"
-        fill="#e07040"
-        filter="url(#brutalist-poster)"
-      />
+      <circle cx="200" cy="76" r="8.5" fill="#e07040" filter="url(#brutalist-poster)" />
     </svg>
   );
 };

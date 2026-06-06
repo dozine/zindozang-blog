@@ -66,11 +66,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
           <div className={styles.metaRight}>
             {isAuthenticated && isAuthor && (
               <>
-                <span
-                  className={
-                    data.isPublished ? styles.published : styles.unpublished
-                  }
-                >
+                <span className={data.isPublished ? styles.published : styles.unpublished}>
                   {data.isPublished ? "공개" : "비공개"}
                 </span>
                 <div className={styles.menuContainer}>
@@ -86,10 +82,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                       <button className={styles.menuItem} onClick={handleEdit}>
                         수정하기
                       </button>
-                      <button
-                        className={styles.menuItem}
-                        onClick={openDeleteModal}
-                      >
+                      <button className={styles.menuItem} onClick={openDeleteModal}>
                         삭제하기
                       </button>
                     </div>

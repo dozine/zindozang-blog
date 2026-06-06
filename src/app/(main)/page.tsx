@@ -41,10 +41,9 @@ export default async function HomePage() {
           <ZindozangLogo />
         </div>
         <div className={styles.titleDesc}>
-          ZINDOZANG IS MY PERSONAL ARCHIVE — THE LIFE AND RAW THOUGHTS OF A
-          DEVELOPER BASED IN SEOUL. NO NEWSLETTERS. NO ALGORITHMS. NO FILTERS.
-          WON'T WRITE OFTEN, BUT I'LL WRITE WHEN IT MATTERS. INSPIRED BY
-          BRUTALISM. DJ PUMP THIS PARTY!
+          {`ZINDOZANG IS MY PERSONAL ARCHIVE — THE LIFE AND RAW THOUGHTS OF A DEVELOPER BASED IN
+          SEOUL. NO NEWSLETTERS. NO ALGORITHMS. NO FILTERS. WON'T WRITE OFTEN, BUT I'LL WRITE WHEN
+          IT MATTERS. INSPIRED BY BRUTALISM. DJ PUMP THIS PARTY!`}
         </div>
       </div>
       <div className={styles.right}>
@@ -56,15 +55,9 @@ export default async function HomePage() {
           <span className={styles.catArrow}>↗</span>
         </Link>
         {categories.map((cat, i) => (
-          <Link
-            key={cat.id}
-            href={`/blog?cat=${cat.slug}`}
-            className={styles.catItem}
-          >
+          <Link key={cat.id} href={`/blog?cat=${cat.slug}`} className={styles.catItem}>
             <div className={styles.catLeft}>
-              <span className={styles.catNum}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
+              <span className={styles.catNum}>{String(i + 1).padStart(2, "0")}</span>
               <span className={styles.catName}>{cat.title}</span>
             </div>
             <span className={styles.catArrow}>↗</span>

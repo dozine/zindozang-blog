@@ -19,9 +19,7 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
         </div>
 
         {/* 2. 이미지 */}
-        {Array.isArray(item.img) &&
-        item.img.length > 0 &&
-        item.img[0].trim() !== "" ? (
+        {Array.isArray(item.img) && item.img.length > 0 && item.img[0].trim() !== "" ? (
           <div className={styles.imageContainer}>
             <div className={styles.image}>
               <Image
@@ -64,9 +62,7 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
             {(() => {
               if (!item.desc) return "";
               const descText = extractTextFromMarkdown(item.desc);
-              return descText.length > 60
-                ? descText.substring(0, 60) + "..."
-                : descText;
+              return descText.length > 60 ? descText.substring(0, 60) + "..." : descText;
             })()}
           </p>
           {/* {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (

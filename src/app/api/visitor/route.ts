@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
           totalVisitors: siteStats.totalVisitors,
           counted: true,
         };
-      }),
+      })
     );
 
     const tomorrow = new Date();
@@ -78,10 +78,7 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("Visitor tracking error:", error);
-    return NextResponse.json(
-      { error: "Failed to track visitor" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to track visitor" }, { status: 500 });
   }
 }
 

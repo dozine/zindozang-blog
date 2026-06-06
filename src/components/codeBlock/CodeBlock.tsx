@@ -2,10 +2,7 @@
 
 import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  vscDarkPlus,
-  oneLight,
-} from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { vscDarkPlus, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 export interface CodeProps {
   node?: any;
@@ -21,11 +18,7 @@ export interface CodeBlockProps {
   isDark?: boolean;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
-  language = "",
-  children,
-  isDark = false,
-}) => {
+const CodeBlock: React.FC<CodeBlockProps> = ({ language = "", children, isDark = false }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -158,8 +151,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         }}
         codeTagProps={{
           style: {
-            fontFamily:
-              '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
+            fontFamily: '"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace',
             whiteSpace: "pre",
             wordBreak: "normal",
           },

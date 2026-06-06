@@ -96,7 +96,7 @@ const WritePage = () => {
 
 ![](이미지URL2)
 
-</div>`,
+</div>`
         );
       },
     },
@@ -128,7 +128,7 @@ const WritePage = () => {
 
 ![](이미지URL3)
 
-</div>`,
+</div>`
         );
       },
     },
@@ -165,9 +165,7 @@ const WritePage = () => {
               <img src={url} alt={`uploaded-${i}`} />
               <div className={styles.imagePreviewInfo}>
                 <span className={styles.imagePreviewIndex}>#{i + 1}</span>
-                {thumbnailImg === url && (
-                  <span className={styles.imagePreviewThumb}>썸네일</span>
-                )}
+                {thumbnailImg === url && <span className={styles.imagePreviewThumb}>썸네일</span>}
               </div>
               <button
                 className={styles.imagePreviewRemove}
@@ -181,7 +179,7 @@ const WritePage = () => {
                     prev
                       .replace(`\n\n![image](${url})\n\n`, "")
                       .replace(`![image](${url})`, "")
-                      .replace(`![](${url})`, ""),
+                      .replace(`![](${url})`, "")
                   );
                 }}
               >

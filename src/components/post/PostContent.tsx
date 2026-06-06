@@ -23,9 +23,7 @@ const PostContent = ({ desc, isDark }: PostContentProps) => {
             const codeString = String(children).replace(/\n$/, "");
             const isInlineCode =
               inline === true ||
-              (!className &&
-                !codeString.includes("\n") &&
-                codeString.length < 100);
+              (!className && !codeString.includes("\n") && codeString.length < 100);
 
             if (isInlineCode) {
               return (
@@ -36,8 +34,7 @@ const PostContent = ({ desc, isDark }: PostContentProps) => {
                     padding: "2px 6px",
                     borderRadius: "3px",
                     fontSize: "0.88em",
-                    fontFamily:
-                      '"SF Mono", Monaco, "Cascadia Code", Consolas, monospace',
+                    fontFamily: '"SF Mono", Monaco, "Cascadia Code", Consolas, monospace',
                     border: `1px solid ${isDark ? "#444" : "#e0dbd4"}`,
                   }}
                   {...props}
