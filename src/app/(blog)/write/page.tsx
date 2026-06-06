@@ -148,7 +148,7 @@ const WritePage = () => {
       <input
         type="text"
         placeholder="Title"
-        className={styles.input}
+        className={styles.titleInput}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
@@ -173,7 +173,7 @@ const WritePage = () => {
                 className={styles.imagePreviewRemove}
                 onClick={() => {
                   const next = uploadedImages.filter((_, idx) => idx !== i);
-                  setUploadedImages(next); // 이게 빠져 있어요
+                  setUploadedImages(next);
                   if (thumbnailImg === url) {
                     setThumbnailImg(next[0] || "");
                   }

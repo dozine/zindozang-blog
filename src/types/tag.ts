@@ -1,4 +1,4 @@
-import TagsPage from "@/app/tags/page";
+import TagsPage from "@/app/(blog)/tags/page";
 import { Category, Post, Prisma, Tag, User } from "@prisma/client";
 
 export type TagWithPostCount = Tag & {
