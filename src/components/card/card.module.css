@@ -5,7 +5,7 @@
   border: none;
   overflow: hidden;
   height: 100%;
-  min-height: 600px;
+  min-height: auto;
   gap: 36px;
   padding: 50px 50px 60px; /* 컨테이너 자체에 패딩 */
   outline: 1px solid #444;
