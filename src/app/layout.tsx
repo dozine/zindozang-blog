@@ -7,8 +7,6 @@ import {
   Syne,
 } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navbar/Navbar";
-import Footer from "@/components/footer/Footer";
 import { ThemeContextProvider } from "@/context/ThemeContext";
 import ThemeProvider from "@/providers/ThemeProvider";
 import AuthProvider from "@/providers/AuthProvider";
@@ -16,6 +14,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Metadata } from "next";
 import LocalFont from "next/font/local";
+
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -67,21 +66,31 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Blog App",
-  description: "The best blog app!",
+  title: {
+    default: "Zindozang",
+    template: "%s | Zindozang",
+  },
+  description: "감성을 설계합니다.",
+  openGraph: {
+    title: "Zindozang",
+    description: "감성을 설계합니다.",
+    url: "https://www.zindozang.com",
+    siteName: "Zindozang",
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
-interface RootLayoutProps {
+export default function RootLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
+}) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <head>
         <meta httpEquiv="Cross-Origin-Opener-Policy" content="same-origin" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
-
         <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>
@@ -90,16 +99,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         <AuthProvider>
           <ThemeContextProvider>
-            <ThemeProvider>
-              <div className="container">
-                <div className="wrapper">
-                  <Navbar />
-                  {children}
-
-                  <Footer />
-                </div>
-              </div>
-            </ThemeProvider>
+            <ThemeProvider>{children}</ThemeProvider>
           </ThemeContextProvider>
         </AuthProvider>
         <Analytics />
@@ -107,17 +107,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
           src="https://www.googletagmanager.com/gtag/js?id=G-4QDHKQH1M8"
           strategy="lazyOnload"
         />
-
         <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', 'G-4QDHKQH1M8',{
-            anonymize_ip: true,
-            cookie_flags: 'SameSite=None; Secure',
-            cookie_expires: 63072000,//
-            send_page_view: false,
+              anonymize_ip: true,
+              cookie_flags: 'SameSite=None; Secure',
+              cookie_expires: 63072000,
+              send_page_view: false,
             });
           `}
         </Script>
