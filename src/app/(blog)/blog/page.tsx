@@ -1,7 +1,6 @@
-import styles from "@/app/blog/blogPage.module.css";
+import styles from "./blogPage.module.css";
 import CardList from "@/components/cardList/CardList";
 import CategoryList from "@/components/categoryList/CategoryList";
-import Menu from "@/components/menu/Menu";
 
 const BlogPage = async ({
   searchParams,
@@ -19,7 +18,6 @@ const BlogPage = async ({
       <CategoryList />
       <div className={styles.content}>
         <CardList page={page} cat={cat} tags={tags} />
-        {/* <Menu /> */}
       </div>
     </div>
   );

@@ -20,9 +20,7 @@ const CardList = async ({ page, cat, tags }: CardListProps) => {
     <div className={styles.container}>
       <div className={styles.posts}>
         {posts.length > 0 ? (
-          posts.map((item, index) => (
-            <Card key={item.id} item={item} priority={index < 3} />
-          ))
+          posts.map((item, index) => <Card key={item.id} item={item} priority={index < 3} />)
         ) : (
           <p>POST가 없습니다.</p>
         )}

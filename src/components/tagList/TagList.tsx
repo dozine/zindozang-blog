@@ -12,12 +12,7 @@ interface TagListProps {
   onTagDelete: (tagId: string) => void;
 }
 
-const TagList = ({
-  tags,
-  selectedTags = [],
-  onTagClick,
-  onTagDelete,
-}: TagListProps) => {
+const TagList = ({ tags, selectedTags = [], onTagClick, onTagDelete }: TagListProps) => {
   const { status } = useSession();
 
   const {

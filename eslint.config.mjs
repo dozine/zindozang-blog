@@ -17,10 +17,22 @@ const compat = new FlatCompat({
 const compatConfig = [...compat.extends("next/core-web-vitals")];
 
 const eslintConfig = [
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "public/**",
+      "dist/**",
+      "storybook-static/**",
+    ],
+  },
+
   ...compatConfig,
+
+  // 2. 프로젝트 소스 코드에 적용할 린트 규칙 세팅
   {
     files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
-    ignores: ["node_modules/**", ".next/**", "out/**", "public/**", "dist/**"],
     plugins: {
       prettier: prettierPlugin,
       import: importPlugin,
@@ -52,7 +64,8 @@ const eslintConfig = [
       },
     },
   },
-  ...storybook.configs["flat/recommended"],
+
+  //...storybook.configs["flat/recommended"],
 ];
 
 export default eslintConfig;
