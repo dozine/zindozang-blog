@@ -1,4 +1,3 @@
-export interface VisitorStats {
-  todayVisitors: number;
-  totalVisitors: number;
-}
+import type { GetVisitorStatsResponse } from "@/types/api/visitor";
+
+export type VisitorStats = GetVisitorStatsResponse;

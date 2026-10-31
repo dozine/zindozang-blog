@@ -1,4 +1,4 @@
-import type { PostData } from "@/types/post";
+import type { PostView } from "@/types/post";
 
 export const mockUser = {
   email: "test@example.com",
@@ -12,7 +12,7 @@ const mockTags = [
   { id: "t2", name: "NextJS" },
 ];
 
-export const mockPostDefault: PostData = {
+export const mockPostDefault: PostView = {
   id: "post_1",
   createdAt: new Date("2023-10-26"),
   slug: "storybook-guide",
@@ -27,7 +27,7 @@ export const mockPostDefault: PostData = {
   tags: mockTags,
 };
 
-export const mockPostNoImage: PostData = {
+export const mockPostNoImage: PostView = {
   ...mockPostDefault,
   id: "post_2",
   slug: "no-image-test",
@@ -36,7 +36,7 @@ export const mockPostNoImage: PostData = {
 };
 
 // 3. 긴 설명 포스트 (줄임표 테스트)
-export const mockPostLongDesc: PostData = {
+export const mockPostLongDesc: PostView = {
   ...mockPostDefault,
   id: "post_3",
   slug: "long-description-test",

@@ -1,8 +1,11 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
+import {
+  toPostDetailResponse,
+  toPostResponse,
+} from "@/lib/serializers/responses";
 import type { CreatePostRequest } from "@/types/api/post";
-import { Post, PostTag, Prisma, Tag, User } from "@prisma/client";
-import { headers } from "next/headers";
+import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const POST_PER_PAGE = 10;
@@ -37,7 +40,9 @@ export const GET = async (req: NextRequest) => {
   const page: number = pageParam ? parseInt(pageParam, 10) : 1;
   const skip: number = Math.max(0, POST_PER_PAGE * (page - 1));
 
-  const selectedTags: string[] = tagsParam ? tagsParam.split(".").filter((tag) => tag !== "") : [];
+  const selectedTags: string[] = tagsParam
+    ? tagsParam.split(".").filter((tag) => tag !== "")
+    : [];
   let where: Prisma.PostWhereInput = {
     isPublished: true,
     ...(cat && { catSlug: cat }),
@@ -97,15 +102,21 @@ export const GET = async (req: NextRequest) => {
       },
     }));
 
-    return new NextResponse(JSON.stringify({ posts: formattedPosts, count }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
+    return new NextResponse(
+      JSON.stringify({ posts: formattedPosts.map(toPostResponse), count }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
   } catch (err: any) {
     console.log(err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      { status: 500 },
+    );
   }
 };
 
@@ -123,13 +134,20 @@ export const POST = async (req: NextRequest) => {
   try {
     const body: CreatePostRequest = await req.json();
     const { tags: tagIds, isPublished, ...postData } = body;
-    const safeImg: string[] = Array.isArray(body.img) ? body.img : body.img ? [body.img] : [];
+    const safeImg: string[] = Array.isArray(body.img)
+      ? body.img
+      : body.img
+        ? [body.img]
+        : [];
 
     if (!body.slug || !body.title) {
-      return new NextResponse(JSON.stringify({ message: "Missing slug or title" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new NextResponse(
+        JSON.stringify({ message: "Missing slug or title" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -158,8 +176,8 @@ export const POST = async (req: NextRequest) => {
                 postId: post.id,
                 tagId: tagIds,
               },
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -168,17 +186,18 @@ export const POST = async (req: NextRequest) => {
         include: { user: true; tags: { include: { tag: true } } };
       }>;
 
-      const createdPostWithRelations: PostWithRelations | null = await tx.post.findUnique({
-        where: { id: post.id },
-        include: {
-          user: true,
-          tags: {
-            include: {
-              tag: true,
+      const createdPostWithRelations: PostWithRelations | null =
+        await tx.post.findUnique({
+          where: { id: post.id },
+          include: {
+            user: true,
+            tags: {
+              include: {
+                tag: true,
+              },
             },
           },
-        },
-      });
+        });
       if (!createdPostWithRelations) {
         throw new Error("Created post not found after transaction");
       }
@@ -190,12 +209,18 @@ export const POST = async (req: NextRequest) => {
       tags: result.tags.map((pt) => pt.tag),
     };
 
-    return new NextResponse(JSON.stringify(formattedResult), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new NextResponse(
+      JSON.stringify(toPostDetailResponse(formattedResult)),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     console.log("Error creating post:", err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      { status: 500 },
+    );
   }
 };

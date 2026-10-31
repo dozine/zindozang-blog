@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
+import { toTagDetailResponse } from "@/lib/serializers/responses";
 import type { TagWithPosts } from "@/types/tag";
 import type { TagByIdRequest } from "@/types/api/tag";
 import { Prisma } from "@prisma/client";
@@ -40,7 +41,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(tag, { status: 200 });
+    return NextResponse.json(toTagDetailResponse(tag), { status: 200 });
   } catch (error: any) {
     console.error("태그 조회 중 오류 발생:", error);
     return NextResponse.json(

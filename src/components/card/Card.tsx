@@ -1,11 +1,11 @@
 import Image from "next/image";
 import styles from "./card.module.css";
 import Link from "next/link";
-import type { PostData } from "@/types/post";
+import type { PostView } from "@/types/post";
 import { extractTextFromMarkdown } from "@/lib/utils/markdown";
 
 interface CardProps {
-  item: PostData;
+  item: PostView;
   priority?: boolean;
   index?: number;
 }

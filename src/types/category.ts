@@ -1,4 +1,4 @@
-import type { Category } from "@prisma/client";
+import type { CategoryResponse } from "@/types/api/category";
 
-/** 서버에서 조회한 카테고리 데이터. */
-export type CategoryData = Category;
+/** 카테고리 화면에서 사용하는 데이터. */
+export type CategoryData = CategoryResponse;

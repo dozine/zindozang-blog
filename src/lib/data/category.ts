@@ -1,7 +1,9 @@
 import prisma from "@/lib/db/prisma";
-import type { CategoryData } from "@/types/category";
+import { toCategoryResponse } from "@/lib/serializers/responses";
+import type { Category } from "@prisma/client";
+import type { CategoryResponse } from "@/types/api/category";
 
-const ensureUncategorizedCategory = async (): Promise<CategoryData> => {
+const ensureUncategorizedCategory = async (): Promise<Category> => {
   const uncategorized = await prisma.category.findUnique({
     where: { slug: "uncategorized" },
   });
@@ -19,7 +21,7 @@ const ensureUncategorizedCategory = async (): Promise<CategoryData> => {
   return uncategorized;
 };
 
-export async function getAllCategories(): Promise<CategoryData[]> {
+export async function getAllCategories(): Promise<CategoryResponse[]> {
   try {
     await ensureUncategorizedCategory();
 
@@ -29,7 +31,7 @@ export async function getAllCategories(): Promise<CategoryData[]> {
       },
     });
 
-    return categories;
+    return categories.map(toCategoryResponse);
   } catch (error) {
     console.error("카테고리 데이터 가져오기 오류:", error);
     return [];

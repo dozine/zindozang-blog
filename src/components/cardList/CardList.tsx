@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./cardList.module.css";
 import Pagination from "../pagination/Pagination";
 import Card from "../card/Card";
-import type { PostData } from "@/types/post";
+import type { PostView } from "@/types/post";
 import { getPosts } from "@/lib/data/post";
 
 interface CardListProps {
@@ -18,7 +18,7 @@ const CardList = async ({ page, cat, tags }: CardListProps) => {
   if (!data) {
     return <p>포스트를 불러오는 데 실패했습니다.</p>;
   }
-  const posts: PostData[] = data.posts || [];
+  const posts: PostView[] = data.posts || [];
   const count: number = data.count || 0;
   const totalPages = Math.max(1, Math.ceil(count / POSTS_PER_PAGE));
 

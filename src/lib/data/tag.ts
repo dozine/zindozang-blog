@@ -1,4 +1,5 @@
 import prisma from "@/lib/db/prisma";
+import { toTagWithPostCountResponse } from "@/lib/serializers/responses";
 import type { TagWithPostCount, TagWithPosts } from "@/types/tag";
 
 export async function getAllTags(): Promise<TagWithPostCount[]> {
@@ -19,7 +20,9 @@ export async function getAllTags(): Promise<TagWithPostCount[]> {
       },
     });
 
-    return Array.from(new Map(tags.map((tag) => [tag.name, tag])).values());
+    return Array.from(new Map(tags.map((tag) => [tag.name, tag])).values()).map(
+      toTagWithPostCountResponse
+    );
   } catch (error: any) {
     console.error("태그 데이터 가져오기 실패:", error);
     return [];

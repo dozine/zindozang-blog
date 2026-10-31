@@ -1,5 +1,6 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
+import { toPostDetailResponse, toPostResponse } from "@/lib/serializers/responses";
 import type { UpdatePostRequest } from "@/types/api/post";
 import type { PostData } from "@/types/post";
 import { Post, Prisma } from "@prisma/client";
@@ -46,7 +47,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       tags: post.tags.map((pt) => pt.tag),
     };
 
-    return new NextResponse(JSON.stringify(formattedPost), {
+    return new NextResponse(JSON.stringify(toPostDetailResponse(formattedPost)), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -248,7 +249,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
       return formattedResponse;
     });
 
-    return new NextResponse(JSON.stringify(result), {
+    return new NextResponse(JSON.stringify(toPostResponse(result)), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

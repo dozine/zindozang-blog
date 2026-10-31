@@ -1,4 +1,4 @@
-import type { TagData, TagWithPostCount, TagWithPosts } from "@/types/tag";
+import type { PostFieldsResponse } from "./post";
 
 /** POST /api/tags 요청 본문. */
 export interface CreateTagRequest {
@@ -10,17 +10,27 @@ export interface TagByIdRequest {
   id: string;
 }
 
-export type TagResponse = TagData;
-export type TagListResponse = TagWithPostCount[];
+export interface TagResponse {
+  id: string;
+  name: string;
+}
+
+export interface TagWithPostCountResponse extends TagResponse {
+  _count: { posts: number };
+}
+
+export type TagListResponse = TagWithPostCountResponse[];
 export type CreateTagResponse = TagResponse;
 
-/** 상세 조회에서 연결된 게시글의 날짜는 JSON 문자열이다. */
-type TagPostData = TagWithPosts["posts"][number];
-export type TagDetailResponse = Omit<TagWithPosts, "posts"> & {
-  posts: (Omit<TagPostData, "post"> & {
-    post: Omit<TagPostData["post"], "createdAt"> & { createdAt: string };
-  })[];
-};
+/** 상세 조회에 포함되는 연결 정보와 공개 게시글. */
+export interface TagDetailResponse extends TagResponse {
+  posts: {
+    id: string;
+    postId: string;
+    tagId: string;
+    post: PostFieldsResponse;
+  }[];
+}
 
 export interface DeleteTagResponse {
   message: string;

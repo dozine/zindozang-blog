@@ -1,5 +1,6 @@
 import type { PostData, PostListData } from "@/types/post";
 import prisma from "@/lib/db/prisma";
+import { toPostView } from "@/lib/serializers/responses";
 import { getAuthSession } from "@/lib/services/authService";
 import { Prisma, Tag } from "@prisma/client";
 import { cache } from "react";
@@ -76,7 +77,7 @@ export const getPostData = cache(async (slug: string): Promise<PostData | null> 
       tags: updatedPost.tags.map((pt) => pt.tag),
     };
 
-    return formattedPost;
+    return toPostView(formattedPost);
   } catch (error) {
     console.error("Error fetching post data:", error);
     return null;
@@ -149,7 +150,7 @@ export const getPosts = cache(
       }));
 
       return {
-        posts: formattedPosts,
+        posts: formattedPosts.map(toPostView),
         count,
       };
     } catch (error: any) {

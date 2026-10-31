@@ -1,5 +1,3 @@
-import type { CategoryData } from "@/types/category";
-
 /** POST /api/categories 요청 본문. */
 export interface CreateCategoryRequest {
   slug: string;
@@ -12,8 +10,13 @@ export interface DeleteCategoryRequest {
   id: string;
 }
 
-/** 카테고리는 현재 JSON 직렬화 시 변환되는 날짜 필드가 없다. */
-export type CategoryResponse = CategoryData;
+/** 외부에 제공하는 카테고리 필드. */
+export interface CategoryResponse {
+  id: string;
+  slug: string;
+  title: string;
+  img: string | null;
+}
 export type CategoryListResponse = CategoryResponse[];
 
 export interface CreateCategoryResponse {

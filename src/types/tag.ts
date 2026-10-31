@@ -1,13 +1,9 @@
-import type { Prisma, Tag } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import type { TagResponse, TagWithPostCountResponse } from "@/types/api/tag";
 
-/** 서버에서 조회한 태그 데이터. */
-export type TagData = Tag;
-
-export type TagWithPostCount = TagData & {
-  _count: {
-    posts: number;
-  };
-};
+/** 화면에서 사용하는 태그와 게시글 수. */
+export type TagData = TagResponse;
+export type TagWithPostCount = TagWithPostCountResponse;
 
 export type TagWithPosts = Prisma.TagGetPayload<{
   include: {
