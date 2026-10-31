@@ -1,7 +1,6 @@
 import type { PostView } from "@/types/post";
 
 export const mockUser = {
-  email: "test@example.com",
   name: "테스트 작성자",
   id: "user_1",
   image: "https://placehold.co/100x100/007AFF/FFFFFF?text=User",
@@ -21,7 +20,6 @@ export const mockPostDefault: PostView = {
   img: ["https://placehold.co/600x400/007AFF/FFFFFF?text=Cover+Image"],
   views: 120,
   catSlug: "Coding",
-  userEmail: mockUser.email,
   isPublished: true,
   user: mockUser,
   tags: mockTags,

@@ -1,4 +1,4 @@
-import type { PostData, PostListData } from "@/types/post";
+import type { PostData, PostDetailView, PostListData } from "@/types/post";
 import prisma from "@/lib/db/prisma";
 import { toPostView } from "@/lib/serializers/responses";
 import { getAuthSession } from "@/lib/services/authService";
@@ -35,7 +35,7 @@ type FormattedPost = Omit<PostWithRelations, "tags" | "user"> & {
   };
 };
 
-export const getPostData = cache(async (slug: string): Promise<PostData | null> => {
+export const getPostData = cache(async (slug: string): Promise<PostDetailView | null> => {
   const decodedSlug = decodeURIComponent(slug);
   console.log("getPostData called with slug:", slug);
 
@@ -46,7 +46,7 @@ export const getPostData = cache(async (slug: string): Promise<PostData | null> 
 
   try {
     const session = await getAuthSession();
-    const userEmail = session?.user.email;
+    const userEmail = session?.user?.email;
 
     const postCheck = await prisma.post.findUnique({
       where: { slug: decodedSlug },
@@ -56,7 +56,10 @@ export const getPostData = cache(async (slug: string): Promise<PostData | null> 
         userEmail: true,
       },
     });
-    if (!postCheck.isPublished && userEmail !== postCheck.userEmail) {
+    if (!postCheck) return null;
+
+    const isAuthor = Boolean(userEmail && userEmail === postCheck.userEmail);
+    if (!postCheck.isPublished && !isAuthor) {
       console.error("Unauthorized access to unpublished post");
       return null;
     }
@@ -77,7 +80,7 @@ export const getPostData = cache(async (slug: string): Promise<PostData | null> 
       tags: updatedPost.tags.map((pt) => pt.tag),
     };
 
-    return toPostView(formattedPost);
+    return { ...toPostView(formattedPost), isAuthor };
   } catch (error) {
     console.error("Error fetching post data:", error);
     return null;
@@ -110,7 +113,7 @@ export const getPosts = cache(
     };
 
     const userEmail = session?.user?.email;
-    const isAdmin = userEmail === (process.env.MYEMAIL as string);
+    const isAdmin = Boolean(userEmail && process.env.MYEMAIL && userEmail === process.env.MYEMAIL);
 
     if (!isAdmin) {
       where = {

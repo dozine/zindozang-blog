@@ -4,7 +4,11 @@ import prisma from "@/lib/db/prisma";
 import { getAuthSession } from "@/lib/services/authService";
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import { GET as listPosts, POST as createPost } from "@/app/api/posts/route";
-import { GET as readPost, PUT as updatePost } from "@/app/api/posts/[slug]/route";
+import {
+  GET as readPost,
+  PUT as updatePost,
+  DELETE as deletePost,
+} from "@/app/api/posts/[slug]/route";
 import {
   GET as listCategories,
   POST as createCategory,
@@ -27,6 +31,7 @@ jest.mock("@/lib/db/prisma", () => ({
       create: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
+      delete: jest.fn(),
     },
     category: { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn(), delete: jest.fn() },
     tag: { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), delete: jest.fn() },
@@ -45,6 +50,7 @@ const db = prisma as unknown as {
     create: jest.Mock;
     update: jest.Mock;
     updateMany: jest.Mock;
+    delete: jest.Mock;
   };
   category: { findUnique: jest.Mock; findMany: jest.Mock; create: jest.Mock; delete: jest.Mock };
   tag: { findMany: jest.Mock; findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
@@ -88,9 +94,8 @@ const publicPostFields = {
   views: 1,
   isPublished: true,
   catSlug: "notes",
-  userEmail: author.email,
 };
-const publicAuthor = { id: author.id, email: author.email, name: author.name, image: null };
+const publicAuthor = { id: author.id, name: author.name, image: null };
 const publicTag = { id: tag.id, name: tag.name };
 const publicCategory = { id: category.id, slug: category.slug, title: category.title, img: null };
 const fullPost = { ...post, user: author, tags: [relation] };
@@ -129,7 +134,7 @@ test("post list and detail serialize their declared fields and dates", async () 
   expect(await detail.json()).toEqual({
     ...publicPostFields,
     tags: [publicTag],
-    user: { ...publicAuthor, emailVerified: date.toISOString() },
+    user: publicAuthor,
   });
 });
 
@@ -143,7 +148,7 @@ test("post creation and update preserve their response shapes", async () => {
   expect(await created.json()).toEqual({
     ...publicPostFields,
     tags: [publicTag],
-    user: { ...publicAuthor, emailVerified: date.toISOString() },
+    user: publicAuthor,
   });
   db.post.update.mockResolvedValue(post);
   const updated = await updatePost(
@@ -206,6 +211,7 @@ test("server post views keep Date values and exclude database-only fields", asyn
     createdAt: date,
     tags: [publicTag],
     user: publicAuthor,
+    isAuthor: true,
   });
 });
 
@@ -269,4 +275,80 @@ test("private post detail is denied without returning its contents", async () =>
   expect(response.status).toBe(403);
   expect(await response.json()).toEqual({ message: "Unauthorized" });
   expect(db.post.update).not.toHaveBeenCalled();
+});
+
+test("anonymous and other users do not receive author privileges or private author data", async () => {
+  db.post.findUnique.mockResolvedValue({ isPublished: true, userEmail: author.email });
+  db.post.update.mockResolvedValue(fullPost);
+
+  jest.mocked(getAuthSession).mockResolvedValue(null);
+  const anonymousView = await getPostData(post.slug);
+  expect(anonymousView.isAuthor).toBe(false);
+  expect(JSON.stringify(anonymousView)).not.toContain(author.email);
+  expect(JSON.stringify(anonymousView)).not.toContain("emailVerified");
+
+  jest.mocked(getAuthSession).mockResolvedValue({
+    user: { email: "reader@example.test" },
+    expires: "2099-01-01",
+  });
+  const otherView = await getPostData(post.slug);
+  expect(otherView.isAuthor).toBe(false);
+  expect(JSON.stringify(otherView)).not.toContain(author.email);
+});
+
+test("anonymous API responses omit author emails and verification dates, including nested tag posts", async () => {
+  jest.mocked(getAuthSession).mockResolvedValue(null);
+  db.post.findMany.mockResolvedValue([fullPost]);
+  db.post.count.mockResolvedValue(1);
+  db.post.findUnique.mockResolvedValue(fullPost);
+  db.post.update.mockResolvedValue(fullPost);
+  db.tag.findUnique.mockResolvedValue({ ...tag, posts: [{ ...relation, post }] });
+
+  for (const response of [
+    await listPosts(request()),
+    await readPost(request(), slugParams),
+    await readTag(request(), tagParams),
+  ]) {
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(JSON.stringify(json)).not.toContain(author.email);
+    expect(JSON.stringify(json)).not.toContain("userEmail");
+    expect(JSON.stringify(json)).not.toContain("emailVerified");
+  }
+});
+
+test("post edits and deletes continue checking ownership on the server", async () => {
+  db.post.findUnique.mockResolvedValue(post);
+  jest.mocked(getAuthSession).mockResolvedValue({
+    user: { email: "reader@example.test" },
+    expires: "2099-01-01",
+  });
+  const edit = await updatePost(request("PUT", { title: post.title, desc: post.desc }), slugParams);
+  const deletion = await deletePost(request("DELETE"), slugParams);
+  expect(edit.status).toBe(403);
+  expect(deletion.status).toBe(403);
+  expect(db.$transaction).not.toHaveBeenCalled();
+
+  jest.mocked(getAuthSession).mockResolvedValue(null);
+  expect(
+    (await updatePost(request("PUT", { title: post.title, desc: post.desc }), slugParams)).status
+  ).toBe(401);
+  expect((await deletePost(request("DELETE"), slugParams)).status).toBe(401);
+});
+
+test("missing admin configuration does not expose unpublished posts to anonymous visitors", async () => {
+  const originalAdminEmail = process.env.MYEMAIL;
+  try {
+    delete process.env.MYEMAIL;
+    jest.mocked(getAuthSession).mockResolvedValue(null);
+    db.post.findMany.mockResolvedValue([]);
+    db.post.count.mockResolvedValue(0);
+
+    await getPosts({ page: 1 });
+
+    expect(db.post.findMany.mock.calls[0][0].where.OR).toEqual([{ isPublished: true }]);
+  } finally {
+    if (originalAdminEmail === undefined) delete process.env.MYEMAIL;
+    else process.env.MYEMAIL = originalAdminEmail;
+  }
 });

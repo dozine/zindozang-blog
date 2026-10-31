@@ -2,26 +2,22 @@
 
 import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import PostDeleteModal from "@/components/modal/postModal/PostDeleteModal";
 import styles from "./singlePage.module.css";
-import type { PostView } from "@/types/post";
+import type { PostDetailView } from "@/types/post";
 import { FaEllipsisH, FaEye } from "react-icons/fa";
 import { usePostActions } from "@/hooks/post/usePostAction";
 import { useUtterances } from "@/hooks/useUtterances";
 import PostContent from "@/components/post/PostContent";
 
 export interface SinglePageClientProps {
-  data: PostView;
+  data: PostDetailView;
   slug: string;
 }
 const UTTERANCES_REPO = "dozine/blog-comments";
 
 const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const isAuthor: boolean = session?.user?.email === data?.user?.email;
-  const isAuthenticated: boolean = status === "authenticated";
   const isDark = useUtterances(UTTERANCES_REPO, slug);
   const handlePostDeleteSuccess = () => {
     router.push("/blog");
@@ -56,7 +52,7 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
             })}
           </span>
           <div className={styles.metaRight}>
-            {isAuthenticated && isAuthor && (
+            {data.isAuthor && (
               <>
                 <span className={data.isPublished ? styles.published : styles.unpublished}>
                   {data.isPublished ? "공개" : "비공개"}

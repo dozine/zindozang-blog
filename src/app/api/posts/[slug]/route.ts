@@ -1,6 +1,6 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
-import { toPostDetailResponse, toPostResponse } from "@/lib/serializers/responses";
+import { toPostResponse } from "@/lib/serializers/responses";
 import type { UpdatePostRequest } from "@/types/api/post";
 import type { PostData } from "@/types/post";
 import { Post, Prisma } from "@prisma/client";
@@ -47,7 +47,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       tags: post.tags.map((pt) => pt.tag),
     };
 
-    return new NextResponse(JSON.stringify(toPostDetailResponse(formattedPost)), {
+    return new NextResponse(JSON.stringify(toPostResponse(formattedPost)), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

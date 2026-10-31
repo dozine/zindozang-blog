@@ -2,7 +2,7 @@ import type { Category, Post, Tag } from "@prisma/client";
 import type { PostData, PostView } from "@/types/post";
 import type { TagWithPosts } from "@/types/tag";
 import type { CategoryResponse } from "@/types/api/category";
-import type { PostDetailResponse, PostFieldsResponse, PostResponse } from "@/types/api/post";
+import type { PostFieldsResponse, PostResponse } from "@/types/api/post";
 import type { TagDetailResponse, TagResponse, TagWithPostCountResponse } from "@/types/api/tag";
 
 export function toCategoryResponse(category: Category): CategoryResponse {
@@ -30,7 +30,6 @@ export function toPostFieldsResponse(post: Post): PostFieldsResponse {
     views: post.views,
     isPublished: post.isPublished,
     catSlug: post.catSlug,
-    userEmail: post.userEmail,
   };
 }
 
@@ -40,7 +39,6 @@ export function toPostResponse(post: PostData): PostResponse {
     tags: post.tags.map(toTagResponse),
     user: {
       id: post.user.id,
-      email: post.user.email,
       name: post.user.name,
       image: post.user.image,
     },
@@ -50,16 +48,6 @@ export function toPostResponse(post: PostData): PostResponse {
 /** 서버 렌더링은 Date를 유지하되 화면에 필요한 필드만 전달한다. */
 export function toPostView(post: PostData): PostView {
   return { ...toPostResponse(post), createdAt: post.createdAt };
-}
-
-export function toPostDetailResponse(
-  post: PostData & { user: { emailVerified: Date | null } }
-): PostDetailResponse {
-  const response = toPostResponse(post);
-  return {
-    ...response,
-    user: { ...response.user, emailVerified: post.user.emailVerified?.toISOString() ?? null },
-  };
 }
 
 export function toTagDetailResponse(tag: TagWithPosts): TagDetailResponse {

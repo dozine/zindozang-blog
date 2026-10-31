@@ -32,12 +32,10 @@ export interface PostFieldsResponse {
   views: number;
   isPublished: boolean;
   catSlug: string;
-  userEmail: string;
 }
 
 export interface PostAuthorResponse {
   id: string;
-  email: string;
   name: string | null;
   image: string | null;
 }
@@ -53,10 +51,7 @@ export interface PostListResponse {
   count: number;
 }
 
-/** 상세 조회 및 생성 API는 작성자의 emailVerified도 반환한다. */
-export type PostDetailResponse = Omit<PostResponse, "user"> & {
-  user: PostResponse["user"] & { emailVerified: string | null };
-};
+export type PostDetailResponse = PostResponse;
 
 export type CreatePostResponse = PostDetailResponse;
 export type UpdatePostResponse = PostResponse;
