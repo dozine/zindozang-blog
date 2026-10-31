@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import PostDeleteModal from "@/components/modal/postModal/PostDeleteModal";
 import styles from "./singlePage.module.css";
-import { FormattedPostResponse } from "@/types";
+import type { PostData } from "@/types/post";
 import { FaEllipsisH, FaEye } from "react-icons/fa";
 import { usePostActions } from "@/hooks/post/usePostAction";
 import { useUtterances } from "@/hooks/useUtterances";
 import PostContent from "@/components/post/PostContent";
 
 export interface SinglePageClientProps {
-  data: FormattedPostResponse;
+  data: PostData;
   slug: string;
 }
 export interface CodeProps {

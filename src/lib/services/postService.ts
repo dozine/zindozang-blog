@@ -1,6 +1,11 @@
-import { PostWithFormattedTags, UpdatePostBody } from "@/types";
+import type {
+  CreatePostRequest,
+  CreatePostResponse,
+  PostDetailResponse,
+  UpdatePostRequest,
+} from "@/types/api/post";
 
-export async function fetchPostBySlug(slug: string): Promise<PostWithFormattedTags> {
+export async function fetchPostBySlug(slug: string): Promise<PostDetailResponse> {
   try {
     const res = await fetch(`/api/posts/${slug}`, { cache: "no-store" });
     if (!res.ok) {
@@ -14,15 +19,7 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithFormattedTa
   }
 }
 
-export async function createPost(createBody: {
-  title: string;
-  desc: string;
-  img: string | string[];
-  slug: string;
-  catSlug: string;
-  tags: string[];
-  isPublished: boolean;
-}): Promise<{ slug: string }> {
+export async function createPost(createBody: CreatePostRequest): Promise<CreatePostResponse> {
   try {
     const res = await fetch("/api/posts", {
       method: "POST",
@@ -41,7 +38,7 @@ export async function createPost(createBody: {
   }
 }
 
-export async function updatePost(slug: string, updateBody: UpdatePostBody): Promise<void> {
+export async function updatePost(slug: string, updateBody: UpdatePostRequest): Promise<void> {
   try {
     const res = await fetch(`/api/posts/${slug}`, {
       method: "PUT",

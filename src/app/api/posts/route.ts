@@ -1,6 +1,6 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
-import { PostWithFormattedTags } from "@/types";
+import type { CreatePostRequest } from "@/types/api/post";
 import { Post, PostTag, Prisma, Tag, User } from "@prisma/client";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -121,17 +121,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   try {
-    interface CreatePostBody {
-      slug: string;
-      title: string;
-      desc: string;
-      img?: string | string[] | null;
-      catSlug?: string;
-      isPublished?: boolean;
-      tags?: string[];
-    }
-
-    const body: CreatePostBody = await req.json();
+    const body: CreatePostRequest = await req.json();
     const { tags: tagIds, isPublished, ...postData } = body;
     const safeImg: string[] = Array.isArray(body.img) ? body.img : body.img ? [body.img] : [];
 

@@ -3,7 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Tag } from "@prisma/client";
 import { useModal } from "@/hooks/useModal";
-import { UpdatePostBody } from "@/types";
+import type { UpdatePostRequest } from "@/types/api/post";
 import { createPost, updatePost } from "@/lib/services/postService";
 import { usePostDataLoader } from "./useWritePageData";
 
@@ -103,7 +103,7 @@ export const usePostEditor = () => {
 
     try {
       if (isEditing && editSlug) {
-        const updateBody: UpdatePostBody = {
+        const updateBody: UpdatePostRequest = {
           title,
           desc: value,
           img: thumbnailImg ? [thumbnailImg] : [],

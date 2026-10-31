@@ -1,4 +1,4 @@
-import { FormattedPostResponse, PostApiResponse } from "@/types";
+import type { PostData, PostListData } from "@/types/post";
 import prisma from "@/lib/db/prisma";
 import { getAuthSession } from "@/lib/services/authService";
 import { Prisma, Tag } from "@prisma/client";
@@ -34,7 +34,7 @@ type FormattedPost = Omit<PostWithRelations, "tags" | "user"> & {
   };
 };
 
-export const getPostData = cache(async (slug: string): Promise<FormattedPostResponse | null> => {
+export const getPostData = cache(async (slug: string): Promise<PostData | null> => {
   const decodedSlug = decodeURIComponent(slug);
   console.log("getPostData called with slug:", slug);
 
@@ -71,7 +71,7 @@ export const getPostData = cache(async (slug: string): Promise<FormattedPostResp
       }),
     ]);
 
-    const formattedPost: FormattedPostResponse = {
+    const formattedPost: PostData = {
       ...updatedPost,
       tags: updatedPost.tags.map((pt) => pt.tag),
     };
@@ -84,12 +84,7 @@ export const getPostData = cache(async (slug: string): Promise<FormattedPostResp
 });
 
 export const getPosts = cache(
-  async ({
-    page,
-    cat = "",
-    tags,
-    postPerPage,
-  }: GetPostsParams): Promise<PostApiResponse | null> => {
+  async ({ page, cat = "", tags, postPerPage }: GetPostsParams): Promise<PostListData | null> => {
     const session = await getAuthSession();
     const postsPerPage = postPerPage || POST_PER_PAGE;
     const skip = Math.max(0, postsPerPage * (page - 1));

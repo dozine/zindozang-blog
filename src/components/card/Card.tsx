@@ -1,8 +1,14 @@
 import Image from "next/image";
 import styles from "./card.module.css";
 import Link from "next/link";
-import { CardProps } from "@/types";
+import type { PostData } from "@/types/post";
 import { extractTextFromMarkdown } from "@/lib/utils/markdown";
+
+interface CardProps {
+  item: PostData;
+  priority?: boolean;
+  index?: number;
+}
 
 const Card = ({ item, priority = false, index = 0 }: CardProps) => {
   const shouldPrioritize = priority || index < 3;

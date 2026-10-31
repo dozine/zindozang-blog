@@ -1,72 +1,16 @@
-import { Category, Post, Prisma, Tag, User } from "@prisma/client";
+import type { Post, Tag, User } from "@prisma/client";
 
-export interface CardProps {
-  item: PostWithFormattedTags;
-  priority?: boolean;
-  index?: number;
-}
+/** 서버에서 직접 조회한 게시글의 작성자 정보. */
+export type PostAuthor = Pick<User, "id" | "email" | "name" | "image">;
 
-export interface CardListProps {
-  page: number;
-  cat?: string;
-  tags?: string | string[];
-}
-
-export interface PostWithFormattedTags extends Omit<Post, "tags" | "user"> {
+/** Prisma 조회 결과를 화면에 사용하기 좋게 태그를 펼친 형태. */
+export type PostData = Post & {
   tags: Tag[];
-  user: Pick<User, "id" | "email" | "name" | "image">;
-  createdAt: Date;
-}
-
-export interface CreatePostBody {
-  slug: string;
-  title: string;
-  desc: string;
-  img?: string | string[] | null;
-  catSlug?: string;
-  isPublished?: boolean;
-  tags?: string[];
-}
-
-export interface PostApiResponse {
-  posts: PostWithFormattedTags[];
-  count: number;
-}
-
-export interface RecentPostsProps {
-  page: number;
-}
-
-export interface PostWithRelations extends Post {
-  user: User;
-  cat: Category;
-}
-
-export interface UpdatePostBody {
-  title?: string;
-  desc?: string;
-  img?: string | string[] | null;
-  catSlug?: string;
-  tags?: string[];
-  isPublished?: boolean;
-}
-
-export type UpdatedPostWithRelations = Prisma.PostGetPayload<{
-  include: { user: true; tags: { include: { tag: true } } };
-}>;
-
-export type FormattedPostResponse = Omit<UpdatedPostWithRelations, "tags" | "user"> & {
-  tags: Tag[];
-  user: Pick<User, "id" | "email" | "name" | "image">;
+  user: PostAuthor;
 };
 
-export interface SinglePageClientProps {
-  data: FormattedPostResponse;
-  slug: string;
-}
-
-export interface PostDeleteModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDelete: () => void;
+/** 서버에서 조회한 게시글 목록. createdAt은 Date다. */
+export interface PostListData {
+  posts: PostData[];
+  count: number;
 }
