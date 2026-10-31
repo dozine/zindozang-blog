@@ -6,7 +6,15 @@ export async function getAllTags(): Promise<TagWithPostCount[]> {
     const tags: TagWithPostCount[] = await prisma.tag.findMany({
       include: {
         _count: {
-          select: { posts: true },
+          select: {
+            posts: {
+              where: {
+                post: {
+                  isPublished: true,
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -29,6 +37,7 @@ export async function getTagById(id: string): Promise<TagWithPosts | null> {
       where: { id },
       include: {
         posts: {
+          where: { post: { isPublished: true } },
           include: {
             post: true,
           },

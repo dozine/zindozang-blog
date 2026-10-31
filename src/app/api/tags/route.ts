@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
 import { TagWithPostCount } from "@/types/tag";
 import { Prisma, Tag } from "@prisma/client";
@@ -8,23 +9,40 @@ export async function GET(req: NextRequest) {
     const tags: TagWithPostCount[] = await prisma.tag.findMany({
       include: {
         _count: {
-          select: { posts: true },
+          select: {
+            posts: {
+              where: {
+                post: {
+                  isPublished: true,
+                },
+              },
+            },
+          },
         },
       },
     });
     return NextResponse.json(tags, { status: 200 });
   } catch (error) {
     console.error("태그 조회 중 오류 발생", error);
-    return NextResponse.json({ message: "태그 조회 중 오류가 발생했습니다." }, { status: 500 });
+    return NextResponse.json(
+      { message: "태그 조회 중 오류가 발생했습니다." },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const denied = await requireAdmin();
+    if (denied) return denied;
+
     const { name }: { name: string } = await req.json();
 
     if (!name || typeof name !== "string" || name.trim() === "") {
-      return NextResponse.json({ message: "태그 이름은 필수입니다." }, { status: 400 });
+      return NextResponse.json(
+        { message: "태그 이름은 필수입니다." },
+        { status: 400 },
+      );
     }
 
     const existingTag: Tag | null = await prisma.tag.findUnique({
@@ -44,9 +62,15 @@ export async function POST(req: NextRequest) {
     console.error("태그 생성 중 오류 발생:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        return NextResponse.json({ message: "이미 존재하는 태그 이름입니다." }, { status: 409 });
+        return NextResponse.json(
+          { message: "이미 존재하는 태그 이름입니다." },
+          { status: 409 },
+        );
       }
     }
-    return NextResponse.json({ message: "태그 생성 중 오류가 발생했습니다." }, { status: 500 });
+    return NextResponse.json(
+      { message: "태그 생성 중 오류가 발생했습니다." },
+      { status: 500 },
+    );
   }
 }

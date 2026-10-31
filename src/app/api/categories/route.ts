@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/services/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { Category } from "@prisma/client";
@@ -41,6 +42,9 @@ export const GET = async () => {
 // POST API 함수
 export const POST = async (req: NextRequest) => {
   try {
+    const denied = await requireAdmin();
+    if (denied) return denied;
+
     const body: CreateCategoryBody = await req.json();
     const { slug, title, img } = body;
 
@@ -83,6 +87,9 @@ export const POST = async (req: NextRequest) => {
 // DELETE API 함수 - 카테고리 삭제 (기존 코드에 Uncategorized 체크 추가)
 export const DELETE = async (req: NextRequest) => {
   try {
+    const denied = await requireAdmin();
+    if (denied) return denied;
+
     const { searchParams } = new URL(req.url);
     const id: string | null = searchParams.get("id");
 
