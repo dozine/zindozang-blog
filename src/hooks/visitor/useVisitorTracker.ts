@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { visitorService } from "@/lib/services/visitorService";
-import { VisitorStats } from "@/types";
+import type { VisitorStats } from "@/types/visitor";
 
-export const useVisitorTracker = () => {
+interface UseVisitorTrackerReturn {
+  stats: VisitorStats;
+  loading: boolean;
+  error: string | null;
+}
+
+export const useVisitorTracker = (): UseVisitorTrackerReturn => {
   const [stats, setStats] = useState<VisitorStats>({
     todayVisitors: 0,
     totalVisitors: 0,
