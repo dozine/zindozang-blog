@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Category } from "@prisma/client";
+import type { CategoryResponse } from "@/types/api/category";
 import { TagWithPostCount } from "@/types/tag";
 import type { PostDetailResponse } from "@/types/api/post";
 import { fetchPostBySlug } from "@/lib/services/postService";
@@ -17,7 +17,7 @@ interface PostDataLoaderProps {
 interface PostDataLoaderResult {
   isLoading: boolean;
   postToEdit: PostDetailResponse | null;
-  categories: Category[];
+  categories: CategoryResponse[];
   availableTags: TagWithPostCount[];
 }
 
@@ -30,7 +30,7 @@ export const usePostDataLoader = ({
 }: PostDataLoaderProps): PostDataLoaderResult => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [postToEdit, setPostToEdit] = useState<PostDetailResponse | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [availableTags, setAvailableTags] = useState<TagWithPostCount[]>([]);
 
   const onPostLoadErrorRef = useRef(onPostLoadError);

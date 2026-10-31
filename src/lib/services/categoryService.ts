@@ -1,12 +1,18 @@
-import { Category } from "@prisma/client";
+import type {
+  CategoryListResponse,
+  CategoryResponse,
+  CreateCategoryRequest,
+  CreateCategoryResponse,
+  DeleteCategoryRequest,
+} from "@/types/api/category";
 
 interface CategoryResult {
   success: boolean;
   error?: string;
-  category?: { id: string; title: string; slug: string };
+  category?: CategoryResponse;
 }
 
-export async function fetchCategories(): Promise<Category[]> {
+export async function fetchCategories(): Promise<CategoryListResponse> {
   try {
     const res = await fetch("/api/categories", { cache: "no-store" });
     if (!res.ok) {
@@ -32,10 +38,11 @@ export async function addCategory(title: string): Promise<CategoryResult> {
   }
 
   try {
+    const body: CreateCategoryRequest = { title, slug };
     const res = await fetch("/api/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, slug }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -45,8 +52,8 @@ export async function addCategory(title: string): Promise<CategoryResult> {
         error: errorData.message || `카테고리 추가 실패 (${res.status})`,
       };
     }
-    const category = await res.json();
-    return { success: true, category };
+    const result: CreateCategoryResponse = await res.json();
+    return { success: true, category: result.category };
   } catch (error: any) {
     console.error("API 카테고리 추가 오류:", error);
     return {
@@ -56,7 +63,9 @@ export async function addCategory(title: string): Promise<CategoryResult> {
   }
 }
 
-export async function deleteCategory(categoryId: string): Promise<CategoryResult> {
+export async function deleteCategory(
+  categoryId: DeleteCategoryRequest["id"]
+): Promise<CategoryResult> {
   try {
     const res = await fetch(`/api/categories?id=${categoryId}`, {
       method: "DELETE",

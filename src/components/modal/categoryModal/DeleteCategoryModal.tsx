@@ -1,20 +1,22 @@
 "use client";
 import React from "react";
 import Modal from "../Modal";
-import { Category } from "@prisma/client";
+import type { CategoryData } from "@/types/category";
 import { useDeleteCategoryModal } from "@/hooks/category/useDeleteCategoryModal";
+
+interface DeleteCategoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => Promise<void>;
+  categories: CategoryData[];
+}
 
 const DeleteCategoryModal = ({
   isOpen,
   onClose,
   onSuccess,
   categories,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => Promise<void>;
-  categories: Category[];
-}) => {
+}: DeleteCategoryModalProps) => {
   const { selectedCategoryId, isLoading, error, handleCategorySelectChange, handleDeleteSubmit } =
     useDeleteCategoryModal({ onSuccess, onClose, isOpen, categories });
 
@@ -35,7 +37,7 @@ const DeleteCategoryModal = ({
         <option value="">선택해주세요</option>
         {categories
           ?.filter((cat) => cat.slug !== "uncategorized")
-          .map((category: Category) => (
+          .map((category) => (
             <option key={category.id} value={category.id}>
               {category.title}
             </option>

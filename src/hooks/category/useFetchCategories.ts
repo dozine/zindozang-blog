@@ -1,17 +1,17 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Category } from "@prisma/client";
+import type { CategoryData } from "@/types/category";
 import { getAllCategories } from "@/lib/data/category";
 
 interface UseFetchCategoriesResult {
-  categories: Category[];
+  categories: CategoryData[];
   error: string | null;
   isLoading: boolean;
   refreshCategories: () => Promise<void>; // 수동 리프레시 함수 제공
 }
 
-export function useFetchCategories(initialCategories: Category[]): UseFetchCategoriesResult {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+export function useFetchCategories(initialCategories: CategoryData[]): UseFetchCategoriesResult {
+  const [categories, setCategories] = useState<CategoryData[]>(initialCategories);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(
     !initialCategories || initialCategories.length === 0

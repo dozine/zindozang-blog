@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/services/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { Category } from "@prisma/client";
-import { CreateCategoryBody } from "@/types";
+import type { CreateCategoryRequest } from "@/types/api/category";
 
 const uncategorizedCategory = async (): Promise<Category> => {
   const uncategorized: Category | null = await prisma.category.findUnique({
@@ -45,7 +45,7 @@ export const POST = async (req: NextRequest) => {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const body: CreateCategoryBody = await req.json();
+    const body: CreateCategoryRequest = await req.json();
     const { slug, title, img } = body;
 
     // 필수 필드 확인

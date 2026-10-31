@@ -1,7 +1,7 @@
 import prisma from "@/lib/db/prisma";
-import { Category } from "@prisma/client";
+import type { CategoryData } from "@/types/category";
 
-const ensureUncategorizedCategory = async (): Promise<Category> => {
+const ensureUncategorizedCategory = async (): Promise<CategoryData> => {
   const uncategorized = await prisma.category.findUnique({
     where: { slug: "uncategorized" },
   });
@@ -19,7 +19,7 @@ const ensureUncategorizedCategory = async (): Promise<Category> => {
   return uncategorized;
 };
 
-export async function getAllCategories(): Promise<Category[]> {
+export async function getAllCategories(): Promise<CategoryData[]> {
   try {
     await ensureUncategorizedCategory();
 

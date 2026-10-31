@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
-import { Category } from "@prisma/client";
+import type { CategoryData } from "@/types/category";
 import { deleteCategory } from "@/lib/services/categoryService";
 
 interface UseDeleteCategoryModalProps {
   onSuccess: () => Promise<void>;
   onClose: () => void;
   isOpen: boolean;
-  categories: Category[];
+  categories: CategoryData[];
 }
 
 export function useDeleteCategoryModal({
