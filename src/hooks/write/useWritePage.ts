@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Tag } from "@prisma/client";
+import type { TagData } from "@/types/tag";
 import { useModal } from "@/hooks/useModal";
 import type { UpdatePostRequest } from "@/types/api/post";
 import { createPost, updatePost } from "@/lib/services/postService";
@@ -38,7 +38,7 @@ export const usePostEditor = () => {
   const { isOpen: showSettingsModal, openModal, closeModal } = useModal();
 
   const [catSlug, setCatSlug] = useState<string>("");
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<TagData[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [tagInput, setTagInput] = useState<string>("");
   const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import type { CategoryResponse } from "@/types/api/category";
-import { TagWithPostCount } from "@/types/tag";
+import type { TagWithPostCount } from "@/types/tag";
 import type { PostDetailResponse } from "@/types/api/post";
 import { fetchPostBySlug } from "@/lib/services/postService";
 import { fetchCategories } from "@/lib/services/categoryService";

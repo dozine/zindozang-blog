@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
-import { TagWithPostCount } from "@/types/tag";
+import type { TagWithPostCount } from "@/types/tag";
+import type { CreateTagRequest } from "@/types/api/tag";
 import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const { name }: { name: string } = await req.json();
+    const { name }: CreateTagRequest = await req.json();
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(

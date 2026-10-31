@@ -1,5 +1,5 @@
 import prisma from "@/lib/db/prisma";
-import { TagWithPostCount, TagWithPosts } from "@/types/tag";
+import type { TagWithPostCount, TagWithPosts } from "@/types/tag";
 
 export async function getAllTags(): Promise<TagWithPostCount[]> {
   try {
