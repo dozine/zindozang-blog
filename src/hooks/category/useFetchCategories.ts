@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import type { CategoryData } from "@/types/category";
-import { getAllCategories } from "@/lib/data/category";
+import { fetchCategories } from "@/lib/services/categoryService";
 
 interface UseFetchCategoriesResult {
   categories: CategoryData[];
@@ -21,7 +21,7 @@ export function useFetchCategories(initialCategories: CategoryData[]): UseFetchC
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getAllCategories(); // 서버 함수를 클라이언트에서 호출 (API 라우트 사용)
+      const data = await fetchCategories();
       setCategories(data);
     } catch (err: any) {
       setError(err.message || "카테고리 로딩 중 문제가 발생했습니다");
