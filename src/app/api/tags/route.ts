@@ -2,7 +2,8 @@ import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
 import { toTagResponse, toTagWithPostCountResponse } from "@/lib/serializers/responses";
 import type { TagWithPostCount } from "@/types/tag";
-import type { CreateTagRequest } from "@/types/api/tag";
+import { createTagSchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
 import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -38,14 +39,9 @@ export async function POST(req: NextRequest) {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const { name }: CreateTagRequest = await req.json();
-
-    if (!name || typeof name !== "string" || name.trim() === "") {
-      return NextResponse.json(
-        { message: "태그 이름은 필수입니다." },
-        { status: 400 },
-      );
-    }
+    const validation = await validateJsonBody(req, createTagSchema);
+    if (validation.success === false) return validation.response;
+    const { name } = validation.data;
 
     const existingTag: Tag | null = await prisma.tag.findUnique({
       where: { name },
