@@ -4,7 +4,7 @@ import storybook from "eslint-plugin-storybook";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
-import prettierPlugin from "eslint-plugin-prettier";
+import prettierConfig from "eslint-config-prettier";
 import importPlugin from "eslint-plugin-import";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -34,22 +34,9 @@ const eslintConfig = [
   {
     files: ["**/*.{js,jsx,mjs,cjs,ts,tsx}"],
     plugins: {
-      prettier: prettierPlugin,
       import: importPlugin,
     },
     rules: {
-      "prettier/prettier": [
-        "error",
-        {
-          semi: true,
-          tabWidth: 2,
-          printWidth: 100,
-          singleQuote: false,
-          trailingComma: "es5",
-          jsxBracketSameLine: false,
-        },
-      ],
-
       "no-unused-vars": "warn",
       "no-console": "warn",
       "import/no-unresolved": "error",
@@ -64,6 +51,9 @@ const eslintConfig = [
       },
     },
   },
+
+  // Prettier와 충돌하는 스타일 규칙을 끈다.
+  prettierConfig,
 
   //...storybook.configs["flat/recommended"],
 ];

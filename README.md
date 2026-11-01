@@ -58,6 +58,18 @@ React Quill을 활용한 에디터 기능, 카테고리 및 태그 필터링 기
 
 ---
 
+### 코드 포맷과 린트
+
+VS Code에서 `blogapp` 폴더를 열고 추천되는 **Prettier - Code formatter** 확장을 설치하면 저장할 때 포맷이 적용됩니다. 포맷 규칙은 `.prettierrc.json`에서 관리합니다.
+
+```bash
+npm run format        # 프로젝트 파일에 포맷 적용
+npm run format:check  # 파일 수정 없이 포맷 확인
+npm run lint          # ESLint 실행
+```
+
+포맷 검사는 배포의 필수 조건이 아니며, `format`은 여러 파일을 수정할 수 있습니다. `format:check`는 기존 파일의 포맷 차이가 있으면 실패합니다.
+
 ## 5. 개발 과정 요약 및 트러블슈팅
 
 ### 🔧 Prisma와 MongoDB 연결 이슈
