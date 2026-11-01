@@ -163,7 +163,7 @@ const ImageUploader = ({
                 );
                 uploadedUrls[sizeName] = downloadURL;
                 resolve();
-              } catch (err: any) {
+              } catch (err) {
                 console.error("다운로드 URL 가져오기 실패:", err);
                 reject(err);
               }
@@ -183,7 +183,7 @@ const ImageUploader = ({
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("이미지 업로드 오류:", error);
       setUploadError("이미지 업로드 중 오류가 발생했습니다.");
     } finally {

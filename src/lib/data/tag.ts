@@ -23,7 +23,7 @@ export async function getAllTags(): Promise<TagWithPostCount[]> {
     return Array.from(new Map(tags.map((tag) => [tag.name, tag])).values()).map(
       toTagWithPostCountResponse
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("태그 데이터 가져오기 실패:", error);
     return [];
   }
@@ -54,7 +54,7 @@ export async function getTagById(id: string): Promise<TagWithPosts | null> {
     }
 
     return tag as TagWithPosts;
-  } catch (error: any) {
+  } catch (error) {
     console.error("태그 조회 중 오류 발생:", error);
     return null;
   }

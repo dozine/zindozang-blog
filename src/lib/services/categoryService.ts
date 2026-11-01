@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import type {
   CategoryListResponse,
   CategoryResponse,
@@ -19,9 +20,9 @@ export async function fetchCategories(): Promise<CategoryListResponse> {
       throw new Error("카테고리를 불러올 수 없습니다.");
     }
     return await res.json();
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 카테고리 목록 조회 오류:", error);
-    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
   }
 }
 
@@ -54,11 +55,11 @@ export async function addCategory(title: string): Promise<CategoryResult> {
     }
     const result: CreateCategoryResponse = await res.json();
     return { success: true, category: result.category };
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 카테고리 추가 오류:", error);
     return {
       success: false,
-      error: error.message || "서버 통신 중 오류가 발생했습니다.",
+      error: getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."),
     };
   }
 }
@@ -81,11 +82,11 @@ export async function deleteCategory(
 
     // 삭제 성공 시 body가 비어있을 수 있으므로 JSON 파싱 생략
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 카테고리 삭제 오류:", error);
     return {
       success: false,
-      error: error.message || "서버 통신 중 오류가 발생했습니다.",
+      error: getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."),
     };
   }
 }

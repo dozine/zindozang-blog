@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import type {
   CreateTagRequest,
   CreateTagResponse,
@@ -16,9 +17,9 @@ export async function fetchAvailableTags(): Promise<TagListResponse> {
     }
     const data: TagListResponse = await res.json();
     return data;
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 태그 목록 조회 오류:", error);
-    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
   }
 }
 
@@ -55,11 +56,11 @@ export async function createTag(
     }
 
     return { success: true, tag: result as CreateTagResponse };
-  } catch (err: any) {
+  } catch (err) {
     console.error("API 태그 생성 오류:", err);
     return {
       success: false,
-      error: err.message || "서버 통신 중 오류가 발생했습니다.",
+      error: getErrorMessage(err, "서버 통신 중 오류가 발생했습니다."),
     };
   }
 }
@@ -83,11 +84,11 @@ export async function deleteTag(
     }
 
     return { success: true, message: "태그가 성공적으로 삭제되었습니다." };
-  } catch (err: any) {
+  } catch (err) {
     console.error("API 태그 삭제 오류:", err);
     return {
       success: false,
-      error: err.message || "서버 통신 중 오류가 발생했습니다.",
+      error: getErrorMessage(err, "서버 통신 중 오류가 발생했습니다."),
     };
   }
 }

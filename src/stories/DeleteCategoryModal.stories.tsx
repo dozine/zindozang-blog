@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Modal from "../components/modal/Modal";
 import { Category } from "@prisma/client";
 
-const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: unknown[]) => console.log("Action triggered (Storybook Mock)", args);
 
 const mockCategories: Category[] = [
   {

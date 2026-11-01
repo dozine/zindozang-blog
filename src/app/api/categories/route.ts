@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
@@ -33,9 +34,9 @@ export const GET = async () => {
     });
 
     return NextResponse.json(categories.map(toCategoryResponse), { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("카테고리 조회 오류:", err);
-    return new NextResponse(`카테고리 조회 중 오류 발생 : ${err.message || "알수없는 오류"}`, {
+    return new NextResponse(`카테고리 조회 중 오류 발생 : ${getErrorMessage(err, "알수없는 오류")}`, {
       status: 500,
     });
   }
@@ -72,9 +73,9 @@ export const POST = async (req: NextRequest) => {
       { message: "카테고리 생성 완료", category: toCategoryResponse(newCategory) },
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error("카테고리 생성 오류:", err);
-    return new NextResponse("카테고리 생성 중 오류 발생: " + err.message, {
+    return new NextResponse("카테고리 생성 중 오류 발생: " + getErrorMessage(err, "알 수 없는 오류"), {
       status: 500,
     });
   }
@@ -123,9 +124,9 @@ export const DELETE = async (req: NextRequest) => {
     });
 
     return NextResponse.json({ message: "카테고리 삭제 완료", deleted: toCategoryResponse(deleted) }, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("카테고리 삭제 오류:", err);
-    return new NextResponse("카테고리 삭제 중 오류 발생: " + err.message, {
+    return new NextResponse("카테고리 삭제 중 오류 발생: " + getErrorMessage(err, "알 수 없는 오류"), {
       status: 500,
     });
   }

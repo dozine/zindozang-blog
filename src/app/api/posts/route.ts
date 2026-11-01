@@ -110,7 +110,7 @@ export const GET = async (req: NextRequest) => {
         },
       },
     );
-  } catch (err: any) {
+  } catch (err) {
     console.log(err);
     return new NextResponse(
       JSON.stringify({ message: "Something went wrong!" }),

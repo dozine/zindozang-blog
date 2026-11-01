@@ -52,7 +52,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.log("Error", err);
     return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), {
       status: 500,
@@ -104,7 +104,7 @@ export const DELETE = async (
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Errror deleting post:", err);
     return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), {
       status: 500,

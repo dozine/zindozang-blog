@@ -369,3 +369,15 @@ test("a session without an email cannot remove the public-post filter", async ()
   expect(response.status).toBe(200);
   expect(db.post.findMany.mock.calls[0][0].where.isPublished).toBe(true);
 });
+
+test("visitor tracking retries a transaction conflict and counts the visit", async () => {
+  db.$transaction.mockRejectedValueOnce({ code: "P2034" });
+  db.visitor.upsert.mockResolvedValue({ count: 3 });
+  db.siteStats.upsert.mockResolvedValue({ totalVisitors: 11 });
+
+  const response = await trackVisitor(request("POST"));
+
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ todayVisitors: 3, totalVisitors: 11, counted: true });
+  expect(db.$transaction).toHaveBeenCalledTimes(2);
+});

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React, { useState } from "react";
 import Modal from "../components/modal/Modal";
 
-const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: unknown[]) => console.log("Action triggered (Storybook Mock)", args);
 
 type PostDeleteModalStoryArgs = {
   isOpen: boolean;

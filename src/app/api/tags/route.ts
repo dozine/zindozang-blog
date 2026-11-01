@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(toTagResponse(newTag), { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("태그 생성 중 오류 발생:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {

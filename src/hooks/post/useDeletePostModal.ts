@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/utils/error";
 import { useState, useCallback } from "react";
 
 interface UsePostDeleteModalProps {
@@ -16,9 +18,9 @@ export function usePostDeleteModal({ onDelete, onClose }: UsePostDeleteModalProp
     try {
       await onDelete();
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error("포스트 삭제 오류:", err);
-      setError(err.message || "삭제 중 오류가 발생했습니다.");
+      setError(getErrorMessage(err, "삭제 중 오류가 발생했습니다."));
     } finally {
       setIsLoading(false);
     }
