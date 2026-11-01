@@ -177,8 +177,8 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
         isPublished: isPublished ?? post.isPublished,
       };
 
-      if (catSlug && catSlug !== post.catSlug) {
-        updateData.cat = { connect: { slug: catSlug } };
+      if (catSlug !== undefined && catSlug !== post.catSlug) {
+        updateData.cat = catSlug ? { connect: { slug: catSlug } } : { disconnect: true };
       }
 
       const updatedPost = await tx.post.update({

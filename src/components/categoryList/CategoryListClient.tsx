@@ -102,9 +102,7 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
             {categories.map((item) => (
               <Link
                 href={`/blog?cat=${item.slug}`}
-                className={`${styles.category} ${
-                  item.slug === "uncategorized" ? styles.uncategorized : ""
-                }`}
+                className={styles.category}
                 key={item.id}
               >
                 <span className={styles.categoryText}>{item.title}</span>

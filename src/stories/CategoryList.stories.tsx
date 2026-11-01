@@ -28,12 +28,6 @@ const mockCategories: Category[] = [
     title: "Food",
     img: null,
   },
-  {
-    id: "5",
-    slug: "uncategorized",
-    title: "Uncategorized",
-    img: null,
-  },
 ];
 
 const mockSession = {
@@ -94,14 +88,7 @@ export const Authenticated: Story = {
 
 export const Empty: Story = {
   args: {
-    initialCategories: [
-      {
-        id: "uncategorized",
-        slug: "uncategorized",
-        title: "Uncategorized",
-        img: null,
-      },
-    ],
+    initialCategories: [],
   },
   decorators: [
     (Story) => (
@@ -114,15 +101,7 @@ export const Empty: Story = {
 
 export const SingleCategory: Story = {
   args: {
-    initialCategories: [
-      mockCategories[0],
-      {
-        id: "uncategorized",
-        slug: "uncategorized",
-        title: "Uncategorized",
-        img: null,
-      },
-    ],
+    initialCategories: [mockCategories[0]],
   },
   decorators: [
     (Story) => (

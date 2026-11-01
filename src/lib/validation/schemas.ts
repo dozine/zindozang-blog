@@ -17,7 +17,7 @@ const postFields = {
       error: "이미지 형식을 확인해주세요.",
     })
     .optional(),
-  catSlug: z.string({ error: "카테고리 주소를 확인해주세요." }).optional(),
+  catSlug: requiredText("카테고리 주소를 확인해주세요.").nullable().optional(),
   isPublished: z.boolean({ error: "공개 설정을 확인해주세요." }).optional(),
   tags: z
     .array(requiredText("유효한 태그 ID가 필요합니다."), {

@@ -52,7 +52,7 @@ export const usePostEditor = () => {
       setMedia(Array.isArray(imgs) ? imgs[0] || "" : imgs);
       setUploadedImages(Array.isArray(imgs) ? imgs : imgs ? [imgs] : []);
       setThumbnailImg(Array.isArray(imgs) ? imgs[0] || "" : imgs || "");
-      setCatSlug(postToEdit.catSlug || "");
+      setCatSlug(postToEdit.catSlug ?? "");
       setIsPublished(Boolean(postToEdit.isPublished));
       setTags(postToEdit.tags || []);
     }
@@ -99,7 +99,7 @@ export const usePostEditor = () => {
 
   const handleFinalPublish = useCallback(async () => {
     const tagIds: string[] = tags.map((tag) => tag.id);
-    const finalCatSlug: string = catSlug || "uncategorized";
+    const finalCatSlug = catSlug || null;
     setIsSubmitting(true);
 
     try {

@@ -24,12 +24,6 @@ const mockCategories: Category[] = [
     title: "비즈니스",
     img: null,
   },
-  {
-    id: "cat_uncategorized",
-    slug: "uncategorized",
-    title: "미분류",
-    img: null,
-  },
 ];
 
 type DeleteCategoryModalStoryArgs = {
@@ -84,9 +78,7 @@ const TestableCategoryDeleteModal = ({
         disabled={mockIsLoading}
       >
         <option value="">선택해주세요</option>
-        {categories
-          ?.filter((cat) => cat.slug !== "uncategorized")
-          .map((category: Category) => (
+        {categories.map((category: Category) => (
             <option key={category.id} value={category.id}>
               {category.title}
             </option>
@@ -156,7 +148,7 @@ const InteractiveDeleteCategoryModalWrapper = (args: DeleteCategoryModalStoryArg
         }}
       >
         <p style={{ margin: 0, fontSize: "14px", color: "#666" }}>
-          현재 카테고리 수: {categories.filter((c) => c.slug !== "uncategorized").length}개
+          현재 카테고리 수: {categories.length}개
         </p>
         <button
           onClick={handleOpen}
@@ -300,13 +292,10 @@ export const ManyCategories: Story = {
 };
 
 export const SingleCategory: Story = {
-  name: "카테고리 1개 (uncategorized 제외)",
+  name: "카테고리 1개",
   render: (args) => <InteractiveDeleteCategoryModalWrapper {...args} />,
   args: {
-    categories: [
-      mockCategories[0],
-      mockCategories[3], // uncategorized (필터링됨)
-    ],
+    categories: [mockCategories[0]],
     initialOpen: true,
   },
 };
@@ -315,7 +304,7 @@ export const NoCategories: Story = {
   name: " 삭제 가능한 카테고리 없음",
   render: (args) => <InteractiveDeleteCategoryModalWrapper {...args} />,
   args: {
-    categories: [mockCategories[3]], // uncategorized만
+    categories: [],
     initialOpen: true,
   },
 };
