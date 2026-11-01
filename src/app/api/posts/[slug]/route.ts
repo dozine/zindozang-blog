@@ -30,7 +30,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       });
     }
 
-    if (!postExists.isPublished && session?.user.email !== postExists.user.email) {
+    if (!postExists.isPublished && session?.user?.email !== postExists.user.email) {
       return new NextResponse(JSON.stringify({ message: "Unauthorized" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },

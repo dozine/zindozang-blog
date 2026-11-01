@@ -198,6 +198,7 @@ test("server post views keep Date values and exclude database-only fields", asyn
   db.post.findMany.mockResolvedValue([fullPost]);
   db.post.count.mockResolvedValue(1);
   const list = await getPosts({ page: 1 });
+  if (!list) throw new Error("Expected posts");
   expect(list.posts[0]).toEqual({
     ...publicPostFields,
     createdAt: date,
@@ -283,6 +284,7 @@ test("anonymous and other users do not receive author privileges or private auth
 
   jest.mocked(getAuthSession).mockResolvedValue(null);
   const anonymousView = await getPostData(post.slug);
+  if (!anonymousView) throw new Error("Expected public post");
   expect(anonymousView.isAuthor).toBe(false);
   expect(JSON.stringify(anonymousView)).not.toContain(author.email);
   expect(JSON.stringify(anonymousView)).not.toContain("emailVerified");
@@ -292,6 +294,7 @@ test("anonymous and other users do not receive author privileges or private auth
     expires: "2099-01-01",
   });
   const otherView = await getPostData(post.slug);
+  if (!otherView) throw new Error("Expected public post");
   expect(otherView.isAuthor).toBe(false);
   expect(JSON.stringify(otherView)).not.toContain(author.email);
 });
@@ -351,4 +354,18 @@ test("missing admin configuration does not expose unpublished posts to anonymous
     if (originalAdminEmail === undefined) delete process.env.MYEMAIL;
     else process.env.MYEMAIL = originalAdminEmail;
   }
+});
+
+test("a session without an email cannot remove the public-post filter", async () => {
+  jest.mocked(getAuthSession).mockResolvedValue({
+    user: { name: "No email" },
+    expires: "2099-01-01",
+  });
+  db.post.findMany.mockResolvedValue([]);
+  db.post.count.mockResolvedValue(0);
+
+  const response = await listPosts(request());
+
+  expect(response.status).toBe(200);
+  expect(db.post.findMany.mock.calls[0][0].where.isPublished).toBe(true);
 });

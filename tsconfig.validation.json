@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "strict": true,
-    "incremental": false
-  },
-  "include": ["src/lib/validation/**/*.ts"],
-  "exclude": ["node_modules"]
-}

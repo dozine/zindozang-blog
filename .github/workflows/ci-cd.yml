@@ -26,8 +26,8 @@ jobs:
       - name: Run unit tests
         run: npm run test:ci -- --passWithNoTests
 
-      - name: Typecheck request validation with strict mode
-        run: npm run typecheck:validation
+      - name: Typecheck project with strict mode
+        run: npm run typecheck
 
       # 📝 Next.js 자체 린트/빌드 검사 단계를 추가하여 코드 품질을 보장합니다.
       - name: Next.js Lint and Build Test

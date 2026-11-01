@@ -25,12 +25,7 @@ export const Unauthenticated: Story = {
   name: "비인증 상태",
   decorators: [
     (Story) => (
-      <SessionProvider
-        session={{
-          expires: null,
-          user: null,
-        }}
-      >
+      <SessionProvider session={null}>
         <Story />
       </SessionProvider>
     ),
