@@ -1,16 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Tag } from "@prisma/client";
+import type { TagListResponse } from "@/types/api/tag";
 import { fetchAvailableTags } from "@/lib/services/tagService";
 
 interface UseFetchTagsResult {
-  tags: Tag[];
+  tags: TagListResponse;
   loading: boolean;
   error: string | null;
 }
 
 export function useFetchTags(): UseFetchTagsResult {
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<TagListResponse>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

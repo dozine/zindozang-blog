@@ -2,12 +2,20 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
-import CodeBlock, { CodeProps } from "@/components/codeBlock/CodeBlock";
+import CodeBlock from "@/components/codeBlock/CodeBlock";
 import "./markdown.css";
 
 interface PostContentProps {
   desc: string;
   isDark: boolean;
+}
+
+interface CodeProps {
+  node?: any;
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+  [key: string]: any;
 }
 
 const PostContent = ({ desc, isDark }: PostContentProps) => {

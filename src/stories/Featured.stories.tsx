@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { Featuredost } from "@/types";
 import Featured from "@/components/featured/Featured";
 
-const mockPosts: Featuredost[] = [
+interface FeaturedPost {
+  id: number;
+  title: string;
+  desc: string;
+  image: string;
+}
+
+const mockPosts: FeaturedPost[] = [
   {
     id: 1,
     title: "블로그 소개글",

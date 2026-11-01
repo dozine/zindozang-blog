@@ -1,7 +1,7 @@
-import { VisitorStats } from "@/types";
+import type { GetVisitorStatsResponse, TrackVisitorResponse } from "@/types/api/visitor";
 
 export const visitorService = {
-  trackVisitor: async (): Promise<VisitorStats> => {
+  trackVisitor: async (): Promise<TrackVisitorResponse> => {
     const response = await fetch("/api/visitor", {
       method: "POST",
       credentials: "include",
@@ -14,7 +14,7 @@ export const visitorService = {
     return response.json();
   },
 
-  getStats: async (): Promise<VisitorStats> => {
+  getStats: async (): Promise<GetVisitorStatsResponse> => {
     const response = await fetch("/api/visitor", {
       method: "GET",
     });

@@ -2,7 +2,7 @@ import styles from "./tagsPage.module.css";
 import CardList from "@/components/cardList/CardList";
 import TagsPageClient from "./tagsPageClient";
 import { getAllTags } from "@/lib/data/tag";
-import { TagWithPostCount } from "@/types/tag";
+import type { TagWithPostCount } from "@/types/tag";
 const TagsPage = async ({
   searchParams,
 }: {

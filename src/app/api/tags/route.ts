@@ -1,6 +1,8 @@
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
-import { TagWithPostCount } from "@/types/tag";
+import { toTagResponse, toTagWithPostCountResponse } from "@/lib/serializers/responses";
+import type { TagWithPostCount } from "@/types/tag";
+import type { CreateTagRequest } from "@/types/api/tag";
 import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -21,7 +23,7 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-    return NextResponse.json(tags, { status: 200 });
+    return NextResponse.json(tags.map(toTagWithPostCountResponse), { status: 200 });
   } catch (error) {
     console.error("태그 조회 중 오류 발생", error);
     return NextResponse.json(
@@ -36,7 +38,7 @@ export async function POST(req: NextRequest) {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const { name }: { name: string } = await req.json();
+    const { name }: CreateTagRequest = await req.json();
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
@@ -50,14 +52,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingTag) {
-      return NextResponse.json(existingTag, { status: 409 });
+      return NextResponse.json(toTagResponse(existingTag), { status: 409 });
     }
 
     const newTag = await prisma.tag.create({
       data: { name },
     });
 
-    return NextResponse.json(newTag, { status: 201 });
+    return NextResponse.json(toTagResponse(newTag), { status: 201 });
   } catch (error: any) {
     console.error("태그 생성 중 오류 발생:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

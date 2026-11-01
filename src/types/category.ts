@@ -1,24 +1,4 @@
-import { Category } from "@prisma/client";
+import type { CategoryResponse } from "@/types/api/category";
 
-export interface CreateCategoryBody {
-  slug: string;
-  title: string;
-  img?: string | null;
-}
-
-export interface CategoryListClientProps {
-  initialCategories: Category[];
-}
-
-export interface AddCategoryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (categoryData: string) => Promise<{ success: boolean; error?: string }>;
-}
-
-export interface DeleteCategoryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDelete: (categoryId: string) => Promise<{ success: boolean; error?: string }>;
-  categories: Category[];
-}
+/** 카테고리 화면에서 사용하는 데이터. */
+export type CategoryData = CategoryResponse;

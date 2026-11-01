@@ -1,7 +1,11 @@
 import React, { MouseEvent } from "react";
 
 import styles from "./modal.module.css";
-import { ModalProps } from "@/types";
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
 
 const Modal = ({ isOpen, onClose, children }: ModalProps) => {
   if (!isOpen) return null;

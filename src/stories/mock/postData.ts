@@ -1,7 +1,6 @@
-import { FormattedPostResponse } from "@/types";
+import type { PostView } from "@/types/post";
 
 export const mockUser = {
-  email: "test@example.com",
   name: "테스트 작성자",
   id: "user_1",
   image: "https://placehold.co/100x100/007AFF/FFFFFF?text=User",
@@ -12,7 +11,7 @@ const mockTags = [
   { id: "t2", name: "NextJS" },
 ];
 
-export const mockPostDefault: FormattedPostResponse = {
+export const mockPostDefault: PostView = {
   id: "post_1",
   createdAt: new Date("2023-10-26"),
   slug: "storybook-guide",
@@ -21,13 +20,12 @@ export const mockPostDefault: FormattedPostResponse = {
   img: ["https://placehold.co/600x400/007AFF/FFFFFF?text=Cover+Image"],
   views: 120,
   catSlug: "Coding",
-  userEmail: mockUser.email,
   isPublished: true,
   user: mockUser,
   tags: mockTags,
 };
 
-export const mockPostNoImage: FormattedPostResponse = {
+export const mockPostNoImage: PostView = {
   ...mockPostDefault,
   id: "post_2",
   slug: "no-image-test",
@@ -36,7 +34,7 @@ export const mockPostNoImage: FormattedPostResponse = {
 };
 
 // 3. 긴 설명 포스트 (줄임표 테스트)
-export const mockPostLongDesc: FormattedPostResponse = {
+export const mockPostLongDesc: PostView = {
   ...mockPostDefault,
   id: "post_3",
   slug: "long-description-test",

@@ -2,7 +2,11 @@
 import React from "react";
 import styles from "./pagination.module.css";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { PaginationProps } from "@/types";
+
+interface PaginationProps {
+  page: number;
+  totalPages: number;
+}
 
 const Pagination = ({ page, totalPages }: PaginationProps) => {
   const router = useRouter();

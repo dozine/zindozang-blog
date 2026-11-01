@@ -1,11 +1,9 @@
-import TagsPage from "@/app/(blog)/tags/page";
-import { Category, Post, Prisma, Tag, User } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import type { TagResponse, TagWithPostCountResponse } from "@/types/api/tag";
 
-export type TagWithPostCount = Tag & {
-  _count: {
-    posts: number;
-  };
-};
+/** 화면에서 사용하는 태그와 게시글 수. */
+export type TagData = TagResponse;
+export type TagWithPostCount = TagWithPostCountResponse;
 
 export type TagWithPosts = Prisma.TagGetPayload<{
   include: {
@@ -16,27 +14,3 @@ export type TagWithPosts = Prisma.TagGetPayload<{
     };
   };
 }>;
-
-export interface CreateTagBody {
-  name: string;
-}
-
-export type PostWithAllPrismaRelations = Prisma.PostGetPayload<{
-  include: { user: true; tags: { include: { tag: true } } };
-}>;
-
-export interface TagsPageSearchParams {
-  page?: string;
-  tags?: string;
-}
-
-export interface PostWithRelations extends Post {
-  user: User;
-  cat: Category;
-}
-
-export interface TagsPageClientProp {
-  initialPage: number;
-  initialTags: string[];
-  allTags: TagWithPostCount[];
-}

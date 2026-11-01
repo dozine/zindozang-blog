@@ -4,14 +4,6 @@ import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
-export interface CodeProps {
-  node?: any;
-  inline?: boolean;
-  className?: string;
-  children: React.ReactNode;
-  [key: string]: any;
-}
-
 export interface CodeBlockProps {
   language?: string;
   children: string;

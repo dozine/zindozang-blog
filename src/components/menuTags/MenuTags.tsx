@@ -2,9 +2,8 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import styles from "./menuTags.module.css";
-import { Tag } from "@prisma/client";
+import type { TagData } from "@/types/tag";
 import { useFetchTags } from "@/hooks/tag/useFetchTags";
-import { TagWithPostCount } from "@/types/tag";
 
 const MenuTags = () => {
   const { tags, loading, error } = useFetchTags();
@@ -12,7 +11,7 @@ const MenuTags = () => {
   const [showAll, setShowAll] = useState<boolean>(false);
 
   const initialTagsToShow = 15;
-  const visibleTags: Tag[] = showAll ? tags : tags.slice(0, initialTagsToShow);
+  const visibleTags: TagData[] = showAll ? tags : tags.slice(0, initialTagsToShow);
   const hasMoreTags: boolean = tags.length > initialTagsToShow;
 
   if (loading) return <div className={styles.loading}>태그 로딩 중...</div>;
@@ -21,7 +20,7 @@ const MenuTags = () => {
   return (
     <div className={styles.container}>
       <div className={styles.tagGrid}>
-        {visibleTags.map((tag: Tag) => (
+        {visibleTags.map((tag) => (
           <Link
             href={`/tags?tags=${encodeURIComponent(tag.name)}`}
             key={tag.id || tag.name}
