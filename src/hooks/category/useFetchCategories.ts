@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/utils/error";
 import { useState, useEffect, useCallback } from "react";
 import type { CategoryData } from "@/types/category";
 import { fetchCategories } from "@/lib/services/categoryService";
@@ -23,8 +25,8 @@ export function useFetchCategories(initialCategories: CategoryData[]): UseFetchC
     try {
       const data = await fetchCategories();
       setCategories(data);
-    } catch (err: any) {
-      setError(err.message || "카테고리 로딩 중 문제가 발생했습니다");
+    } catch (err) {
+      setError(getErrorMessage(err, "카테고리 로딩 중 문제가 발생했습니다"));
     } finally {
       setIsLoading(false);
     }

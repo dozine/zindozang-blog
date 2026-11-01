@@ -55,15 +55,16 @@ export const GET = async (req: NextRequest) => {
     }),
   };
 
-  if (session?.user) {
-    if (session.user.email === (process.env.MYEMAIL as string)) {
+  const userEmail = session?.user?.email;
+  if (userEmail) {
+    if (process.env.MYEMAIL && userEmail === process.env.MYEMAIL) {
       delete where.isPublished; // 관리자는 모든 글을 볼 수 있도록
     } else {
       where = {
         AND: [
           { ...where, isPublished: undefined },
           {
-            OR: [{ isPublished: true }, { userEmail: session.user.email }],
+            OR: [{ isPublished: true }, { userEmail }],
           },
         ],
       };
@@ -109,7 +110,7 @@ export const GET = async (req: NextRequest) => {
         },
       },
     );
-  } catch (err: any) {
+  } catch (err) {
     console.log(err);
     return new NextResponse(
       JSON.stringify({ message: "Something went wrong!" }),
@@ -122,7 +123,8 @@ export const GET = async (req: NextRequest) => {
 export const POST = async (req: NextRequest) => {
   const session = await getAuthSession();
 
-  if (!session?.user?.email) {
+  const userEmail = session?.user?.email;
+  if (!userEmail) {
     return new NextResponse(JSON.stringify({ message: "Not Authenticated!" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -148,7 +150,7 @@ export const POST = async (req: NextRequest) => {
           desc: body.desc,
           img: safeImg,
           user: {
-            connect: { email: session.user.email },
+            connect: { email: userEmail },
           },
           isPublished: body.isPublished ?? false,
           cat: {

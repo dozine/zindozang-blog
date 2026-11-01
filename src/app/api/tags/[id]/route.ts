@@ -42,7 +42,7 @@ export async function GET(
     }
 
     return NextResponse.json(toTagDetailResponse(tag), { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("태그 조회 중 오류 발생:", error);
     return NextResponse.json(
       { message: "태그 조회 중 오류가 발생했습니다." },
@@ -81,7 +81,7 @@ export async function DELETE(
       { message: "태그가 삭제되었습니다." },
       { status: 200 },
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("태그 삭제 중 오류 발생:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {

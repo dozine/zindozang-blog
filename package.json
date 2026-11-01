@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck:validation": "tsc --project tsconfig.validation.json --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:ci": "jest --ci",
     "storybook": "storybook dev -p 6006",

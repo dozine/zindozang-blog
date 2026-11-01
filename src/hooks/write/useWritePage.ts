@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -127,9 +128,9 @@ export const usePostEditor = () => {
         const data = await createPost(createBody);
         router.push(`/posts/${data.slug}`);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error submitting post:", err);
-      alert(err.message);
+      alert(getErrorMessage(err, "게시글 저장 중 오류가 발생했습니다."));
     } finally {
       setIsSubmitting(false);
       closeModal();

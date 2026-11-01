@@ -58,7 +58,7 @@ export function useDeleteCategoryModal({
         setSelectedCategoryId("");
         onClose();
       }
-    } catch (err: any) {
+    } catch (err) {
       setError("삭제 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);

@@ -8,8 +8,8 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
-    } catch (error: any) {
-      if (error?.code === "P2034" && i < retries - 1) {
+    } catch (error) {
+      if (typeof error === "object" && error !== null && "code" in error && error.code === "P2034" && i < retries - 1) {
         await new Promise((res) => setTimeout(res, 50 * (i + 1)));
         continue;
       }

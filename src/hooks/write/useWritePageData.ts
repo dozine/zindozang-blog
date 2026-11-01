@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import { useEffect, useState, useRef } from "react";
 import type { CategoryResponse } from "@/types/api/category";
 import type { TagWithPostCount } from "@/types/tag";
@@ -58,8 +59,8 @@ export const usePostDataLoader = ({
 
       let postPromise: Promise<PostDetailResponse | null> = Promise.resolve(null);
       if (isEditing && editSlug) {
-        postPromise = fetchPostBySlug(editSlug).catch((err) => {
-          onPostLoadErrorRef.current(err.message || "게시글을 불러올 수 없습니다.");
+        postPromise = fetchPostBySlug(editSlug).catch((err: unknown) => {
+          onPostLoadErrorRef.current(getErrorMessage(err, "게시글을 불러올 수 없습니다."));
           return null;
         });
       }
@@ -81,7 +82,7 @@ export const usePostDataLoader = ({
         if (postResult) setPostToEdit(postResult);
         setCategories(catData);
         setAvailableTags(tagData);
-      } catch (err: any) {
+      } catch (err) {
         console.error("데이터 로딩 중 치명적인 오류 발생:", err);
       } finally {
         setIsLoading(false);

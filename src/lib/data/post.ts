@@ -156,8 +156,8 @@ export const getPosts = cache(
         posts: formattedPosts.map(toPostView),
         count,
       };
-    } catch (error: any) {
-      console.error("Error fetching posts:", error.message);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
       return null;
     }
   }

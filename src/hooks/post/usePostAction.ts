@@ -29,7 +29,7 @@ export function usePostActions(slug: string, onSuccess: () => void) {
       alert("삭제되었습니다.");
       closeDeleteModal(); // 모달 닫기
       onSuccess();
-    } catch (err: any) {
+    } catch (err) {
       console.error("삭제 오류", err);
       alert("삭제 중 오류가 발생했습니다.");
     } finally {

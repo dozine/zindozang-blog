@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { deleteTag } from "@/lib/services/tagService";
 
@@ -38,10 +39,10 @@ export function useDeleteTagModal(isOpen: boolean, onClose: () => void) {
           onClose();
         }
         return result;
-      } catch (err: any) {
-        setError(err.message || "삭제 중 오류가 발생했습니다.");
+      } catch (err) {
+        setError(getErrorMessage(err, "삭제 중 오류가 발생했습니다."));
         console.error("태그 삭제 오류:", err);
-        return { success: false, error: err.message || "알 수 없는 오류" };
+        return { success: false, error: getErrorMessage(err, "알 수 없는 오류") };
       } finally {
         setIsLoading(false);
       }

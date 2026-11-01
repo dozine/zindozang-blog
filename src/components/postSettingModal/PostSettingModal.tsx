@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/utils/error";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./postSettingModal.module.css";
 import type { CategoryData } from "@/types/category";
@@ -112,9 +114,9 @@ const PostSettingModal = ({
       } else if (result.error) {
         throw new Error(result.error);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("태그 생성 실패:", err);
-      alert(err.message);
+      alert(getErrorMessage(err, "태그 생성 중 오류가 발생했습니다."));
     } finally {
       setTagInput("");
       setShowTagSuggestions(false);

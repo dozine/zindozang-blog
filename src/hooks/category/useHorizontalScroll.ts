@@ -2,7 +2,7 @@
 import { useRef, useState, MouseEvent, TouchEvent, useEffect } from "react";
 
 interface UseHorizontalScrollResult {
-  sliderRef: React.RefObject<HTMLDivElement>;
+  sliderRef: React.RefObject<HTMLDivElement | null>;
   scrollLeftHandler: () => void;
   scrollRightHandler: () => void;
   handleMouseDown: (e: MouseEvent<HTMLDivElement>) => void;

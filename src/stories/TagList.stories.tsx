@@ -1,3 +1,4 @@
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import TagList from "@/components/tagList/TagList";
 import { SessionProvider } from "next-auth/react";
@@ -41,8 +42,8 @@ export const Default: Story = {
   args: {
     tags: mockTagswithCounts,
     selectedTags: [],
-    onTagClick: { action: "onTagClick" } as any,
-    onTagDelete: { action: "onTagDelete" } as any,
+    onTagClick: fn(),
+    onTagDelete: fn(),
   },
   decorators: [
     (Story) => (

@@ -2,7 +2,7 @@ import Modal from "@/components/modal/Modal";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React, { useState, ChangeEvent } from "react";
 
-const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: unknown[]) => console.log("Action triggered (Storybook Mock)", args);
 
 type AddCategoryModalStoryArgs = {
   isOpen: boolean;
