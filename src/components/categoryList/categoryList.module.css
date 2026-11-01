@@ -119,11 +119,6 @@
   border: 1px solid #444;
 }
 
-.uncategorized {
-  background-color: #fdfaf5;
-  color: #888;
-}
-
 /* ── 관리 메뉴 ── */
 .menuContainer {
   display: flex;

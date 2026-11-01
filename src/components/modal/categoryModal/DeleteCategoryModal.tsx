@@ -18,7 +18,7 @@ const DeleteCategoryModal = ({
   categories,
 }: DeleteCategoryModalProps) => {
   const { selectedCategoryId, isLoading, error, handleCategorySelectChange, handleDeleteSubmit } =
-    useDeleteCategoryModal({ onSuccess, onClose, isOpen, categories });
+    useDeleteCategoryModal({ onSuccess, onClose, isOpen });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -35,14 +35,14 @@ const DeleteCategoryModal = ({
         disabled={isLoading}
       >
         <option value="">선택해주세요</option>
-        {categories
-          ?.filter((cat) => cat.slug !== "uncategorized")
-          .map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.title}
-            </option>
-          ))}
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.title}
+          </option>
+        ))}
       </select>
+
+      <p>카테고리를 삭제해도 글은 삭제되지 않으며 전체 목록에서 볼 수 있습니다.</p>
 
       {error && (
         <p

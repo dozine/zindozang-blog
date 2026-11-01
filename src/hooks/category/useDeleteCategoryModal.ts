@@ -1,20 +1,17 @@
 "use client";
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
-import type { CategoryData } from "@/types/category";
 import { deleteCategory } from "@/lib/services/categoryService";
 
 interface UseDeleteCategoryModalProps {
   onSuccess: () => Promise<void>;
   onClose: () => void;
   isOpen: boolean;
-  categories: CategoryData[];
 }
 
 export function useDeleteCategoryModal({
   onSuccess,
   onClose,
   isOpen,
-  categories,
 }: UseDeleteCategoryModalProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -38,13 +35,6 @@ export function useDeleteCategoryModal({
       return;
     }
 
-    const selectedCategory = categories?.find((cat) => cat.id === selectedCategoryId);
-
-    if (selectedCategory?.slug === "uncategorized") {
-      setError("'미분류' 카테고리는 삭제할 수 없습니다.");
-      return;
-    }
-
     setError(null);
     setIsLoading(true);
     try {
@@ -63,7 +53,7 @@ export function useDeleteCategoryModal({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategoryId, categories, onSuccess, onClose]);
+  }, [selectedCategoryId, onSuccess, onClose]);
 
   return {
     selectedCategoryId,

@@ -153,9 +153,7 @@ export const POST = async (req: NextRequest) => {
             connect: { email: userEmail },
           },
           isPublished: body.isPublished ?? false,
-          cat: {
-            connect: { slug: body.catSlug || "uncategorized" },
-          },
+          ...(body.catSlug ? { cat: { connect: { slug: body.catSlug } } } : {}),
         },
       });
 

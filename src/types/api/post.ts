@@ -6,7 +6,7 @@ export interface CreatePostRequest {
   title: string;
   desc: string;
   img?: string | string[] | null;
-  catSlug?: string;
+  catSlug?: string | null;
   isPublished?: boolean;
   tags?: string[];
 }
@@ -16,7 +16,7 @@ export interface UpdatePostRequest {
   title: string;
   desc: string;
   img?: string | string[] | null;
-  catSlug?: string;
+  catSlug?: string | null;
   tags?: string[];
   isPublished?: boolean;
 }
@@ -31,7 +31,7 @@ export interface PostFieldsResponse {
   img: string[];
   views: number;
   isPublished: boolean;
-  catSlug: string;
+  catSlug: string | null;
 }
 
 export interface PostAuthorResponse {

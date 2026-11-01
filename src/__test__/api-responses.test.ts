@@ -164,7 +164,7 @@ test("post creation and update preserve their response shapes", async () => {
 });
 
 test("category list and creation expose only the declared fields", async () => {
-  db.category.findUnique.mockResolvedValueOnce(category).mockResolvedValueOnce(null);
+  db.category.findUnique.mockResolvedValueOnce(null);
   db.category.findMany.mockResolvedValue([category]);
   db.category.create.mockResolvedValue(category);
   expect(await (await listCategories()).json()).toEqual([publicCategory]);
@@ -217,15 +217,18 @@ test("server post views keep Date values and exclude database-only fields", asyn
 });
 
 test("category deletion returns the declared category shape", async () => {
-  db.category.findUnique
-    .mockResolvedValueOnce(category)
-    .mockResolvedValueOnce({ ...category, slug: "uncategorized" });
+  db.category.findUnique.mockResolvedValueOnce(category);
   db.category.delete.mockResolvedValue(category);
   const response = await deleteCategory(
     new NextRequest("http://localhost/api/categories?id=category-1", { method: "DELETE" })
   );
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ message: "카테고리 삭제 완료", deleted: publicCategory });
+  expect(db.post.updateMany).toHaveBeenCalledWith({
+    where: { catSlug: category.slug },
+    data: { catSlug: null },
+  });
+  expect(db.category.delete).toHaveBeenCalledWith({ where: { id: "category-1" } });
 });
 
 test("tag creation and deletion retain their response shapes", async () => {
@@ -380,4 +383,59 @@ test("visitor tracking retries a transaction conflict and counts the visit", asy
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ todayVisitors: 3, totalVisitors: 11, counted: true });
   expect(db.$transaction).toHaveBeenCalledTimes(2);
+});
+
+
+test("전체 글 조회는 미분류 글을 포함하고 카테고리 필터는 해당 글만 조회한다", async () => {
+  const postWithoutCategory = { ...fullPost, catSlug: null };
+  db.post.findMany.mockResolvedValue([postWithoutCategory]);
+  db.post.count.mockResolvedValue(1);
+
+  const all = await getPosts({ page: 1 });
+  expect(all?.posts[0].catSlug).toBeNull();
+  expect(db.post.findMany.mock.calls[0][0].where.catSlug).toBeUndefined();
+
+  await getPosts({ page: 1, cat: "notes" });
+  expect(db.post.findMany.mock.calls[1][0].where.catSlug).toBe("notes");
+});
+
+
+test("카테고리 없이 글을 생성하고 응답에도 null을 반환한다", async () => {
+  const noCategory = { ...post, catSlug: null };
+  db.post.create.mockResolvedValue(noCategory);
+  db.post.findUnique.mockResolvedValue({ ...fullPost, catSlug: null });
+  const response = await createPost(request("POST", { title: post.title, desc: post.desc, slug: post.slug, catSlug: null }));
+  expect(response.status).toBe(200);
+  expect((await response.json()).catSlug).toBeNull();
+  expect(db.post.create.mock.calls[0][0].data.cat).toBeUndefined();
+});
+
+test("글 수정 시 null은 카테고리를 해제하고 생략은 기존 분류를 유지한다", async () => {
+  db.post.findUnique.mockResolvedValue(fullPost);
+  db.post.update.mockResolvedValue(post);
+  const response = await updatePost(request("PUT", { title: post.title, desc: post.desc, catSlug: null }), slugParams);
+  expect(response.status).toBe(200);
+  expect(db.post.update.mock.calls[0][0].data.cat).toEqual({ disconnect: true });
+
+  await updatePost(request("PUT", { title: post.title, desc: post.desc }), slugParams);
+  expect(db.post.update.mock.calls[1][0].data.cat).toBeUndefined();
+});
+
+test("글 수정 시 선택한 카테고리를 연결한다", async () => {
+  db.post.findUnique.mockResolvedValue(fullPost);
+  db.post.update.mockResolvedValue(post);
+  const response = await updatePost(request("PUT", { title: post.title, desc: post.desc, catSlug: "life" }), slugParams);
+  expect(response.status).toBe(200);
+  expect(db.post.update.mock.calls[0][0].data.cat).toEqual({ connect: { slug: "life" } });
+});
+
+test("기존 미분류 slug도 일반 카테고리로 생성할 수 있다", async () => {
+  const other = { ...category, slug: "uncategorized", title: "Other" };
+  db.category.findUnique.mockResolvedValue(null);
+  db.category.create.mockResolvedValue(other);
+
+  const response = await createCategory(request("POST", { slug: other.slug, title: other.title }));
+
+  expect(response.status).toBe(201);
+  expect((await response.json()).category.slug).toBe(other.slug);
 });

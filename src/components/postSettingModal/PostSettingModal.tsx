@@ -163,7 +163,7 @@ const PostSettingModal = ({
             value={catSlug}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => setCatSlug(e.target.value)}
           >
-            <option value="">카테고리 선택</option>
+            <option value="">카테고리 없음</option>
             {categories.map((cat: CategoryData) => (
               <option key={cat.slug} value={cat.slug}>
                 {cat.title}

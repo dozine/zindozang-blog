@@ -7,26 +7,9 @@ import { Category } from "@prisma/client";
 import { createCategorySchema } from "@/lib/validation/schemas";
 import { validateJsonBody } from "@/lib/validation/request";
 
-const uncategorizedCategory = async (): Promise<Category> => {
-  const uncategorized: Category | null = await prisma.category.findUnique({
-    where: { slug: "uncategorized" },
-  });
-  if (!uncategorized) {
-    return await prisma.category.create({
-      data: {
-        slug: "uncategorized",
-        title: "미분류",
-        img: null,
-      },
-    });
-  }
-  return uncategorized;
-};
-
 // GET API 함수
 export const GET = async () => {
   try {
-    await uncategorizedCategory();
     const categories: Category[] = await prisma.category.findMany({
       orderBy: {
         title: "asc",
@@ -81,7 +64,7 @@ export const POST = async (req: NextRequest) => {
   }
 };
 
-// DELETE API 함수 - 카테고리 삭제 (기존 코드에 Uncategorized 체크 추가)
+// DELETE API 함수 - 카테고리 삭제 및 게시글 분류 해제
 export const DELETE = async (req: NextRequest) => {
   try {
     const denied = await requireAdmin();
@@ -105,18 +88,10 @@ export const DELETE = async (req: NextRequest) => {
       });
     }
 
-    if (categoryToDelete.slug === "uncategorized") {
-      return new NextResponse("'미분류' 카테고리는 삭제할 수 없습니다.", {
-        status: 400,
-      });
-    }
-
     const deleted: Category = await prisma.$transaction(async (tx) => {
-      const uncategorized: Category = await uncategorizedCategory();
-
       await tx.post.updateMany({
         where: { catSlug: categoryToDelete.slug },
-        data: { catSlug: uncategorized.slug },
+        data: { catSlug: null },
       });
       return await tx.category.delete({
         where: { id },
