@@ -1,18 +1,29 @@
 import prisma from "@/lib/db/prisma";
-import { TagWithPostCount, TagWithPosts } from "@/types/tag";
+import { toTagWithPostCountResponse } from "@/lib/serializers/responses";
+import type { TagWithPostCount, TagWithPosts } from "@/types/tag";
 
 export async function getAllTags(): Promise<TagWithPostCount[]> {
   try {
     const tags: TagWithPostCount[] = await prisma.tag.findMany({
       include: {
         _count: {
-          select: { posts: true },
+          select: {
+            posts: {
+              where: {
+                post: {
+                  isPublished: true,
+                },
+              },
+            },
+          },
         },
       },
     });
 
-    return Array.from(new Map(tags.map((tag) => [tag.name, tag])).values());
-  } catch (error: any) {
+    return Array.from(new Map(tags.map((tag) => [tag.name, tag])).values()).map(
+      toTagWithPostCountResponse
+    );
+  } catch (error) {
     console.error("태그 데이터 가져오기 실패:", error);
     return [];
   }
@@ -29,6 +40,7 @@ export async function getTagById(id: string): Promise<TagWithPosts | null> {
       where: { id },
       include: {
         posts: {
+          where: { post: { isPublished: true } },
           include: {
             post: true,
           },
@@ -42,7 +54,7 @@ export async function getTagById(id: string): Promise<TagWithPosts | null> {
     }
 
     return tag as TagWithPosts;
-  } catch (error: any) {
+  } catch (error) {
     console.error("태그 조회 중 오류 발생:", error);
     return null;
   }

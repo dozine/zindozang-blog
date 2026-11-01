@@ -1,21 +1,28 @@
-import { Category } from "@prisma/client";
+import { getErrorMessage } from "@/lib/utils/error";
+import type {
+  CategoryListResponse,
+  CategoryResponse,
+  CreateCategoryRequest,
+  CreateCategoryResponse,
+  DeleteCategoryRequest,
+} from "@/types/api/category";
 
 interface CategoryResult {
   success: boolean;
   error?: string;
-  category?: { id: string; title: string; slug: string };
+  category?: CategoryResponse;
 }
 
-export async function fetchCategories(): Promise<Category[]> {
+export async function fetchCategories(): Promise<CategoryListResponse> {
   try {
     const res = await fetch("/api/categories", { cache: "no-store" });
     if (!res.ok) {
       throw new Error("카테고리를 불러올 수 없습니다.");
     }
     return await res.json();
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 카테고리 목록 조회 오류:", error);
-    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
   }
 }
 
@@ -32,10 +39,11 @@ export async function addCategory(title: string): Promise<CategoryResult> {
   }
 
   try {
+    const body: CreateCategoryRequest = { title, slug };
     const res = await fetch("/api/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, slug }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -45,18 +53,20 @@ export async function addCategory(title: string): Promise<CategoryResult> {
         error: errorData.message || `카테고리 추가 실패 (${res.status})`,
       };
     }
-    const category = await res.json();
-    return { success: true, category };
-  } catch (error: any) {
+    const result: CreateCategoryResponse = await res.json();
+    return { success: true, category: result.category };
+  } catch (error) {
     console.error("API 카테고리 추가 오류:", error);
     return {
       success: false,
-      error: error.message || "서버 통신 중 오류가 발생했습니다.",
+      error: getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."),
     };
   }
 }
 
-export async function deleteCategory(categoryId: string): Promise<CategoryResult> {
+export async function deleteCategory(
+  categoryId: DeleteCategoryRequest["id"]
+): Promise<CategoryResult> {
   try {
     const res = await fetch(`/api/categories?id=${categoryId}`, {
       method: "DELETE",
@@ -72,11 +82,11 @@ export async function deleteCategory(categoryId: string): Promise<CategoryResult
 
     // 삭제 성공 시 body가 비어있을 수 있으므로 JSON 파싱 생략
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 카테고리 삭제 오류:", error);
     return {
       success: false,
-      error: error.message || "서버 통신 중 오류가 발생했습니다.",
+      error: getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."),
     };
   }
 }

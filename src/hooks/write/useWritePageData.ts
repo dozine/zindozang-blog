@@ -1,7 +1,8 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import { useEffect, useState, useRef } from "react";
-import { Category } from "@prisma/client";
-import { TagWithPostCount } from "@/types/tag";
-import { PostWithFormattedTags } from "@/types";
+import type { CategoryResponse } from "@/types/api/category";
+import type { TagWithPostCount } from "@/types/tag";
+import type { PostDetailResponse } from "@/types/api/post";
 import { fetchPostBySlug } from "@/lib/services/postService";
 import { fetchCategories } from "@/lib/services/categoryService";
 import { fetchAvailableTags } from "@/lib/services/tagService";
@@ -16,8 +17,8 @@ interface PostDataLoaderProps {
 
 interface PostDataLoaderResult {
   isLoading: boolean;
-  postToEdit: PostWithFormattedTags | null;
-  categories: Category[];
+  postToEdit: PostDetailResponse | null;
+  categories: CategoryResponse[];
   availableTags: TagWithPostCount[];
 }
 
@@ -29,8 +30,8 @@ export const usePostDataLoader = ({
   onNavigate,
 }: PostDataLoaderProps): PostDataLoaderResult => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [postToEdit, setPostToEdit] = useState<PostWithFormattedTags | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [postToEdit, setPostToEdit] = useState<PostDetailResponse | null>(null);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [availableTags, setAvailableTags] = useState<TagWithPostCount[]>([]);
 
   const onPostLoadErrorRef = useRef(onPostLoadError);
@@ -56,10 +57,10 @@ export const usePostDataLoader = ({
     const loadAllData = async () => {
       setIsLoading(true);
 
-      let postPromise: Promise<PostWithFormattedTags | null> = Promise.resolve(null);
+      let postPromise: Promise<PostDetailResponse | null> = Promise.resolve(null);
       if (isEditing && editSlug) {
-        postPromise = fetchPostBySlug(editSlug).catch((err) => {
-          onPostLoadErrorRef.current(err.message || "게시글을 불러올 수 없습니다.");
+        postPromise = fetchPostBySlug(editSlug).catch((err: unknown) => {
+          onPostLoadErrorRef.current(getErrorMessage(err, "게시글을 불러올 수 없습니다."));
           return null;
         });
       }
@@ -81,7 +82,7 @@ export const usePostDataLoader = ({
         if (postResult) setPostToEdit(postResult);
         setCategories(catData);
         setAvailableTags(tagData);
-      } catch (err: any) {
+      } catch (err) {
         console.error("데이터 로딩 중 치명적인 오류 발생:", err);
       } finally {
         setIsLoading(false);

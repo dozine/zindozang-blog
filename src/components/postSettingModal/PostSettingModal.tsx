@@ -1,8 +1,10 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/utils/error";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./postSettingModal.module.css";
-import { Category, Tag } from "@prisma/client";
-import { TagWithPostCount } from "@/types/tag";
+import type { CategoryData } from "@/types/category";
+import type { TagData, TagWithPostCount } from "@/types/tag";
 import { createTag } from "@/lib/services/tagService";
 
 export interface PostSettingModalProps {
@@ -14,9 +16,9 @@ export interface PostSettingModalProps {
   setIsPublished: (published: boolean) => void;
   tagInput: string;
   setTagInput: (input: string) => void;
-  tags: Tag[];
-  setTags: (tags: Tag[]) => void;
-  categories: Category[];
+  tags: TagData[];
+  setTags: (tags: TagData[]) => void;
+  categories: CategoryData[];
   availableTags: TagWithPostCount[];
   setAvailableTags: (tags: TagWithPostCount[]) => void;
   onPublish: () => void;
@@ -112,9 +114,9 @@ const PostSettingModal = ({
       } else if (result.error) {
         throw new Error(result.error);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("태그 생성 실패:", err);
-      alert(err.message);
+      alert(getErrorMessage(err, "태그 생성 중 오류가 발생했습니다."));
     } finally {
       setTagInput("");
       setShowTagSuggestions(false);
@@ -161,8 +163,8 @@ const PostSettingModal = ({
             value={catSlug}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => setCatSlug(e.target.value)}
           >
-            <option value="">카테고리 선택</option>
-            {categories.map((cat: Category) => (
+            <option value="">카테고리 없음</option>
+            {categories.map((cat: CategoryData) => (
               <option key={cat.slug} value={cat.slug}>
                 {cat.title}
               </option>
@@ -215,7 +217,7 @@ const PostSettingModal = ({
             )}
 
             <div className={styles.selectedTags}>
-              {tags.map((tag: Tag) => (
+              {tags.map((tag: TagData) => (
                 <span key={tag.id} className={styles.tagBadge}>
                   {tag.name}
                   <button className={styles.removeTagButton} onClick={() => removeTag(tag.id)}>

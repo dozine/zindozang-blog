@@ -1,9 +1,10 @@
+import { getErrorMessage } from "@/lib/utils/error";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Tag } from "@prisma/client";
+import type { TagData } from "@/types/tag";
 import { useModal } from "@/hooks/useModal";
-import { UpdatePostBody } from "@/types";
+import type { UpdatePostRequest } from "@/types/api/post";
 import { createPost, updatePost } from "@/lib/services/postService";
 import { usePostDataLoader } from "./useWritePageData";
 
@@ -38,7 +39,7 @@ export const usePostEditor = () => {
   const { isOpen: showSettingsModal, openModal, closeModal } = useModal();
 
   const [catSlug, setCatSlug] = useState<string>("");
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<TagData[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [tagInput, setTagInput] = useState<string>("");
   const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
@@ -51,7 +52,7 @@ export const usePostEditor = () => {
       setMedia(Array.isArray(imgs) ? imgs[0] || "" : imgs);
       setUploadedImages(Array.isArray(imgs) ? imgs : imgs ? [imgs] : []);
       setThumbnailImg(Array.isArray(imgs) ? imgs[0] || "" : imgs || "");
-      setCatSlug(postToEdit.catSlug || "");
+      setCatSlug(postToEdit.catSlug ?? "");
       setIsPublished(Boolean(postToEdit.isPublished));
       setTags(postToEdit.tags || []);
     }
@@ -98,12 +99,12 @@ export const usePostEditor = () => {
 
   const handleFinalPublish = useCallback(async () => {
     const tagIds: string[] = tags.map((tag) => tag.id);
-    const finalCatSlug: string = catSlug || "uncategorized";
+    const finalCatSlug = catSlug || null;
     setIsSubmitting(true);
 
     try {
       if (isEditing && editSlug) {
-        const updateBody: UpdatePostBody = {
+        const updateBody: UpdatePostRequest = {
           title,
           desc: value,
           img: thumbnailImg ? [thumbnailImg] : [],
@@ -127,9 +128,9 @@ export const usePostEditor = () => {
         const data = await createPost(createBody);
         router.push(`/posts/${data.slug}`);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error submitting post:", err);
-      alert(err.message);
+      alert(getErrorMessage(err, "게시글 저장 중 오류가 발생했습니다."));
     } finally {
       setIsSubmitting(false);
       closeModal();

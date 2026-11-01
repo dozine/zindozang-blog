@@ -1,5 +1,6 @@
 import prisma from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import type { GetVisitorStatsResponse, TrackVisitorResponse } from "@/types/api/visitor";
 
 const SITE_STATS_ID = "main";
 
@@ -7,8 +8,8 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
-    } catch (error: any) {
-      if (error?.code === "P2034" && i < retries - 1) {
+    } catch (error) {
+      if (typeof error === "object" && error !== null && "code" in error && error.code === "P2034" && i < retries - 1) {
         await new Promise((res) => setTimeout(res, 50 * (i + 1)));
         continue;
       }
@@ -33,14 +34,14 @@ export async function POST(req: NextRequest) {
         prisma.siteStats.findUnique({ where: { id: SITE_STATS_ID } }),
       ]);
 
-      return NextResponse.json({
+      return NextResponse.json<TrackVisitorResponse>({
         todayVisitors: todayVisitor?.count || 0,
         totalVisitors: siteStats?.totalVisitors || 0,
         counted: false,
       });
     }
 
-    const result = await withRetry(() =>
+    const result: TrackVisitorResponse = await withRetry(() =>
       prisma.$transaction(async (tx) => {
         const todayVisitor = await tx.visitor.upsert({
           where: { date: today },
@@ -95,7 +96,7 @@ export async function GET() {
       prisma.siteStats.findUnique({ where: { id: SITE_STATS_ID } }),
     ]);
 
-    return NextResponse.json({
+    return NextResponse.json<GetVisitorStatsResponse>({
       todayVisitors: todayVisitor?.count || 0,
       totalVisitors: siteStats?.totalVisitors || 0,
     });

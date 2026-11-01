@@ -3,7 +3,13 @@ import React from "react";
 import Modal from "../Modal";
 import { usePostDeleteModal } from "@/hooks/post/useDeletePostModal";
 
-const PostDeleteModal = ({ isOpen, onClose, onDelete }) => {
+interface PostDeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onDelete: () => Promise<void>;
+}
+
+const PostDeleteModal = ({ isOpen, onClose, onDelete }: PostDeleteModalProps) => {
   const { isLoading, error, handleDeleteConfirm } = usePostDeleteModal({
     onDelete,
     onClose,

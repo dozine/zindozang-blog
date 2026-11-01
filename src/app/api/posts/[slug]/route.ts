@@ -1,6 +1,9 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
-import { PostWithFormattedTags, UpdatePostBody } from "@/types";
+import { toPostResponse } from "@/lib/serializers/responses";
+import { updatePostSchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
+import type { PostData } from "@/types/post";
 import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -27,7 +30,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       });
     }
 
-    if (!postExists.isPublished && session?.user.email !== postExists.user.email) {
+    if (!postExists.isPublished && session?.user?.email !== postExists.user.email) {
       return new NextResponse(JSON.stringify({ message: "Unauthorized" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
@@ -45,11 +48,11 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
       tags: post.tags.map((pt) => pt.tag),
     };
 
-    return new NextResponse(JSON.stringify(formattedPost), {
+    return new NextResponse(JSON.stringify(toPostResponse(formattedPost)), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.log("Error", err);
     return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), {
       status: 500,
@@ -101,7 +104,7 @@ export const DELETE = async (
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Errror deleting post:", err);
     return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), {
       status: 500,
@@ -128,20 +131,15 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
       });
     }
 
-    const body: UpdatePostBody = await req.json();
+    const validation = await validateJsonBody(req, updatePostSchema);
+    if (validation.success === false) return validation.response;
+    const body = validation.data;
     const { title, desc, img, tags, isPublished, catSlug } = body;
     const formattedImg: string[] = Array.isArray(img)
       ? img
       : typeof img === "string" && img.trim() !== ""
         ? [img]
         : [];
-
-    if (!title?.trim() || !desc?.trim()) {
-      return new NextResponse(JSON.stringify({ message: "Title and description are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
 
     const post = await prisma.post.findUnique({
       where: { slug },
@@ -179,8 +177,8 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
         isPublished: isPublished ?? post.isPublished,
       };
 
-      if (catSlug && catSlug !== post.catSlug) {
-        updateData.cat = { connect: { slug: catSlug } };
+      if (catSlug !== undefined && catSlug !== post.catSlug) {
+        updateData.cat = catSlug ? { connect: { slug: catSlug } } : { disconnect: true };
       }
 
       const updatedPost = await tx.post.update({
@@ -239,7 +237,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
       }
 
       // 응답 형식 변환
-      const formattedResponse: PostWithFormattedTags = {
+      const formattedResponse: PostData = {
         ...postWithTags,
         tags: postWithTags.tags.map((pt) => pt.tag),
       };
@@ -247,7 +245,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
       return formattedResponse;
     });
 
-    return new NextResponse(JSON.stringify(result), {
+    return new NextResponse(JSON.stringify(toPostResponse(result)), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

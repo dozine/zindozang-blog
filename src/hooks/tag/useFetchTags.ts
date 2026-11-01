@@ -1,16 +1,18 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/utils/error";
 import { useEffect, useState } from "react";
-import { Tag } from "@prisma/client";
+import type { TagListResponse } from "@/types/api/tag";
 import { fetchAvailableTags } from "@/lib/services/tagService";
 
 interface UseFetchTagsResult {
-  tags: Tag[];
+  tags: TagListResponse;
   loading: boolean;
   error: string | null;
 }
 
 export function useFetchTags(): UseFetchTagsResult {
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<TagListResponse>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,8 +23,8 @@ export function useFetchTags(): UseFetchTagsResult {
       try {
         const allTags = await fetchAvailableTags();
         setTags(allTags);
-      } catch (err: any) {
-        const errorMessage = err.message || "태그 불러오기 오류가 발생했습니다.";
+      } catch (err) {
+        const errorMessage = getErrorMessage(err, "태그 불러오기 오류가 발생했습니다.");
         console.error("태그 불러오기 오류", err);
         setError(errorMessage);
       } finally {

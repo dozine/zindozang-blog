@@ -1,8 +1,10 @@
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type ExtraProps } from "react-markdown";
+import type { ComponentPropsWithoutRef } from "react";
+import type { Pluggable } from "unified";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
-import CodeBlock, { CodeProps } from "@/components/codeBlock/CodeBlock";
+import CodeBlock from "@/components/codeBlock/CodeBlock";
 import "./markdown.css";
 
 interface PostContentProps {
@@ -10,11 +12,14 @@ interface PostContentProps {
   isDark: boolean;
 }
 
+type CodeProps = ComponentPropsWithoutRef<"code"> & ExtraProps & { inline?: boolean };
+
 const PostContent = ({ desc, isDark }: PostContentProps) => {
   return (
     <div className="post-content-container">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks as any]}
+        // remark-breaks와 react-markdown이 사용하는 unified 버전의 타입 차이를 연결한다.
+        remarkPlugins={[remarkGfm, remarkBreaks as unknown as Pluggable]}
         rehypePlugins={[rehypeRaw]}
         components={{
           code({ inline, node, className, children, ...props }: CodeProps) {

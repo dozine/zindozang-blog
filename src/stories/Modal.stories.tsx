@@ -12,7 +12,9 @@ const mockModalContent = (
   </div>
 );
 
-const InteractiveModalWrapper = (args) => {
+const InteractiveModalWrapper = (
+  args: React.ComponentProps<typeof Modal> & { initialOpen?: boolean }
+) => {
   const [isOpen, setIsOpen] = useState(args.initialOpen || false);
   const handleClose = () => {
     setIsOpen(false);

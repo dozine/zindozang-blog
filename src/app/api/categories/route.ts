@@ -1,38 +1,25 @@
+import { getErrorMessage } from "@/lib/utils/error";
+import { requireAdmin } from "@/lib/services/requireAdmin";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
+import { toCategoryResponse } from "@/lib/serializers/responses";
 import { Category } from "@prisma/client";
-import { CreateCategoryBody } from "@/types";
-
-const uncategorizedCategory = async (): Promise<Category> => {
-  const uncategorized: Category | null = await prisma.category.findUnique({
-    where: { slug: "uncategorized" },
-  });
-  if (!uncategorized) {
-    return await prisma.category.create({
-      data: {
-        slug: "uncategorized",
-        title: "미분류",
-        img: null,
-      },
-    });
-  }
-  return uncategorized;
-};
+import { createCategorySchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
 
 // GET API 함수
 export const GET = async () => {
   try {
-    await uncategorizedCategory();
     const categories: Category[] = await prisma.category.findMany({
       orderBy: {
         title: "asc",
       },
     });
 
-    return NextResponse.json(categories, { status: 200 });
-  } catch (err: any) {
+    return NextResponse.json(categories.map(toCategoryResponse), { status: 200 });
+  } catch (err) {
     console.error("카테고리 조회 오류:", err);
-    return new NextResponse(`카테고리 조회 중 오류 발생 : ${err.message || "알수없는 오류"}`, {
+    return new NextResponse(`카테고리 조회 중 오류 발생 : ${getErrorMessage(err, "알수없는 오류")}`, {
       status: 500,
     });
   }
@@ -41,15 +28,12 @@ export const GET = async () => {
 // POST API 함수
 export const POST = async (req: NextRequest) => {
   try {
-    const body: CreateCategoryBody = await req.json();
-    const { slug, title, img } = body;
+    const denied = await requireAdmin();
+    if (denied) return denied;
 
-    // 필수 필드 확인
-    if (!slug || !title) {
-      return new NextResponse("slug와 title은 필수 입력 항목입니다.", {
-        status: 400,
-      });
-    }
+    const validation = await validateJsonBody(req, createCategorySchema);
+    if (validation.success === false) return validation.response;
+    const { slug, title, img } = validation.data;
 
     const existingCategory: Category | null = await prisma.category.findUnique({
       where: { slug },
@@ -69,20 +53,23 @@ export const POST = async (req: NextRequest) => {
     });
 
     return NextResponse.json(
-      { message: "카테고리 생성 완료", category: newCategory },
+      { message: "카테고리 생성 완료", category: toCategoryResponse(newCategory) },
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error("카테고리 생성 오류:", err);
-    return new NextResponse("카테고리 생성 중 오류 발생: " + err.message, {
+    return new NextResponse("카테고리 생성 중 오류 발생: " + getErrorMessage(err, "알 수 없는 오류"), {
       status: 500,
     });
   }
 };
 
-// DELETE API 함수 - 카테고리 삭제 (기존 코드에 Uncategorized 체크 추가)
+// DELETE API 함수 - 카테고리 삭제 및 게시글 분류 해제
 export const DELETE = async (req: NextRequest) => {
   try {
+    const denied = await requireAdmin();
+    if (denied) return denied;
+
     const { searchParams } = new URL(req.url);
     const id: string | null = searchParams.get("id");
 
@@ -101,28 +88,20 @@ export const DELETE = async (req: NextRequest) => {
       });
     }
 
-    if (categoryToDelete.slug === "uncategorized") {
-      return new NextResponse("'미분류' 카테고리는 삭제할 수 없습니다.", {
-        status: 400,
-      });
-    }
-
     const deleted: Category = await prisma.$transaction(async (tx) => {
-      const uncategorized: Category = await uncategorizedCategory();
-
       await tx.post.updateMany({
         where: { catSlug: categoryToDelete.slug },
-        data: { catSlug: uncategorized.slug },
+        data: { catSlug: null },
       });
       return await tx.category.delete({
         where: { id },
       });
     });
 
-    return NextResponse.json({ message: "카테고리 삭제 완료", deleted }, { status: 200 });
-  } catch (err: any) {
+    return NextResponse.json({ message: "카테고리 삭제 완료", deleted: toCategoryResponse(deleted) }, { status: 200 });
+  } catch (err) {
     console.error("카테고리 삭제 오류:", err);
-    return new NextResponse("카테고리 삭제 중 오류 발생: " + err.message, {
+    return new NextResponse("카테고리 삭제 중 오류 발생: " + getErrorMessage(err, "알 수 없는 오류"), {
       status: 500,
     });
   }

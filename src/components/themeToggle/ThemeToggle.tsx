@@ -4,10 +4,9 @@ import Image from "next/image";
 import styles from "./themeToggle.module.css";
 import { useContext } from "react";
 import { ThemeContext } from "@/context/ThemeContext";
-import { ThemeContextType } from "@/types";
 
 const ThemeToggle = () => {
-  const { toggle, theme } = useContext<ThemeContextType>(ThemeContext);
+  const { toggle, theme } = useContext(ThemeContext);
   const claudeOrange: string = "#f9a03f";
   return (
     <button

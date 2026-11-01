@@ -1,6 +1,12 @@
-import { PostWithFormattedTags, UpdatePostBody } from "@/types";
+import { getErrorMessage } from "@/lib/utils/error";
+import type {
+  CreatePostRequest,
+  CreatePostResponse,
+  PostDetailResponse,
+  UpdatePostRequest,
+} from "@/types/api/post";
 
-export async function fetchPostBySlug(slug: string): Promise<PostWithFormattedTags> {
+export async function fetchPostBySlug(slug: string): Promise<PostDetailResponse> {
   try {
     const res = await fetch(`/api/posts/${slug}`, { cache: "no-store" });
     if (!res.ok) {
@@ -8,21 +14,13 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithFormattedTa
       throw new Error(errorData.message || "게시글을 불러올 수 없습니다.");
     }
     return await res.json();
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 게시글 조회 오류:", error);
-    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
   }
 }
 
-export async function createPost(createBody: {
-  title: string;
-  desc: string;
-  img: string | string[];
-  slug: string;
-  catSlug: string;
-  tags: string[];
-  isPublished: boolean;
-}): Promise<{ slug: string }> {
+export async function createPost(createBody: CreatePostRequest): Promise<CreatePostResponse> {
   try {
     const res = await fetch("/api/posts", {
       method: "POST",
@@ -35,13 +33,13 @@ export async function createPost(createBody: {
       throw new Error(errorData.message || "게시글 작성에 실패했습니다.");
     }
     return await res.json();
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 게시글 작성 오류:", error);
-    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
   }
 }
 
-export async function updatePost(slug: string, updateBody: UpdatePostBody): Promise<void> {
+export async function updatePost(slug: string, updateBody: UpdatePostRequest): Promise<void> {
   try {
     const res = await fetch(`/api/posts/${slug}`, {
       method: "PUT",
@@ -53,9 +51,9 @@ export async function updatePost(slug: string, updateBody: UpdatePostBody): Prom
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || "게시글 수정에 실패했습니다.");
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("API 게시글 수정 오류:", error);
-    throw new Error(error.message || "서버 통신 중 오류가 발생했습니다.");
+    throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
   }
 }
 

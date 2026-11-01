@@ -1,20 +1,17 @@
 "use client";
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
-import { Category } from "@prisma/client";
 import { deleteCategory } from "@/lib/services/categoryService";
 
 interface UseDeleteCategoryModalProps {
   onSuccess: () => Promise<void>;
   onClose: () => void;
   isOpen: boolean;
-  categories: Category[];
 }
 
 export function useDeleteCategoryModal({
   onSuccess,
   onClose,
   isOpen,
-  categories,
 }: UseDeleteCategoryModalProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -38,13 +35,6 @@ export function useDeleteCategoryModal({
       return;
     }
 
-    const selectedCategory = categories?.find((cat) => cat.id === selectedCategoryId);
-
-    if (selectedCategory?.slug === "uncategorized") {
-      setError("'미분류' 카테고리는 삭제할 수 없습니다.");
-      return;
-    }
-
     setError(null);
     setIsLoading(true);
     try {
@@ -58,12 +48,12 @@ export function useDeleteCategoryModal({
         setSelectedCategoryId("");
         onClose();
       }
-    } catch (err: any) {
+    } catch (err) {
       setError("삭제 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategoryId, categories, onSuccess, onClose]);
+  }, [selectedCategoryId, onSuccess, onClose]);
 
   return {
     selectedCategoryId,

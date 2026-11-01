@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:ci": "jest --ci",
     "storybook": "storybook dev -p 6006",
@@ -49,7 +52,8 @@
     "slick-carousel": "^1.8.1",
     "superjson": "^2.2.2",
     "swr": "^2.3.3",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",
@@ -80,7 +84,6 @@
     "eslint-config-next": "15.2.2",
     "eslint-config-prettier": "^10.1.1",
     "eslint-import-resolver-alias": "^1.1.2",
-    "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-storybook": "^10.1.4",
     "identity-obj-proxy": "^3.0.0",
     "install": "^0.13.0",

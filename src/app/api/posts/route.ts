@@ -1,8 +1,9 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
-import { PostWithFormattedTags } from "@/types";
-import { Post, PostTag, Prisma, Tag, User } from "@prisma/client";
-import { headers } from "next/headers";
+import { toPostResponse } from "@/lib/serializers/responses";
+import { createPostSchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
+import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const POST_PER_PAGE = 10;
@@ -37,7 +38,9 @@ export const GET = async (req: NextRequest) => {
   const page: number = pageParam ? parseInt(pageParam, 10) : 1;
   const skip: number = Math.max(0, POST_PER_PAGE * (page - 1));
 
-  const selectedTags: string[] = tagsParam ? tagsParam.split(".").filter((tag) => tag !== "") : [];
+  const selectedTags: string[] = tagsParam
+    ? tagsParam.split(".").filter((tag) => tag !== "")
+    : [];
   let where: Prisma.PostWhereInput = {
     isPublished: true,
     ...(cat && { catSlug: cat }),
@@ -52,15 +55,16 @@ export const GET = async (req: NextRequest) => {
     }),
   };
 
-  if (session?.user) {
-    if (session.user.email === (process.env.MYEMAIL as string)) {
+  const userEmail = session?.user?.email;
+  if (userEmail) {
+    if (process.env.MYEMAIL && userEmail === process.env.MYEMAIL) {
       delete where.isPublished; // 관리자는 모든 글을 볼 수 있도록
     } else {
       where = {
         AND: [
           { ...where, isPublished: undefined },
           {
-            OR: [{ isPublished: true }, { userEmail: session.user.email }],
+            OR: [{ isPublished: true }, { userEmail }],
           },
         ],
       };
@@ -97,15 +101,21 @@ export const GET = async (req: NextRequest) => {
       },
     }));
 
-    return new NextResponse(JSON.stringify({ posts: formattedPosts, count }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
+    return new NextResponse(
+      JSON.stringify({ posts: formattedPosts.map(toPostResponse), count }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
-  } catch (err: any) {
+    );
+  } catch (err) {
     console.log(err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      { status: 500 },
+    );
   }
 };
 
@@ -113,7 +123,8 @@ export const GET = async (req: NextRequest) => {
 export const POST = async (req: NextRequest) => {
   const session = await getAuthSession();
 
-  if (!session?.user?.email) {
+  const userEmail = session?.user?.email;
+  if (!userEmail) {
     return new NextResponse(JSON.stringify({ message: "Not Authenticated!" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -121,26 +132,15 @@ export const POST = async (req: NextRequest) => {
   }
 
   try {
-    interface CreatePostBody {
-      slug: string;
-      title: string;
-      desc: string;
-      img?: string | string[] | null;
-      catSlug?: string;
-      isPublished?: boolean;
-      tags?: string[];
-    }
-
-    const body: CreatePostBody = await req.json();
-    const { tags: tagIds, isPublished, ...postData } = body;
-    const safeImg: string[] = Array.isArray(body.img) ? body.img : body.img ? [body.img] : [];
-
-    if (!body.slug || !body.title) {
-      return new NextResponse(JSON.stringify({ message: "Missing slug or title" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    const validation = await validateJsonBody(req, createPostSchema);
+    if (validation.success === false) return validation.response;
+    const body = validation.data;
+    const { tags: tagIds } = body;
+    const safeImg: string[] = Array.isArray(body.img)
+      ? body.img
+      : body.img
+        ? [body.img]
+        : [];
 
     const result = await prisma.$transaction(async (tx) => {
       const post = await tx.post.create({
@@ -150,12 +150,10 @@ export const POST = async (req: NextRequest) => {
           desc: body.desc,
           img: safeImg,
           user: {
-            connect: { email: session.user.email },
+            connect: { email: userEmail },
           },
           isPublished: body.isPublished ?? false,
-          cat: {
-            connect: { slug: body.catSlug || "uncategorized" },
-          },
+          ...(body.catSlug ? { cat: { connect: { slug: body.catSlug } } } : {}),
         },
       });
 
@@ -168,8 +166,8 @@ export const POST = async (req: NextRequest) => {
                 postId: post.id,
                 tagId: tagIds,
               },
-            })
-          )
+            }),
+          ),
         );
       }
 
@@ -178,17 +176,18 @@ export const POST = async (req: NextRequest) => {
         include: { user: true; tags: { include: { tag: true } } };
       }>;
 
-      const createdPostWithRelations: PostWithRelations | null = await tx.post.findUnique({
-        where: { id: post.id },
-        include: {
-          user: true,
-          tags: {
-            include: {
-              tag: true,
+      const createdPostWithRelations: PostWithRelations | null =
+        await tx.post.findUnique({
+          where: { id: post.id },
+          include: {
+            user: true,
+            tags: {
+              include: {
+                tag: true,
+              },
             },
           },
-        },
-      });
+        });
       if (!createdPostWithRelations) {
         throw new Error("Created post not found after transaction");
       }
@@ -200,12 +199,18 @@ export const POST = async (req: NextRequest) => {
       tags: result.tags.map((pt) => pt.tag),
     };
 
-    return new NextResponse(JSON.stringify(formattedResult), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new NextResponse(
+      JSON.stringify(toPostResponse(formattedResult)),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     console.log("Error creating post:", err);
-    return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
+    return new NextResponse(
+      JSON.stringify({ message: "Something went wrong!" }),
+      { status: 500 },
+    );
   }
 };

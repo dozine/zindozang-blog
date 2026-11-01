@@ -6,10 +6,14 @@ import { useSession } from "next-auth/react";
 import styles from "./categoryList.module.css";
 import AddCategoryModal from "../modal/categoryModal/AddCategoryModal";
 import DeleteCategoryModal from "../modal/categoryModal/DeleteCategoryModal";
-import { CategoryListClientProps } from "@/types";
+import type { CategoryData } from "@/types/category";
 import { useHorizontalScroll } from "@/hooks/category/useHorizontalScroll";
 import { useFetchCategories } from "@/hooks/category/useFetchCategories";
 import { useModal } from "@/hooks/useModal";
+
+interface CategoryListClientProps {
+  initialCategories: CategoryData[];
+}
 
 const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
   const { status } = useSession();
@@ -98,9 +102,7 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
             {categories.map((item) => (
               <Link
                 href={`/blog?cat=${item.slug}`}
-                className={`${styles.category} ${
-                  item.slug === "uncategorized" ? styles.uncategorized : ""
-                }`}
+                className={styles.category}
                 key={item.id}
               >
                 <span className={styles.categoryText}>{item.title}</span>

@@ -3,15 +3,13 @@ import React, { ChangeEvent } from "react";
 import { useAddCategoryModal } from "@/hooks/category/useAddCategoryModal";
 import Modal from "../Modal";
 
-const AddCategoryModal = ({
-  isOpen,
-  onClose,
-  onSuccess,
-}: {
+interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => Promise<void>;
-}) => {
+}
+
+const AddCategoryModal = ({ isOpen, onClose, onSuccess }: AddCategoryModalProps) => {
   const { title, setTitle, isLoading, error, handleSubmit } = useAddCategoryModal({
     onSuccess,
     onClose,

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import React, { useState } from "react";
 import Modal from "../components/modal/Modal";
-import { TagWithPostCount } from "@/types/tag";
+import type { TagWithPostCount } from "@/types/tag";
 
-const fn = (...args: any[]) => console.log("Action triggered (Storybook Mock)", args);
+const fn = (...args: unknown[]) => console.log("Action triggered (Storybook Mock)", args);
 
 const mockTags: TagWithPostCount[] = [
   {

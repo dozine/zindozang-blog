@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import styles from "./tagList.module.css";
 import DeleteTagModal from "../modal/tagModal/DeleteTagModal";
 import { useTagActions } from "@/hooks/tag/useTagAction";
-import { TagWithPostCount } from "@/types/tag";
+import type { TagWithPostCount } from "@/types/tag";
 
 interface TagListProps {
   tags: TagWithPostCount[];

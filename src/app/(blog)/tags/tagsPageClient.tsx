@@ -2,7 +2,7 @@
 import { useState } from "react";
 import TagList from "@/components/tagList/TagList";
 import styles from "./tagsPage.module.css";
-import { TagWithPostCount } from "@/types/tag";
+import type { TagWithPostCount } from "@/types/tag";
 import { useTagSelection } from "@/hooks/tag/useTagSelection";
 
 interface TagsPageClientProps {

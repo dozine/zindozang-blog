@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/utils/error";
 import { useState, useEffect, useCallback } from "react";
 import { addCategory } from "@/lib/services/categoryService";
 
@@ -39,8 +41,8 @@ export function useAddCategoryModal({ onSuccess, onClose, isOpen }: UseAddCatego
       } else {
         setError(result.error || "카테고리 추가 중 오류가 발생했습니다.");
       }
-    } catch (err: any) {
-      setError(err.message || "카테고리 추가 중 오류가 발생했습니다.");
+    } catch (err) {
+      setError(getErrorMessage(err, "카테고리 추가 중 오류가 발생했습니다."));
     } finally {
       setIsLoading(false);
     }

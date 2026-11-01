@@ -1,8 +1,14 @@
 import Image from "next/image";
 import styles from "./card.module.css";
 import Link from "next/link";
-import { CardProps } from "@/types";
+import type { PostView } from "@/types/post";
 import { extractTextFromMarkdown } from "@/lib/utils/markdown";
+
+interface CardProps {
+  item: PostView;
+  priority?: boolean;
+  index?: number;
+}
 
 const Card = ({ item, priority = false, index = 0 }: CardProps) => {
   const shouldPrioritize = priority || index < 3;
@@ -15,7 +21,9 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
               ? item.createdAt.toISOString().substring(0, 10)
               : new Date(item.createdAt).toISOString().substring(0, 10)}
           </span>
-          <span className={styles.category}>{item.catSlug}</span>
+          {item.catSlug && (
+            <span className={styles.category}>{item.catSlug}</span>
+          )}
         </div>
 
         {/* 2. 이미지 */}

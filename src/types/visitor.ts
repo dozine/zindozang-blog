@@ -1,11 +1,3 @@
-export interface VisitorStats {
-  todayVisitors: number;
-  totalVisitors: number;
-  counted?: boolean;
-}
+import type { GetVisitorStatsResponse } from "@/types/api/visitor";
 
-export interface UseVisitorTrackerReturn {
-  stats: VisitorStats;
-  loading: boolean;
-  error: string | null;
-}
+export type VisitorStats = GetVisitorStatsResponse;

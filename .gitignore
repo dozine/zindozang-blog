@@ -39,7 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 *storybook.log
 storybook-static
