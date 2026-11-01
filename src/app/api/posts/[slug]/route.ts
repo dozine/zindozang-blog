@@ -1,7 +1,8 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
 import { toPostResponse } from "@/lib/serializers/responses";
-import type { UpdatePostRequest } from "@/types/api/post";
+import { updatePostSchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
 import type { PostData } from "@/types/post";
 import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -130,20 +131,15 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
       });
     }
 
-    const body: UpdatePostRequest = await req.json();
+    const validation = await validateJsonBody(req, updatePostSchema);
+    if (validation.success === false) return validation.response;
+    const body = validation.data;
     const { title, desc, img, tags, isPublished, catSlug } = body;
     const formattedImg: string[] = Array.isArray(img)
       ? img
       : typeof img === "string" && img.trim() !== ""
         ? [img]
         : [];
-
-    if (!title?.trim() || !desc?.trim()) {
-      return new NextResponse(JSON.stringify({ message: "Title and description are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
 
     const post = await prisma.post.findUnique({
       where: { slug },

@@ -1,7 +1,8 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
 import { toPostResponse } from "@/lib/serializers/responses";
-import type { CreatePostRequest } from "@/types/api/post";
+import { createPostSchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
 import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -129,23 +130,15 @@ export const POST = async (req: NextRequest) => {
   }
 
   try {
-    const body: CreatePostRequest = await req.json();
-    const { tags: tagIds, isPublished, ...postData } = body;
+    const validation = await validateJsonBody(req, createPostSchema);
+    if (validation.success === false) return validation.response;
+    const body = validation.data;
+    const { tags: tagIds } = body;
     const safeImg: string[] = Array.isArray(body.img)
       ? body.img
       : body.img
         ? [body.img]
         : [];
-
-    if (!body.slug || !body.title) {
-      return new NextResponse(
-        JSON.stringify({ message: "Missing slug or title" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
 
     const result = await prisma.$transaction(async (tx) => {
       const post = await tx.post.create({

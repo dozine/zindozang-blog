@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { toCategoryResponse } from "@/lib/serializers/responses";
 import { Category } from "@prisma/client";
-import type { CreateCategoryRequest } from "@/types/api/category";
+import { createCategorySchema } from "@/lib/validation/schemas";
+import { validateJsonBody } from "@/lib/validation/request";
 
 const uncategorizedCategory = async (): Promise<Category> => {
   const uncategorized: Category | null = await prisma.category.findUnique({
@@ -46,15 +47,9 @@ export const POST = async (req: NextRequest) => {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const body: CreateCategoryRequest = await req.json();
-    const { slug, title, img } = body;
-
-    // 필수 필드 확인
-    if (!slug || !title) {
-      return new NextResponse("slug와 title은 필수 입력 항목입니다.", {
-        status: 400,
-      });
-    }
+    const validation = await validateJsonBody(req, createCategorySchema);
+    if (validation.success === false) return validation.response;
+    const { slug, title, img } = validation.data;
 
     const existingCategory: Category | null = await prisma.category.findUnique({
       where: { slug },
