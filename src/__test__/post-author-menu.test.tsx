@@ -1,4 +1,5 @@
 import React from "react";
+import QueryProvider from "@/providers/QueryProvider";
 import { fireEvent, render, screen } from "@testing-library/react";
 import SinglePageClient from "@/app/(blog)/posts/[slug]/singlePageClient";
 import type { PostDetailView } from "@/types/post";
@@ -37,7 +38,7 @@ const data: PostDetailView = {
 };
 
 test("only the verified author sees post management controls", () => {
-  const { rerender } = render(<SinglePageClient data={data} slug="hello" />);
+  const { rerender } = render(<SinglePageClient data={data} slug="hello" />, { wrapper: QueryProvider });
   expect(screen.queryByRole("button", { name: "포스트 메뉴 열기" })).toBeNull();
 
   rerender(<SinglePageClient data={{ ...data, isAuthor: true }} slug="hello" />);

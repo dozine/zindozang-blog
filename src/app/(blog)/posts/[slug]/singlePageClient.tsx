@@ -24,15 +24,8 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
     router.refresh();
   };
 
-  const {
-    menuOpen,
-    toggleMenu,
-    isDeleteModalOpen,
-    openDeleteModal,
-    closeDeleteModal,
-    handleEdit,
-    handleDelete,
-  } = usePostActions(slug, handlePostDeleteSuccess);
+  const { menuOpen, toggleMenu, isDeleteModalOpen, openDeleteModal, closeDeleteModal, handleEdit } =
+    usePostActions(slug);
   const renderedContent = useMemo(() => {
     return <PostContent desc={data.desc} isDark={isDark} />;
   }, [data.desc, isDark]);
@@ -114,7 +107,8 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
       <PostDeleteModal
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
-        onDelete={handleDelete}
+        slug={slug}
+        onSuccess={handlePostDeleteSuccess}
       />
     </div>
   );

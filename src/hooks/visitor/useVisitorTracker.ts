@@ -1,49 +1,33 @@
-import { useState, useEffect } from "react";
-import { visitorService } from "@/lib/services/visitorService";
-import type { VisitorStats } from "@/types/visitor";
+"use client";
 
-interface UseVisitorTrackerReturn {
-  stats: VisitorStats;
-  loading: boolean;
-  error: string | null;
-}
+import { useEffect, useRef } from "react";
+import { useTrackVisitor, useVisitorStats } from "@/queries/visitor";
 
-export const useVisitorTracker = (): UseVisitorTrackerReturn => {
-  const [stats, setStats] = useState<VisitorStats>({
-    todayVisitors: 0,
-    totalVisitors: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const useVisitorTracker = () => {
+  const started = useRef(false);
+  const {
+    mutate,
+    data: trackedStats,
+    isError: isTrackingError,
+    isIdle,
+    isPending,
+  } = useTrackVisitor();
+  const {
+    data: fetchedStats,
+    isLoading: isStatsLoading,
+    isError: isStatsError,
+  } = useVisitorStats(isTrackingError);
 
   useEffect(() => {
-    const trackVisitor = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    if (started.current) return;
+    started.current = true;
+    mutate();
+  }, [mutate]);
 
-        const data = await visitorService.trackVisitor();
-        setStats({
-          todayVisitors: data.todayVisitors,
-          totalVisitors: data.totalVisitors,
-        });
-      } catch (err) {
-        console.error("Failed to track visitor:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
-
-        try {
-          const data = await visitorService.getStats();
-          setStats(data);
-        } catch (fallbackErr) {
-          console.error("Failed to get visitor stats:", fallbackErr);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    trackVisitor();
-  }, []);
-
-  return { stats, loading, error };
+  const stats = trackedStats ?? (isTrackingError ? fetchedStats : undefined);
+  return {
+    stats: stats ?? { todayVisitors: 0, totalVisitors: 0 },
+    isLoading: isIdle || isPending || (isTrackingError && isStatsLoading),
+    error: isTrackingError && isStatsError ? "방문자 통계를 불러올 수 없습니다." : null,
+  };
 };

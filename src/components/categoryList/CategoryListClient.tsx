@@ -8,7 +8,7 @@ import AddCategoryModal from "../modal/categoryModal/AddCategoryModal";
 import DeleteCategoryModal from "../modal/categoryModal/DeleteCategoryModal";
 import type { CategoryData } from "@/types/category";
 import { useHorizontalScroll } from "@/hooks/category/useHorizontalScroll";
-import { useFetchCategories } from "@/hooks/category/useFetchCategories";
+import { useCategoriesQuery } from "@/queries/category";
 import { useModal } from "@/hooks/useModal";
 
 interface CategoryListClientProps {
@@ -18,7 +18,7 @@ interface CategoryListClientProps {
 const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
   const { status } = useSession();
 
-  const { categories, error, isLoading, refreshCategories } = useFetchCategories(initialCategories);
+  const { data: categories = [], error, isLoading } = useCategoriesQuery(true, initialCategories);
   const {
     sliderRef,
     handleMouseDown,
@@ -42,7 +42,7 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
   } = useModal(false);
 
   if (error) {
-    return <div>오류 발생 : {error} </div>;
+    return <div>카테고리를 불러올 수 없습니다.</div>;
   }
 
   if (isLoading && categories.length === 0) {
@@ -64,12 +64,12 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
                 <AddCategoryModal
                   isOpen={isAddModalOpen}
                   onClose={closeAddModal}
-                  onSuccess={refreshCategories}
+                  onSuccess={async () => {}}
                 />
                 <DeleteCategoryModal
                   isOpen={isDeleteModalOpen}
                   onClose={closeDeleteModal}
-                  onSuccess={refreshCategories}
+                  onSuccess={async () => {}}
                   categories={categories}
                 />
               </div>
@@ -100,11 +100,7 @@ const CategoryListClient = ({ initialCategories }: CategoryListClientProps) => {
               <span className={styles.categoryText}>All</span>
             </Link>
             {categories.map((item) => (
-              <Link
-                href={`/blog?cat=${item.slug}`}
-                className={styles.category}
-                key={item.id}
-              >
+              <Link href={`/blog?cat=${item.slug}`} className={styles.category} key={item.id}>
                 <span className={styles.categoryText}>{item.title}</span>
               </Link>
             ))}

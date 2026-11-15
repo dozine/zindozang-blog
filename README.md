@@ -58,6 +58,10 @@ React Quill을 활용한 에디터 기능, 카테고리 및 태그 필터링 기
 
 ---
 
+### 서버 상태 관리
+
+React Query 도입 배경과 쿼리·화면 상태를 구분하는 기준은 [서버 상태 관리 문서](docs/server-state-management.md)를 참고하세요.
+
 ### 코드 포맷과 린트
 
 VS Code에서 `blogapp` 폴더를 열고 추천되는 **Prettier - Code formatter** 확장을 설치하면 저장할 때 포맷이 적용됩니다. 포맷 규칙은 `.prettierrc.json`에서 관리합니다.

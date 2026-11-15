@@ -1,34 +1,37 @@
 "use client";
 
 import { getErrorMessage } from "@/lib/utils/error";
-import { useState, useCallback } from "react";
+import { useDeletePost } from "@/queries/post";
+import { useCallback, useEffect } from "react";
 
 interface UsePostDeleteModalProps {
-  onDelete: () => Promise<void>;
+  slug: string;
+  isOpen: boolean;
+  onSuccess: () => void;
   onClose: () => void;
 }
 
-export function usePostDeleteModal({ onDelete, onClose }: UsePostDeleteModalProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+export function usePostDeleteModal({ slug, isOpen, onSuccess, onClose }: UsePostDeleteModalProps) {
+  const { mutateAsync: deletePost, isPending, isError, error, reset } = useDeletePost();
+
+  useEffect(() => {
+    if (!isOpen) reset();
+  }, [isOpen, reset]);
 
   const handleDeleteConfirm = useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
     try {
-      await onDelete();
-      onClose();
-    } catch (err) {
-      console.error("포스트 삭제 오류:", err);
-      setError(getErrorMessage(err, "삭제 중 오류가 발생했습니다."));
-    } finally {
-      setIsLoading(false);
+      await deletePost(slug);
+    } catch {
+      return;
     }
-  }, [onDelete, onClose]);
+    alert("삭제되었습니다.");
+    onSuccess();
+    onClose();
+  }, [deletePost, slug, onSuccess, onClose]);
 
   return {
-    isLoading,
-    error,
+    isLoading: isPending,
+    error: isError ? getErrorMessage(error, "삭제 중 오류가 발생했습니다.") : null,
     handleDeleteConfirm,
   };
 }
