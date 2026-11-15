@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTagsQuery } from "@/queries/tag";
 import TagList from "@/components/tagList/TagList";
 import styles from "./tagsPage.module.css";
 import type { TagWithPostCount } from "@/types/tag";
@@ -12,10 +13,11 @@ interface TagsPageClientProps {
 
 const TagsPageClient = ({ allTags, selectedTags }: TagsPageClientProps) => {
   const { handleTagClick } = useTagSelection();
-  const [tags, setTags] = useState<TagWithPostCount[]>(allTags);
+  const router = useRouter();
+  const { data: tags = allTags } = useTagsQuery(true, allTags);
 
-  const handleTagDelete = (deletedTagId: string) => {
-    setTags((prevTags) => prevTags.filter((tag) => tag.id !== deletedTagId));
+  const handleTagDelete = () => {
+    router.refresh();
   };
   return (
     <div className={styles.container}>

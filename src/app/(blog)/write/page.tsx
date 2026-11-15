@@ -1,50 +1,197 @@
 "use client";
 import styles from "./writePage.module.css";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
-import { ICommand } from "@uiw/react-md-editor";
+import type { ICommand } from "@uiw/react-md-editor";
 import dynamic from "next/dynamic";
-import { usePostEditor } from "@/hooks/write/useWritePage";
+import { useModal } from "@/hooks/useModal";
+import { useCreatePost, usePostQuery, useUpdatePost } from "@/queries/post";
+import { useCategoriesQuery } from "@/queries/category";
+import { useTagsQuery } from "@/queries/tag";
+import { getErrorMessage } from "@/lib/utils/error";
+import type { TagData } from "@/types/tag";
+import type { UpdatePostRequest } from "@/types/api/post";
 import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const WritePage = () => {
+  const { status } = useSession();
   const router = useRouter();
+  const initializedSlug = useRef<string | null>(null);
+  const { mutateAsync: createPost, isPending: isCreating } = useCreatePost();
+  const { mutateAsync: updatePost, isPending: isUpdating } = useUpdatePost();
+  const searchParams = useSearchParams();
 
+  const isEditing: boolean = searchParams.get("edit") === "true";
+  const editSlug: string = searchParams.get("slug") || "";
+
+  const isAuthenticated = status === "authenticated";
   const {
-    status,
-    loading,
+    data: categories = [],
+    isLoading: isCategoriesLoading,
+    isError: isCategoriesError,
+    error: categoriesError,
+    refetch: refetchCategories,
+  } = useCategoriesQuery(isAuthenticated);
+  const {
+    data: availableTags = [],
+    isLoading: isTagsLoading,
+    isError: isTagsError,
+    error: tagsError,
+    refetch: refetchTags,
+  } = useTagsQuery(isAuthenticated);
+  const {
+    data: post,
+    isFetchedAfterMount: isPostFetchedAfterMount,
+    isFetching: isPostFetching,
+    isError: isPostError,
+    error: postError,
+    refetch: refetchPost,
+  } = usePostQuery(editSlug, isAuthenticated && isEditing && !!editSlug);
+  const waitingForPost =
+    isEditing &&
+    !!editSlug &&
+    initializedSlug.current !== editSlug &&
+    (!isPostFetchedAfterMount || isPostFetching) &&
+    !isPostError;
+  const isLoading =
+    isAuthenticated &&
+    (isCategoriesLoading || isTagsLoading || (isEditing && (!editSlug || waitingForPost)));
+  const error = postError || categoriesError || tagsError;
+  const dataError = error ? getErrorMessage(error, "데이터를 불러올 수 없습니다.") : null;
+  const retryData = () => {
+    if (isCategoriesError) void refetchCategories();
+    if (isTagsError) void refetchTags();
+    if (isPostError) void refetchPost();
+  };
+  const postToEdit =
+    !waitingForPost && isPostFetchedAfterMount && !isPostError ? (post ?? null) : null;
+
+  useEffect(() => {
+    if (isAuthenticated && isEditing && !editSlug) {
+      alert("수정할 게시글의 slug가 없습니다.");
+      router.push("/write");
+    }
+  }, [isAuthenticated, isEditing, editSlug, router]);
+
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [thumbnailImg, setThumbnailImg] = useState<string>("");
+  const [value, setValue] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const isSubmitting = isCreating || isUpdating;
+
+  const { isOpen: showSettingsModal, openModal, closeModal } = useModal();
+
+  const [catSlug, setCatSlug] = useState<string>("");
+  const [tags, setTags] = useState<TagData[]>([]);
+  const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [tagInput, setTagInput] = useState<string>("");
+  const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (postToEdit && initializedSlug.current !== editSlug) {
+      initializedSlug.current = editSlug;
+      setTitle(postToEdit.title);
+      setValue(postToEdit.desc);
+      const imgs = postToEdit.img || [];
+      setUploadedImages(Array.isArray(imgs) ? imgs : imgs ? [imgs] : []);
+      setThumbnailImg(Array.isArray(imgs) ? imgs[0] || "" : imgs || "");
+      setCatSlug(postToEdit.catSlug ?? "");
+      setIsPublished(Boolean(postToEdit.isPublished));
+      setTags(postToEdit.tags || []);
+    }
+  }, [postToEdit, editSlug]);
+
+  const slugify = (str: string) =>
+    str
+      .normalize("NFC")
+      .trim()
+      .replace(/[^\w가-힣\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .toLowerCase();
+
+  const handleImageUploaded = useCallback((url: string | string[]) => {
+    let imageUrl = "";
+    if (Array.isArray(url)) {
+      imageUrl = url[1] || url[0];
+    } else {
+      imageUrl = url;
+    }
+
+    const markdownImage = `\n\n![image](${imageUrl})\n\n`;
+    setValue((prevValue) => prevValue + markdownImage);
+
+    setUploadedImages((prev) => {
+      const next = [...prev, imageUrl];
+      if (next.length === 1) setThumbnailImg(imageUrl);
+      return next;
+    });
+  }, []);
+
+  const resetImageUploadTrigger = useCallback(() => {
+    setTriggerImageUpload(false);
+  }, []);
+
+  const handlePublishClick = useCallback(() => {
+    if (!title.trim()) return alert("제목을 입력해주세요.");
+    if (!value.trim()) return alert("내용을 입력해주세요.");
+    openModal();
+  }, [title, value, openModal]);
+
+  const handleFinalPublish = useCallback(async () => {
+    const tagIds: string[] = tags.map((tag) => tag.id);
+    const finalCatSlug = catSlug || null;
+
+    try {
+      if (isEditing && editSlug) {
+        const updateBody: UpdatePostRequest = {
+          title,
+          desc: value,
+          img: thumbnailImg ? [thumbnailImg] : [],
+          catSlug: finalCatSlug,
+          tags: tagIds,
+          isPublished,
+        };
+        await updatePost({ slug: editSlug, body: updateBody });
+        alert("게시글이 성공적으로 수정되었습니다.");
+        router.push(`/posts/${editSlug}`);
+      } else {
+        const createBody = {
+          title,
+          desc: value,
+          img: thumbnailImg ? [thumbnailImg] : [],
+          slug: slugify(title),
+          catSlug: finalCatSlug,
+          tags: tagIds,
+          isPublished,
+        };
+        const data = await createPost(createBody);
+        router.push(`/posts/${data.slug}`);
+      }
+    } catch (err) {
+      console.error("Error submitting post:", err);
+      alert(getErrorMessage(err, "게시글 저장 중 오류가 발생했습니다."));
+    } finally {
+      closeModal();
+    }
+  }, [
     isEditing,
+    editSlug,
     title,
     value,
-    media,
-    showSettingsModal,
+    thumbnailImg,
     catSlug,
     tags,
     isPublished,
-    tagInput,
-    categories,
-    availableTags,
-    triggerImageUpload,
-    setTitle,
-    setValue,
-    setMedia,
-    setCatSlug,
-    setTags,
-    setIsPublished,
-    setTagInput,
-    setUploadedImages,
+    router,
     closeModal,
-    setTriggerImageUpload,
-    handlePublishClick,
-    handleFinalPublish,
-    handleImageUploaded,
-    resetImageUploadTrigger,
-    uploadedImages,
-    thumbnailImg,
-    setThumbnailImg,
-  } = usePostEditor();
+    createPost,
+    updatePost,
+  ]);
 
   const customCommands: ICommand[] = [
     {
@@ -121,26 +268,30 @@ const WritePage = () => {
       execute: (state, api) => {
         api.replaceSelection(
           `<div class="img-grid-3">
-
-![](이미지URL1)
-
-![](이미지URL2)
-
-![](이미지URL3)
-
-</div>`
+          ![](이미지URL1)
+          ![](이미지URL2)
+          ![](이미지URL3)
+          </div>`
         );
       },
     },
   ];
 
-  if (status === "loading" || loading) {
+  if (status === "loading" || isLoading) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
   if (status === "unauthenticated") {
     router.push("/");
     return null;
+  }
+
+  if (dataError) {
+    return (
+      <div className={styles.loading}>
+        데이터를 불러오지 못했습니다: {dataError} <button onClick={retryData}>다시 시도</button>
+      </div>
+    );
   }
 
   return (
@@ -217,8 +368,8 @@ const WritePage = () => {
           setTags={setTags}
           categories={categories}
           availableTags={availableTags}
-          setAvailableTags={() => {}}
           onPublish={handleFinalPublish}
+          isSubmitting={isSubmitting}
           uploadedImages={uploadedImages}
           thumbnailImg={thumbnailImg}
           setThumbnailImg={setThumbnailImg}

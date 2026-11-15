@@ -5,7 +5,7 @@ import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import styles from "./postSettingModal.module.css";
 import type { CategoryData } from "@/types/category";
 import type { TagData, TagWithPostCount } from "@/types/tag";
-import { createTag } from "@/lib/services/tagService";
+import { useCreateTag } from "@/queries/tag";
 
 export interface PostSettingModalProps {
   isOpen: boolean;
@@ -20,8 +20,8 @@ export interface PostSettingModalProps {
   setTags: (tags: TagData[]) => void;
   categories: CategoryData[];
   availableTags: TagWithPostCount[];
-  setAvailableTags: (tags: TagWithPostCount[]) => void;
   onPublish: () => void;
+  isSubmitting?: boolean;
   uploadedImages: string[];
   thumbnailImg: string;
   setThumbnailImg: (url: string) => void;
@@ -40,12 +40,13 @@ const PostSettingModal = ({
   setTags,
   categories,
   availableTags,
-  setAvailableTags,
   onPublish,
+  isSubmitting = false,
   uploadedImages,
   thumbnailImg,
   setThumbnailImg,
 }: PostSettingModalProps) => {
+  const { mutateAsync: createTag, isPending: isCreatingTag } = useCreateTag();
   const [filteredTags, setFilteredTags] = useState<TagWithPostCount[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState<boolean>(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -98,7 +99,6 @@ const PostSettingModal = ({
           _count: { posts: 0 },
         };
         addTag(newTagWithCount);
-        setAvailableTags([...availableTags, newTagWithCount]);
       } else if (result.existingTag) {
         const existingTagWithCount: TagWithPostCount = {
           ...result.existingTag,
@@ -109,7 +109,6 @@ const PostSettingModal = ({
           addTag(foundTag);
         } else {
           addTag(existingTagWithCount);
-          setAvailableTags([...availableTags, existingTagWithCount]);
         }
       } else if (result.error) {
         throw new Error(result.error);
@@ -197,10 +196,14 @@ const PostSettingModal = ({
                     }
                   }
                 }}
-                disabled={tags.length >= 5}
+                disabled={tags.length >= 5 || isCreatingTag}
               />
               {tags.length < 5 && tagInput && (
-                <button className={styles.addTagButton} onClick={createNewTag}>
+                <button
+                  className={styles.addTagButton}
+                  onClick={createNewTag}
+                  disabled={isCreatingTag}
+                >
                   +
                 </button>
               )}
@@ -249,8 +252,8 @@ const PostSettingModal = ({
           <button className={styles.cancelButton} onClick={onClose}>
             취소
           </button>
-          <button className={styles.publishButton} onClick={onPublish}>
-            게시하기
+          <button className={styles.publishButton} onClick={onPublish} disabled={isSubmitting}>
+            {isSubmitting ? "저장 중..." : "게시하기"}
           </button>
         </div>
       </div>

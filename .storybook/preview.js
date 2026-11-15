@@ -1,7 +1,10 @@
 /** @type { import('@storybook/nextjs-vite').Preview } */
 
 import "@/app/globals.css";
+import React from "react";
+import QueryProvider from "@/providers/QueryProvider";
 const preview = {
+  decorators: [(Story) => React.createElement(QueryProvider, null, React.createElement(Story))],
   parameters: {
     controls: {
       matchers: {

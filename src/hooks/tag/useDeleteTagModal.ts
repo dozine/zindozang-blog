@@ -1,59 +1,53 @@
 import { getErrorMessage } from "@/lib/utils/error";
 import { useState, useEffect, useCallback, ChangeEvent } from "react";
-import { deleteTag } from "@/lib/services/tagService";
+import { useDeleteTag } from "@/queries/tag";
 
 export function useDeleteTagModal(isOpen: boolean, onClose: () => void) {
   const [selectedTagId, setSelectedTagId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const [validationError, setValidationError] = useState("");
+  const { mutateAsync: deleteTag, isPending, isError, error, reset } = useDeleteTag();
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedTagId("");
-      setError("");
+      setValidationError("");
+      reset();
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
-  const handleTagSelectChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedTagId(e.target.value);
-    setError("");
-  }, []);
+  const handleTagSelectChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      setSelectedTagId(e.target.value);
+      setValidationError("");
+      reset();
+    },
+    [reset]
+  );
 
   const handleDeleteSubmit = useCallback(
     async (onSuccessCallback: (tagId: string) => void) => {
       if (!selectedTagId) {
-        setError("삭제할 태그를 선택해주세요.");
+        setValidationError("삭제할 태그를 선택해주세요.");
         return;
       }
-      setError("");
-      setIsLoading(true);
-
+      setValidationError("");
       try {
-        const result = await deleteTag(selectedTagId);
-
-        if (result.success === false) {
-          setError(result.error || "삭제 중 오류가 발생했습니다.");
-        } else {
-          onSuccessCallback(selectedTagId);
-          setSelectedTagId("");
-          onClose();
-        }
-        return result;
-      } catch (err) {
-        setError(getErrorMessage(err, "삭제 중 오류가 발생했습니다."));
-        console.error("태그 삭제 오류:", err);
-        return { success: false, error: getErrorMessage(err, "알 수 없는 오류") };
-      } finally {
-        setIsLoading(false);
+        await deleteTag(selectedTagId);
+      } catch {
+        return;
       }
+      onSuccessCallback(selectedTagId);
+      setSelectedTagId("");
+      onClose();
     },
-    [selectedTagId, onClose]
+    [selectedTagId, onClose, deleteTag]
   );
 
   return {
     selectedTagId,
-    isLoading,
-    error,
+    isLoading: isPending,
+    error:
+      validationError || (isError ? getErrorMessage(error, "삭제 중 오류가 발생했습니다.") : ""),
     handleTagSelectChange,
     handleDeleteSubmit,
   };

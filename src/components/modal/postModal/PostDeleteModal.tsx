@@ -6,12 +6,15 @@ import { usePostDeleteModal } from "@/hooks/post/useDeletePostModal";
 interface PostDeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onDelete: () => Promise<void>;
+  slug: string;
+  onSuccess: () => void;
 }
 
-const PostDeleteModal = ({ isOpen, onClose, onDelete }: PostDeleteModalProps) => {
+const PostDeleteModal = ({ isOpen, onClose, slug, onSuccess }: PostDeleteModalProps) => {
   const { isLoading, error, handleDeleteConfirm } = usePostDeleteModal({
-    onDelete,
+    slug,
+    isOpen,
+    onSuccess,
     onClose,
   });
 

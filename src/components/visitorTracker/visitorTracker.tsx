@@ -4,9 +4,9 @@ import styles from "./visitorTracker.module.css";
 import { useVisitorTracker } from "@/hooks/visitor/useVisitorTracker";
 
 export default function VisitorTracker() {
-  const { stats, loading, error } = useVisitorTracker();
+  const { stats, isLoading, error } = useVisitorTracker();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={styles.container}>
         <div className={styles.stat}>

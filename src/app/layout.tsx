@@ -10,6 +10,7 @@ import "./globals.css";
 import { ThemeContextProvider } from "@/context/ThemeContext";
 import ThemeProvider from "@/providers/ThemeProvider";
 import AuthProvider from "@/providers/AuthProvider";
+import QueryProvider from "@/providers/QueryProvider";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { Metadata } from "next";
@@ -93,11 +94,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable} ${notoSerifKR.variable} ${bebasNeue.variable} ${cormorant.variable} ${syne.variable}`}
       >
-        <AuthProvider>
-          <ThemeContextProvider>
-            <ThemeProvider>{children}</ThemeProvider>
-          </ThemeContextProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ThemeContextProvider>
+              <ThemeProvider>{children}</ThemeProvider>
+            </ThemeContextProvider>
+          </AuthProvider>
+        </QueryProvider>
         <Analytics />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-4QDHKQH1M8"

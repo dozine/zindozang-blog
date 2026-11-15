@@ -2,7 +2,7 @@
 
 import { getErrorMessage } from "@/lib/utils/error";
 import { useState, useEffect, useCallback } from "react";
-import { addCategory } from "@/lib/services/categoryService";
+import { useAddCategory } from "@/queries/category";
 
 interface UseAddCategoryModalProps {
   onSuccess: () => Promise<void>;
@@ -12,47 +12,46 @@ interface UseAddCategoryModalProps {
 
 export function useAddCategoryModal({ onSuccess, onClose, isOpen }: UseAddCategoryModalProps) {
   const [title, setTitle] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const { mutateAsync: addCategory, isPending, isError, error, reset } = useAddCategory();
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setTitle("");
-      setError(null);
+      setLocalError(null);
+      reset();
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
   const handleSubmit = useCallback(async (): Promise<void> => {
     const trimmedTitle = title.trim();
     if (trimmedTitle === "") {
-      setError("카테고리 이름을 입력해주세요.");
+      setLocalError("카테고리 이름을 입력해주세요.");
       return;
     }
-    setError(null);
-    setIsLoading(true);
+    setLocalError(null);
 
     try {
-      const result = await addCategory(trimmedTitle);
-
-      if (result.success) {
-        await onSuccess();
-        setTitle("");
-        onClose();
-      } else {
-        setError(result.error || "카테고리 추가 중 오류가 발생했습니다.");
-      }
-    } catch (err) {
-      setError(getErrorMessage(err, "카테고리 추가 중 오류가 발생했습니다."));
-    } finally {
-      setIsLoading(false);
+      await addCategory(trimmedTitle);
+    } catch {
+      return;
     }
-  }, [title, onSuccess, onClose]);
+    try {
+      await onSuccess();
+      setTitle("");
+      onClose();
+    } catch (err) {
+      setLocalError(getErrorMessage(err, "카테고리 추가 후 화면을 갱신할 수 없습니다."));
+    }
+  }, [title, onSuccess, onClose, addCategory]);
 
   return {
     title,
     setTitle,
-    isLoading,
-    error,
+    isLoading: isPending,
+    error:
+      localError ||
+      (isError ? getErrorMessage(error, "카테고리 추가 중 오류가 발생했습니다.") : null),
     handleSubmit,
   };
 }

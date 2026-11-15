@@ -3,10 +3,10 @@ import Link from "next/link";
 import React, { useState } from "react";
 import styles from "./menuTags.module.css";
 import type { TagData } from "@/types/tag";
-import { useFetchTags } from "@/hooks/tag/useFetchTags";
+import { useTagsQuery } from "@/queries/tag";
 
 const MenuTags = () => {
-  const { tags, loading, error } = useFetchTags();
+  const { data: tags = [], isLoading, isError } = useTagsQuery();
 
   const [showAll, setShowAll] = useState<boolean>(false);
 
@@ -14,8 +14,8 @@ const MenuTags = () => {
   const visibleTags: TagData[] = showAll ? tags : tags.slice(0, initialTagsToShow);
   const hasMoreTags: boolean = tags.length > initialTagsToShow;
 
-  if (loading) return <div className={styles.loading}>태그 로딩 중...</div>;
-  if (error) return <div className={styles.error}>{error}</div>;
+  if (isLoading) return <div className={styles.loading}>태그 로딩 중...</div>;
+  if (isError) return <div className={styles.error}>태그를 불러올 수 없습니다.</div>;
 
   return (
     <div className={styles.container}>
