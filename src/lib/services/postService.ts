@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import { postResponseSchema } from "@/lib/zod/post";
 import { parseApiResponse, readApiError } from "@/lib/zod/response";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -10,7 +11,7 @@ import type {
 
 export async function fetchPostBySlug(slug: string): Promise<PostDetailResponse> {
   try {
-    const res = await fetch(`/api/posts/${slug}`, { cache: "no-store" });
+    const res = await fetch(API_ENDPOINTS.posts.detail(slug), { cache: "no-store" });
     if (!res.ok) {
       throw new Error(await readApiError(res, "게시글을 불러올 수 없습니다."));
     }
@@ -23,7 +24,7 @@ export async function fetchPostBySlug(slug: string): Promise<PostDetailResponse>
 
 export async function createPost(createBody: CreatePostRequest): Promise<CreatePostResponse> {
   try {
-    const res = await fetch("/api/posts", {
+    const res = await fetch(API_ENDPOINTS.posts.list, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(createBody),
@@ -41,7 +42,7 @@ export async function createPost(createBody: CreatePostRequest): Promise<CreateP
 
 export async function updatePost(slug: string, updateBody: UpdatePostRequest): Promise<void> {
   try {
-    const res = await fetch(`/api/posts/${slug}`, {
+    const res = await fetch(API_ENDPOINTS.posts.detail(slug), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updateBody),
@@ -59,7 +60,7 @@ export async function updatePost(slug: string, updateBody: UpdatePostRequest): P
 export async function deletePost(slug: string): Promise<void> {
   if (!slug) throw new Error("Slug is required for deletion.");
 
-  const res = await fetch(`/api/posts/${slug}`, {
+  const res = await fetch(API_ENDPOINTS.posts.detail(slug), {
     method: "DELETE",
     cache: "no-store",
   });

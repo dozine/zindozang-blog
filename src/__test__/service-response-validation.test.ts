@@ -1,6 +1,6 @@
-import { fetchCategories, addCategory } from "@/lib/services/categoryService";
-import { fetchAvailableTags, createTag } from "@/lib/services/tagService";
-import { createPost, fetchPostBySlug, updatePost } from "@/lib/services/postService";
+import { fetchCategories, addCategory, deleteCategory } from "@/lib/services/categoryService";
+import { fetchAvailableTags, createTag, deleteTag } from "@/lib/services/tagService";
+import { createPost, fetchPostBySlug, updatePost, deletePost } from "@/lib/services/postService";
 import { visitorService } from "@/lib/services/visitorService";
 
 const mockFetch = jest.fn();
@@ -96,4 +96,32 @@ test("오류 응답 형식이 잘못되어도 요청별 기본 오류를 표시�
   await expect(fetchPostBySlug("hello")).rejects.toThrow("게시글을 불러올 수 없습니다.");
   mockFetch.mockResolvedValueOnce(jsonResponse({ message: "권한이 없습니다" }, 403));
   await expect(createTag("React")).resolves.toEqual({ success: false, error: "권한이 없습니다" });
+});
+
+test("동적 경로와 쿼리 값의 특수 문자를 인코딩해 전송한다", async () => {
+  mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+  await updatePost("한글/제목?#", { title: "제목", desc: "본문" });
+  expect(mockFetch).toHaveBeenLastCalledWith(
+    "/api/posts/%ED%95%9C%EA%B8%80%2F%EC%A0%9C%EB%AA%A9%3F%23",
+    expect.objectContaining({ method: "PUT" })
+  );
+
+  await deletePost("a/b");
+  expect(mockFetch).toHaveBeenLastCalledWith(
+    "/api/posts/a%2Fb",
+    expect.objectContaining({ method: "DELETE" })
+  );
+
+  await deleteTag("tag/1");
+  expect(mockFetch).toHaveBeenLastCalledWith(
+    "/api/tags/tag%2F1",
+    expect.objectContaining({ method: "DELETE" })
+  );
+
+  await deleteCategory("a&b=1");
+  expect(mockFetch).toHaveBeenLastCalledWith(
+    "/api/categories?id=a%26b%3D1",
+    expect.objectContaining({ method: "DELETE" })
+  );
 });

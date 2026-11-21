@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import { tagListResponseSchema, tagResponseSchema } from "@/lib/zod/tag";
 import { parseApiResponse, readApiError } from "@/lib/zod/response";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -10,7 +11,7 @@ import type {
 
 export async function fetchAvailableTags(): Promise<TagListResponse> {
   try {
-    const res = await fetch("/api/tags", { cache: "no-store" });
+    const res = await fetch(API_ENDPOINTS.tags.list, { cache: "no-store" });
     if (!res.ok) {
       throw new Error("태그를 불러올 수 없습니다.");
     }
@@ -31,7 +32,7 @@ export async function createTag(
 
   try {
     const body: CreateTagRequest = { name: name.trim() };
-    const res = await fetch("/api/tags", {
+    const res = await fetch(API_ENDPOINTS.tags.list, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -70,7 +71,7 @@ export async function deleteTag(
   tagId: TagByIdRequest["id"]
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
-    const res = await fetch(`/api/tags/${tagId}`, {
+    const res = await fetch(API_ENDPOINTS.tags.detail(tagId), {
       method: "DELETE",
       cache: "no-store",
     });

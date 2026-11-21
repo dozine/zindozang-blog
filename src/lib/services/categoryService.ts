@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import { categoryListResponseSchema, createCategoryResponseSchema } from "@/lib/zod/category";
 import { parseApiResponse, readApiError } from "@/lib/zod/response";
 import { getErrorMessage } from "@/lib/utils/error";
@@ -16,7 +17,7 @@ interface CategoryResult {
 
 export async function fetchCategories(): Promise<CategoryListResponse> {
   try {
-    const res = await fetch("/api/categories", { cache: "no-store" });
+    const res = await fetch(API_ENDPOINTS.categories.list, { cache: "no-store" });
     if (!res.ok) {
       throw new Error("카테고리를 불러올 수 없습니다.");
     }
@@ -41,7 +42,7 @@ export async function addCategory(title: string): Promise<CategoryResult> {
 
   try {
     const body: CreateCategoryRequest = { title, slug };
-    const res = await fetch("/api/categories", {
+    const res = await fetch(API_ENDPOINTS.categories.list, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -68,7 +69,7 @@ export async function deleteCategory(
   categoryId: DeleteCategoryRequest["id"]
 ): Promise<CategoryResult> {
   try {
-    const res = await fetch(`/api/categories?id=${categoryId}`, {
+    const res = await fetch(API_ENDPOINTS.categories.byId(categoryId), {
       method: "DELETE",
     });
 
