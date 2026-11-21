@@ -1,17 +1,18 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
 import { toPostResponse } from "@/lib/serializers/responses";
-import { updatePostSchema } from "@/lib/validation/schemas";
-import { validateJsonBody } from "@/lib/validation/request";
+import { postSlugSchema, updatePostSchema } from "@/lib/zod/post";
+import { parseApiRequest } from "@/lib/zod/request";
 import type { PostData } from "@/types/post";
+import type { PostSlugRequest } from "@/types/api/post";
 import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 //GET SINGLE POST
-export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug: string }> }) => {
+export const GET = async (req: NextRequest, { params }: { params: Promise<PostSlugRequest> }) => {
   const { slug } = await params;
   const session = await getAuthSession();
-  if (!slug || slug === "undefined") {
+  if (!postSlugSchema.safeParse({ slug }).success) {
     return new NextResponse(JSON.stringify({ message: "Invalid post slug" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -64,7 +65,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ slug
 //DELETE POST
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<PostSlugRequest> }
 ) => {
   const session = await getAuthSession();
   if (!session?.user?.email) {
@@ -74,6 +75,9 @@ export const DELETE = async (
     });
   }
   const { slug } = await params;
+  if (!postSlugSchema.safeParse({ slug }).success) {
+    return NextResponse.json({ message: "Invalid post slug" }, { status: 400 });
+  }
   try {
     const post: Post | null = await prisma.post.findUnique({
       where: { slug },
@@ -113,7 +117,7 @@ export const DELETE = async (
   }
 };
 
-export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug: string }> }) => {
+export const PUT = async (req: NextRequest, { params }: { params: Promise<PostSlugRequest> }) => {
   try {
     const session = await getAuthSession();
     if (!session?.user?.email) {
@@ -124,14 +128,14 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<{ slug
     }
 
     const { slug } = await params;
-    if (!slug || slug === "undefined") {
+    if (!postSlugSchema.safeParse({ slug }).success) {
       return new NextResponse(JSON.stringify({ message: "Invalid post slug" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const validation = await validateJsonBody(req, updatePostSchema);
+    const validation = await parseApiRequest(req, updatePostSchema);
     if (validation.success === false) return validation.response;
     const body = validation.data;
     const { title, desc, img, tags, isPublished, catSlug } = body;

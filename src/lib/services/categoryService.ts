@@ -1,9 +1,10 @@
+import { categoryListResponseSchema, createCategoryResponseSchema } from "@/lib/zod/category";
+import { parseApiResponse, readApiError } from "@/lib/zod/response";
 import { getErrorMessage } from "@/lib/utils/error";
 import type {
   CategoryListResponse,
   CategoryResponse,
   CreateCategoryRequest,
-  CreateCategoryResponse,
   DeleteCategoryRequest,
 } from "@/types/api/category";
 
@@ -19,7 +20,7 @@ export async function fetchCategories(): Promise<CategoryListResponse> {
     if (!res.ok) {
       throw new Error("카테고리를 불러올 수 없습니다.");
     }
-    return await res.json();
+    return await parseApiResponse(res, categoryListResponseSchema);
   } catch (error) {
     console.error("API 카테고리 목록 조회 오류:", error);
     throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
@@ -47,13 +48,12 @@ export async function addCategory(title: string): Promise<CategoryResult> {
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: errorData.message || `카테고리 추가 실패 (${res.status})`,
+        error: await readApiError(res, `카테고리 추가 실패 (${res.status})`),
       };
     }
-    const result: CreateCategoryResponse = await res.json();
+    const result = await parseApiResponse(res, createCategoryResponseSchema);
     return { success: true, category: result.category };
   } catch (error) {
     console.error("API 카테고리 추가 오류:", error);
@@ -73,10 +73,9 @@ export async function deleteCategory(
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: errorData.message || `카테고리 삭제 실패 (${res.status})`,
+        error: await readApiError(res, `카테고리 삭제 실패 (${res.status})`),
       };
     }
 

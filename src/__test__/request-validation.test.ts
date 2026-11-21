@@ -4,15 +4,17 @@ import prisma from "@/lib/db/prisma";
 import { getAuthSession } from "@/lib/services/authService";
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import { POST as createPost } from "@/app/api/posts/route";
-import { PUT as updatePost } from "@/app/api/posts/[slug]/route";
-import { POST as createCategory } from "@/app/api/categories/route";
-import { POST as createTag } from "@/app/api/tags/route";
 import {
-  createCategorySchema,
-  createPostSchema,
-  createTagSchema,
-  updatePostSchema,
-} from "@/lib/validation/schemas";
+  GET as getPost,
+  PUT as updatePost,
+  DELETE as deletePost,
+} from "@/app/api/posts/[slug]/route";
+import { GET as getTag, DELETE as deleteTag } from "@/app/api/tags/[id]/route";
+import { POST as createCategory, DELETE as deleteCategory } from "@/app/api/categories/route";
+import { POST as createTag } from "@/app/api/tags/route";
+import { createCategorySchema } from "@/lib/zod/category";
+import { createPostSchema, updatePostSchema } from "@/lib/zod/post";
+import { createTagSchema } from "@/lib/zod/tag";
 
 jest.mock("@/lib/services/authService", () => ({ getAuthSession: jest.fn() }));
 jest.mock("@/lib/services/requireAdmin", () => ({ requireAdmin: jest.fn() }));
@@ -124,6 +126,82 @@ test("authentication is checked before parsing invalid requests", async () => {
   expect((await updatePost(request("PUT", "{"), params())).status).toBe(401);
   expect((await createCategory(request("POST", "{"))).status).toBe(401);
   expect((await createTag(request("POST", "{"))).status).toBe(401);
+});
+
+test.each(["", "?id=", "?id=%20%20"])(
+  "rejects a missing or blank category id (%s) before database access",
+  async (query) => {
+    const response = await deleteCategory(
+      new NextRequest(`http://localhost/api/categories${query}`, { method: "DELETE" })
+    );
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("카테고리 id가 없습니다.");
+    expect(db.category.findUnique).not.toHaveBeenCalled();
+    expect(db.$transaction).not.toHaveBeenCalled();
+  }
+);
+
+test("checks authorization before validating the category id", async () => {
+  jest
+    .mocked(requireAdmin)
+    .mockResolvedValue(NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 }));
+  const response = await deleteCategory(
+    new NextRequest("http://localhost/api/categories", { method: "DELETE" })
+  );
+  expect(response.status).toBe(401);
+  expect(db.category.findUnique).not.toHaveBeenCalled();
+});
+
+test("passes a valid category id to the database lookup", async () => {
+  jest.mocked(db.category.findUnique).mockResolvedValue(null);
+  const response = await deleteCategory(
+    new NextRequest("http://localhost/api/categories?id=category-1", { method: "DELETE" })
+  );
+  expect(response.status).toBe(404);
+  expect(db.category.findUnique).toHaveBeenCalledWith({ where: { id: "category-1" } });
+});
+
+test.each(["", "   ", "undefined"])(
+  "rejects invalid post slug before database access: %s",
+  async (slug) => {
+    const routeParams = { params: Promise.resolve({ slug }) };
+    expect(
+      (await getPost(new NextRequest("http://localhost/api/posts/test"), routeParams)).status
+    ).toBe(400);
+    expect((await updatePost(request("PUT", JSON.stringify(validPost)), routeParams)).status).toBe(
+      400
+    );
+    expect((await deletePost(request("DELETE", ""), routeParams)).status).toBe(400);
+    expect(db.post.findUnique).not.toHaveBeenCalled();
+    expect(db.$transaction).not.toHaveBeenCalled();
+  }
+);
+
+test.each(["", "   ", "undefined"])(
+  "rejects invalid tag id before database access: %s",
+  async (id) => {
+    const routeParams = { params: Promise.resolve({ id }) };
+    expect(
+      (await getTag(new NextRequest("http://localhost/api/tags/test"), routeParams)).status
+    ).toBe(400);
+    expect((await deleteTag(request("DELETE", ""), routeParams)).status).toBe(400);
+    expect(db.tag.findUnique).not.toHaveBeenCalled();
+    expect(db.$transaction).not.toHaveBeenCalled();
+  }
+);
+
+test("checks authorization before validating post and tag deletion parameters", async () => {
+  jest.mocked(getAuthSession).mockResolvedValue(null);
+  jest
+    .mocked(requireAdmin)
+    .mockResolvedValue(NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 }));
+  expect(
+    (await deletePost(request("DELETE", ""), { params: Promise.resolve({ slug: "" }) })).status
+  ).toBe(401);
+  expect(
+    (await deleteTag(request("DELETE", ""), { params: Promise.resolve({ id: "" }) })).status
+  ).toBe(401);
+  expect(db.$transaction).not.toHaveBeenCalled();
 });
 
 test("accepts existing valid request formats without changing their values", () => {

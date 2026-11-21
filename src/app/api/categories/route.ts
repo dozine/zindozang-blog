@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { toCategoryResponse } from "@/lib/serializers/responses";
 import { Category } from "@prisma/client";
-import { createCategorySchema } from "@/lib/validation/schemas";
-import { validateJsonBody } from "@/lib/validation/request";
+import { createCategorySchema, deleteCategorySchema } from "@/lib/zod/category";
+import { parseApiRequest } from "@/lib/zod/request";
 
 // GET API 함수
 export const GET = async () => {
@@ -31,7 +31,7 @@ export const POST = async (req: NextRequest) => {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const validation = await validateJsonBody(req, createCategorySchema);
+    const validation = await parseApiRequest(req, createCategorySchema);
     if (validation.success === false) return validation.response;
     const { slug, title, img } = validation.data;
 
@@ -71,11 +71,11 @@ export const DELETE = async (req: NextRequest) => {
     if (denied) return denied;
 
     const { searchParams } = new URL(req.url);
-    const id: string | null = searchParams.get("id");
-
-    if (!id) {
+    const validation = deleteCategorySchema.safeParse({ id: searchParams.get("id") });
+    if (!validation.success) {
       return new NextResponse("카테고리 id가 없습니다.", { status: 400 });
     }
+    const { id } = validation.data;
 
     // 먼저 카테고리 정보 조회
     const categoryToDelete: Category | null = await prisma.category.findUnique({

@@ -1,8 +1,8 @@
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
 import { toPostResponse } from "@/lib/serializers/responses";
-import { createPostSchema } from "@/lib/validation/schemas";
-import { validateJsonBody } from "@/lib/validation/request";
+import { createPostSchema } from "@/lib/zod/post";
+import { parseApiRequest } from "@/lib/zod/request";
 import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -132,7 +132,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   try {
-    const validation = await validateJsonBody(req, createPostSchema);
+    const validation = await parseApiRequest(req, createPostSchema);
     if (validation.success === false) return validation.response;
     const body = validation.data;
     const { tags: tagIds } = body;

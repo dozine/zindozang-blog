@@ -1,31 +1,23 @@
+import type { z } from "zod";
+import type {
+  createCategorySchema,
+  deleteCategorySchema,
+  categoryResponseSchema,
+  categoryListResponseSchema,
+  createCategoryResponseSchema,
+  deleteCategoryResponseSchema,
+} from "@/lib/zod/category";
+
 /** POST /api/categories 요청 본문. */
-export interface CreateCategoryRequest {
-  slug: string;
-  title: string;
-  img?: string | null;
-}
+export type CreateCategoryRequest = z.infer<typeof createCategorySchema>;
 
 /** DELETE /api/categories의 쿼리 파라미터. */
-export interface DeleteCategoryRequest {
-  id: string;
-}
+export type DeleteCategoryRequest = z.infer<typeof deleteCategorySchema>;
 
 /** 외부에 제공하는 카테고리 필드. */
-export interface CategoryResponse {
-  id: string;
-  slug: string;
-  title: string;
-  img: string | null;
-}
-export type CategoryListResponse = CategoryResponse[];
-
-export interface CreateCategoryResponse {
-  message: string;
-  category: CategoryResponse;
-}
+export type CategoryResponse = z.infer<typeof categoryResponseSchema>;
+export type CategoryListResponse = z.infer<typeof categoryListResponseSchema>;
+export type CreateCategoryResponse = z.infer<typeof createCategoryResponseSchema>;
 
 /** DELETE /api/categories?id=... 성공 응답. */
-export interface DeleteCategoryResponse {
-  message: string;
-  deleted: CategoryResponse;
-}
+export type DeleteCategoryResponse = z.infer<typeof deleteCategoryResponseSchema>;

@@ -1,3 +1,5 @@
+import { postResponseSchema } from "@/lib/zod/post";
+import { parseApiResponse, readApiError } from "@/lib/zod/response";
 import { getErrorMessage } from "@/lib/utils/error";
 import type {
   CreatePostRequest,
@@ -10,10 +12,9 @@ export async function fetchPostBySlug(slug: string): Promise<PostDetailResponse>
   try {
     const res = await fetch(`/api/posts/${slug}`, { cache: "no-store" });
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || "게시글을 불러올 수 없습니다.");
+      throw new Error(await readApiError(res, "게시글을 불러올 수 없습니다."));
     }
-    return await res.json();
+    return await parseApiResponse(res, postResponseSchema);
   } catch (error) {
     console.error("API 게시글 조회 오류:", error);
     throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
@@ -29,10 +30,9 @@ export async function createPost(createBody: CreatePostRequest): Promise<CreateP
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || "게시글 작성에 실패했습니다.");
+      throw new Error(await readApiError(res, "게시글 작성에 실패했습니다."));
     }
-    return await res.json();
+    return await parseApiResponse(res, postResponseSchema);
   } catch (error) {
     console.error("API 게시글 작성 오류:", error);
     throw new Error(getErrorMessage(error, "서버 통신 중 오류가 발생했습니다."));
@@ -48,8 +48,7 @@ export async function updatePost(slug: string, updateBody: UpdatePostRequest): P
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || "게시글 수정에 실패했습니다.");
+      throw new Error(await readApiError(res, "게시글 수정에 실패했습니다."));
     }
   } catch (error) {
     console.error("API 게시글 수정 오류:", error);
@@ -65,9 +64,7 @@ export async function deletePost(slug: string): Promise<void> {
     cache: "no-store",
   });
 
-  const result = await res.json();
-
   if (!res.ok) {
-    throw new Error(result.message || "Failed to delete post");
+    throw new Error(await readApiError(res, "Failed to delete post"));
   }
 }
