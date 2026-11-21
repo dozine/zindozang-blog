@@ -1,3 +1,4 @@
+import { tagByIdSchema } from "@/lib/zod/tag";
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
 import { toTagDetailResponse } from "@/lib/serializers/responses";
@@ -11,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<TagByIdRequest> },
 ) {
   const { id } = await params;
-  if (!id || id === "undefined") {
+  if (!tagByIdSchema.safeParse({ id }).success) {
     return NextResponse.json(
       { message: "유효하지 않은 태그 ID입니다." },
       { status: 400 },
@@ -60,7 +61,7 @@ export async function DELETE(
   if (denied) return denied;
 
   const { id } = await params;
-  if (!id || id === "undefined") {
+  if (!tagByIdSchema.safeParse({ id }).success) {
     return NextResponse.json(
       { message: "유효하지 않은 태그 ID입니다." },
       { status: 400 },

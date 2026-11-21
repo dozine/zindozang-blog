@@ -2,8 +2,8 @@ import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
 import { toTagResponse, toTagWithPostCountResponse } from "@/lib/serializers/responses";
 import type { TagWithPostCount } from "@/types/tag";
-import { createTagSchema } from "@/lib/validation/schemas";
-import { validateJsonBody } from "@/lib/validation/request";
+import { createTagSchema } from "@/lib/zod/tag";
+import { parseApiRequest } from "@/lib/zod/request";
 import { Prisma, Tag } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    const validation = await validateJsonBody(req, createTagSchema);
+    const validation = await parseApiRequest(req, createTagSchema);
     if (validation.success === false) return validation.response;
     const { name } = validation.data;
 

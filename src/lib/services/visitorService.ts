@@ -1,3 +1,5 @@
+import { trackVisitorResponseSchema, visitorStatsResponseSchema } from "@/lib/zod/visitor";
+import { parseApiResponse } from "@/lib/zod/response";
 import type { GetVisitorStatsResponse, TrackVisitorResponse } from "@/types/api/visitor";
 
 export const visitorService = {
@@ -11,7 +13,7 @@ export const visitorService = {
       throw new Error("Failed to track visitor");
     }
 
-    return response.json();
+    return parseApiResponse(response, trackVisitorResponseSchema);
   },
 
   getStats: async (): Promise<GetVisitorStatsResponse> => {
@@ -23,6 +25,6 @@ export const visitorService = {
       throw new Error("Failed to get visitor stats");
     }
 
-    return response.json();
+    return parseApiResponse(response, visitorStatsResponseSchema);
   },
 };
