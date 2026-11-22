@@ -57,15 +57,18 @@ jest.mock(
   () =>
     function MockUploader({
       onUploadRequested,
-      onImageUploaded,
+      onImagesUploaded,
     }: {
       onUploadRequested: () => void;
-      onImageUploaded: (url: string) => void;
+      onImagesUploaded: (urls: string[]) => void;
     }) {
       return (
         <>
           <button onClick={onUploadRequested}>사진 선택</button>
-          <button onClick={() => onImageUploaded("/photo.png")}>업로드 완료</button>
+          <button onClick={() => onImagesUploaded(["/photo.png"])}>업로드 완료</button>
+          <button onClick={() => onImagesUploaded(["/first.png", "/second.png"])}>
+            여러 장 완료
+          </button>
         </>
       );
     }
@@ -295,4 +298,15 @@ test("빈 본문에도 사진을 삽입한다", () => {
   expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).toBe(
     "\n\n![image](/photo.png)\n\n"
   );
+});
+
+test("여러 사진을 기억한 커서 위치에 순서대로 삽입한다", () => {
+  render(<WritePage />);
+  const editor = screen.getByLabelText("본문") as HTMLTextAreaElement;
+  fireEvent.change(editor, { target: { value: "앞뒤" } });
+  editor.setSelectionRange(1, 1);
+  fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
+  fireEvent.click(screen.getByRole("button", { name: "여러 장 완료" }));
+  expect(editor.value).toBe("앞\n\n![image](/first.png)\n\n\n\n![image](/second.png)\n\n뒤");
+  expect(screen.getAllByAltText(/uploaded-/)).toHaveLength(2);
 });

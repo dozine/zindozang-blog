@@ -1,7 +1,11 @@
 "use client";
 import styles from "./writePage.module.css";
+import ImageGridPicker from "@/components/imageGridPicker/ImageGridPicker";
+import { arrangeImageGrid } from "@/lib/utils/imageGrid";
+import { ThemeContext } from "@/context/ThemeContext";
+import { formattingCommands } from "@/components/writeEditor/toolbar";
 import { postRecoverySchema } from "@/lib/zod/postRecovery";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
@@ -19,6 +23,7 @@ import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const WritePage = () => {
+  const { theme } = useContext(ThemeContext);
   const { status, data: session } = useSession();
   const router = useRouter();
   const initializedSlug = useRef<string | null>(null);
@@ -127,6 +132,8 @@ const WritePage = () => {
   const [tags, setTags] = useState<TagData[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [tagInput, setTagInput] = useState<string>("");
+  const [gridColumns, setGridColumns] = useState<2 | 3 | null>(null);
+  const gridPosition = useRef(0);
   const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
 
   const postRecoveryKey = `blog:post-recovery:v1:${session?.user?.email ?? "local"}:${isEditing ? `edit:${editSlug}` : "new"}`;
@@ -263,15 +270,9 @@ const WritePage = () => {
       .replace(/-+/g, "-")
       .toLowerCase();
 
-  const handleImageUploaded = useCallback((url: string | string[]) => {
-    let imageUrl = "";
-    if (Array.isArray(url)) {
-      imageUrl = url[1] || url[0];
-    } else {
-      imageUrl = url;
-    }
-
-    const markdownImage = `\n\n![image](${imageUrl})\n\n`;
+  const handleImagesUploaded = useCallback((imageUrls: string[]) => {
+    if (!imageUrls.length) return;
+    const markdownImage = imageUrls.map((url) => `\n\n![image](${url})\n\n`).join("");
     const position = Math.min(
       imageAnchor.current ?? previousValue.current.length,
       previousValue.current.length
@@ -283,8 +284,8 @@ const WritePage = () => {
     setImageCaret(position + markdownImage.length);
 
     setUploadedImages((prev) => {
-      const next = [...prev, imageUrl];
-      if (next.length === 1) setThumbnailImg(imageUrl);
+      const next = [...prev, ...imageUrls];
+      if (prev.length === 0) setThumbnailImg(imageUrls[0]);
       return next;
     });
   }, []);
@@ -395,16 +396,9 @@ const WritePage = () => {
           <rect x="13" y="3" width="8" height="18" rx="1" />
         </svg>
       ),
-      execute: (state, api) => {
-        api.replaceSelection(
-          `<div class="img-grid-2">
-
-![](이미지URL1)
-
-![](이미지URL2)
-
-</div>`
-        );
+      execute: (state) => {
+        gridPosition.current = state.selection.start;
+        setGridColumns(2);
       },
     },
     {
@@ -425,14 +419,9 @@ const WritePage = () => {
           <rect x="16" y="3" width="6" height="18" rx="1" />
         </svg>
       ),
-      execute: (state, api) => {
-        api.replaceSelection(
-          `<div class="img-grid-3">
-          ![](이미지URL1)
-          ![](이미지URL2)
-          ![](이미지URL3)
-          </div>`
-        );
+      execute: (state) => {
+        gridPosition.current = state.selection.start;
+        setGridColumns(3);
       },
     },
   ];
@@ -479,14 +468,19 @@ const WritePage = () => {
         {postRecoveryMessage || "작성 내용은 이 브라우저에 자동 보관됩니다."}
       </p>
       <ImageUploader
-        onImageUploaded={handleImageUploaded}
+        onImagesUploaded={handleImagesUploaded}
         onUploadRequested={rememberImagePosition}
         triggerUpload={triggerImageUpload}
         onUploadTriggered={resetImageUploadTrigger}
       />
 
       {uploadedImages.length > 0 && (
-        <div className={styles.imagePreviewList}>
+        <div
+          className={styles.imagePreviewList}
+          role="region"
+          aria-label={`업로드한 사진 ${uploadedImages.length}장`}
+          tabIndex={0}
+        >
           {uploadedImages.map((url, i) => (
             <div key={i} className={styles.imagePreviewItem}>
               <img src={url} alt={`uploaded-${i}`} />
@@ -517,12 +511,18 @@ const WritePage = () => {
         </div>
       )}
 
-      <div ref={editorContainerRef} data-color-mode="light" className={styles.editorContainer}>
+      <div
+        ref={editorContainerRef}
+        data-color-mode={theme === "dark" ? "dark" : "light"}
+        className={styles.editorContainer}
+      >
         <MDEditor
           value={value}
           onChange={(val) => setValue(val || "")}
-          style={{ minHeight: 500 }}
-          commands={customCommands}
+          height={560}
+          minHeight={400}
+          textareaProps={{ "aria-label": "본문", placeholder: "여기에 이야기를 적어보세요…" }}
+          commands={[...formattingCommands, ...customCommands]}
         />
       </div>
 
@@ -530,6 +530,24 @@ const WritePage = () => {
         {isEditing ? "Edit" : "Publish"}
       </button>
 
+      {gridColumns !== null && (
+        <ImageGridPicker
+          columns={gridColumns}
+          images={[
+            ...new Set([
+              ...uploadedImages,
+              ...Array.from(value.matchAll(/!\[[^\]]*\]\(([^\s)]+)\)/g), (match) => match[1]),
+            ]),
+          ]}
+          onClose={() => setGridColumns(null)}
+          onConfirm={(urls) => {
+            const result = arrangeImageGrid(value, urls, gridColumns, gridPosition.current);
+            setValue(result.value);
+            setImageCaret(result.caret);
+            setGridColumns(null);
+          }}
+        />
+      )}
       {showSettingsModal && (
         <PostSettingModal
           isOpen={showSettingsModal}

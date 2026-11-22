@@ -125,3 +125,13 @@ test("동적 경로와 쿼리 값의 특수 문자를 인코딩해 전송한다"
     expect.objectContaining({ method: "DELETE" })
   );
 });
+
+test("한글 게시글 삭제 URL은 한 번만 인코딩한다", async () => {
+  mockFetch.mockResolvedValue({ ok: true, status: 200 });
+  await deletePost("test-랑께");
+  expect(mockFetch).toHaveBeenCalledWith(
+    `/api/posts/${encodeURIComponent("test-랑께")}`,
+    expect.objectContaining({ method: "DELETE" })
+  );
+  expect(mockFetch.mock.calls[0][0]).not.toContain("%25");
+});

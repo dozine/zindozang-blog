@@ -5,7 +5,8 @@
   gap: 10px;
   margin-top: 20px;
   padding: 0 20px;
-  max-width: 720px;
+  max-width: 1040px;
+  padding-bottom: 100px;
   margin: 0 auto;
 }
 
@@ -15,15 +16,15 @@
   font-family: var(--font-noto-sans-kr), sans-serif;
   font-weight: 700;
   border: none;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid color-mix(in srgb, var(--softTextColor) 18%, var(--bg));
   outline: none;
   background-color: transparent;
-  color: #111;
+  color: var(--textColor);
   margin-bottom: 12px;
 }
 
 .titleInput::placeholder {
-  color: #ddd;
+  color: color-mix(in srgb, var(--softTextColor) 50%, var(--bg));
 }
 
 .publish {
@@ -73,19 +74,28 @@
   border-bottom: 1px solid var(--soft-textColor);
 }
 
-.editorContainer :global(.w-md-editor-text-input pre) {
-  white-space: pre-wrap !important;
-}
-
 .imagePreviewList {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   margin-bottom: 20px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--softTextColor) transparent;
+}
+
+.imagePreviewList:focus-visible {
+  outline: 2px solid #b66b42;
+  outline-offset: 3px;
 }
 
 .imagePreviewItem {
   position: relative;
+  flex: 0 0 120px;
   width: 120px;
   height: 80px;
   border: 1px solid #e0e0e0;
@@ -180,4 +190,160 @@
   font-size: 20px;
   cursor: pointer;
   padding: 2px 4px;
+}
+
+.editorContainer {
+  --editor-border: color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  --editor-accent: #b66b42;
+  margin-top: 4px;
+  min-width: 0;
+}
+
+.editorContainer :global(.w-md-editor) {
+  --md-editor-background-color: var(--bg);
+  --md-editor-box-shadow-color: var(--editor-border);
+  --md-editor-font-family: "SF Mono", Consolas, var(--font-noto-sans-kr), monospace;
+  --color-fg-default: var(--textColor);
+  --color-canvas-default: var(--bg);
+  border: 1px solid var(--editor-border);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 3%);
+}
+
+.editorContainer :global(.w-md-editor > .w-md-editor-toolbar) {
+  padding: 10px 12px;
+  gap: 8px;
+  background: color-mix(in srgb, var(--softTextColor) 4%, var(--bg));
+  border-radius: 12px 12px 0 0;
+}
+
+.editorContainer :global(.w-md-editor-toolbar li > button) {
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  border-radius: 6px;
+  color: var(--softTextColor);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.editorContainer :global(.w-md-editor-toolbar li > button:hover),
+.editorContainer :global(.w-md-editor-toolbar li.active > button) {
+  background: color-mix(in srgb, var(--editor-accent) 12%, var(--bg));
+  color: var(--editor-accent);
+}
+
+.editorContainer :global(.w-md-editor-toolbar li > button:focus-visible) {
+  outline: 2px solid var(--editor-accent);
+  outline-offset: 2px;
+}
+
+.editorContainer :global(.w-md-editor-toolbar-divider) {
+  background: var(--editor-border);
+  margin: 0 6px;
+}
+
+.editorContainer :global(.w-md-editor-toolbar-child) {
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 10;
+  max-height: 320px;
+  overflow-y: auto;
+  box-shadow: 0 4px 18px rgb(0 0 0 / 12%);
+}
+
+.editorContainer :global(.w-md-editor-toolbar-child .w-md-editor-toolbar ul > li button) {
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* 입력 영역과 구문 강조 레이어의 글자 크기·행간을 동일하게 유지한다. */
+.editorContainer :global(.w-md-editor-text) {
+  padding: 24px;
+  font-size: 14px !important;
+  line-height: 1.85 !important;
+}
+
+.editorContainer :global(.w-md-editor-text-pre > code) {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.editorContainer :global(.w-md-editor-text-input::placeholder) {
+  color: var(--softTextColor);
+  -webkit-text-fill-color: var(--softTextColor);
+  opacity: 0.65;
+}
+
+.editorContainer :global(.w-md-editor-preview) {
+  padding: 24px 28px;
+}
+
+.editorContainer :global(.wmde-markdown) {
+  background: var(--bg);
+  color: var(--textColor);
+  font-family: var(--font-noto-sans-kr), sans-serif;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.editorContainer :global(.w-md-editor-bar) {
+  color: var(--softTextColor);
+  border-radius: 0 0 12px 12px;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding-inline: 12px;
+  }
+
+  .titleInput {
+    font-size: 28px;
+  }
+
+  .editorContainer :global(.w-md-editor > .w-md-editor-toolbar) {
+    padding: 8px;
+  }
+
+  .editorContainer :global(.w-md-editor-text) {
+    padding: 16px;
+  }
+
+  .editorContainer :global(.w-md-editor-preview) {
+    padding: 16px;
+  }
+}
+
+.editorContainer :global(.wmde-markdown .img-grid-2),
+.editorContainer :global(.wmde-markdown .img-grid-3) {
+  display: grid;
+  gap: 8px;
+  margin: 1.5em 0;
+}
+.editorContainer :global(.wmde-markdown .img-grid-2) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.editorContainer :global(.wmde-markdown .img-grid-3) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.editorContainer :global(.wmde-markdown [class^="img-grid-"] p) {
+  margin: 0;
+  min-width: 0;
+}
+.editorContainer :global(.wmde-markdown [class^="img-grid-"] img) {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 2px;
+}
+@media screen and (max-width: 640px) {
+  .editorContainer :global(.wmde-markdown .img-grid-2),
+  .editorContainer :global(.wmde-markdown .img-grid-3) {
+    grid-template-columns: 1fr;
+  }
 }

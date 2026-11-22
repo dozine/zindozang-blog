@@ -7,34 +7,31 @@ import styles from "./ImageUploader.module.css";
 import { app } from "@/lib/external/firebase";
 
 interface ImageUploaderProps {
-  onImageUploaded?: (url: string | string[]) => void;
+  onImagesUploaded?: (urls: string[]) => void;
   triggerUpload?: boolean;
   onUploadTriggered?: () => void;
   onUploadRequested?: () => void;
 }
 
-interface SizedImageResult {
-  file: File;
-  sizeName: string;
-}
-
 const ImageUploader = ({
-  onImageUploaded,
+  onImagesUploaded,
   triggerUpload = false,
   onUploadTriggered,
   onUploadRequested,
 }: ImageUploaderProps) => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [uploadError, setUploadError] = useState("");
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [fileStatus, setFileStatus] = useState("");
+  const uploadInProgress = useRef(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePlusButtonClick = useCallback(() => {
-    if (uploading) return;
+    if (uploadInProgress.current) return;
     onUploadRequested?.();
     fileInputRef.current?.click();
-  }, [uploading, onUploadRequested]);
+  }, [onUploadRequested]);
 
   useEffect(() => {
     if (triggerUpload) {
@@ -43,32 +40,32 @@ const ImageUploader = ({
     }
   }, [triggerUpload, onUploadTriggered, handlePlusButtonClick]);
 
-  const createMultipleSizes = async (file: File): Promise<SizedImageResult[]> => {
-    const sizes = [
-      { name: "card", width: 400, height: 300 },
-      { name: "medium", width: 800, height: 600 },
-      { name: "large", width: 1200, height: 900 },
-    ];
+  const prepareImage = async (file: File): Promise<File> => {
+    if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
+    const img = new window.Image();
 
-    const results: SizedImageResult[] = [];
-
-    for (const size of sizes) {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const img = new window.Image();
-
-      const resizedFile = await new Promise<File>((resolve) => {
-        img.onload = () => {
-          // 원본 비율 유지하면서 리사이징
-          const aspectRatio = img.width / img.height;
-          let { width, height } = size;
-
-          if (aspectRatio > width / height) {
-            height = width / aspectRatio;
-          } else {
-            width = height * aspectRatio;
+    return new Promise<File>((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("이미지를 읽을 수 없습니다."));
+      };
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        try {
+          const scale = Math.min(1, 800 / img.width, 600 / img.height);
+          if (scale === 1) {
+            resolve(file);
+            return;
           }
-
+          const width = Math.max(1, Math.round(img.width * scale));
+          const height = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("이미지를 변환할 수 없습니다."));
+            return;
+          }
           canvas.width = width;
           canvas.height = height;
 
@@ -77,105 +74,88 @@ const ImageUploader = ({
           canvas.toBlob(
             (blob) => {
               if (blob) {
-                const resizedFile = new File([blob], file.name, {
-                  type: file.type,
-                  lastModified: Date.now(),
-                });
+                const resizedFile = new File(
+                  [blob],
+                  blob.type === file.type ? file.name : `${file.name.replace(/\.[^.]+$/, "")}.png`,
+                  {
+                    type: blob.type,
+                    lastModified: Date.now(),
+                  }
+                );
                 resolve(resizedFile);
+              } else {
+                reject(new Error("이미지 변환에 실패했습니다."));
               }
             },
             file.type,
             0.8
           );
-        };
-        img.src = URL.createObjectURL(file);
-      });
+        } catch {
+          reject(new Error("이미지 변환에 실패했습니다."));
+        }
+      };
+      img.src = objectUrl;
+    });
+  };
 
-      results.push({
-        file: resizedFile,
-        sizeName: size.name,
-      });
-    }
+  const uploadFile = async (file: File, fileIndex: number, totalFiles: number) => {
+    if (file.size > 10 * 1024 * 1024) throw new Error("파일 크기는 10MB 이하여야 합니다.");
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
+    if (!validTypes.includes(file.type))
+      throw new Error("지원되는 이미지 형식은 JPEG, PNG, GIF, WEBP, SVG입니다.");
+    const sizedFile = await prepareImage(file);
+    const storage = getStorage(app);
+    const uploadId = crypto.randomUUID();
+    const fileName = `images/${uploadId}_medium_${sizedFile.name}`;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, sizedFile);
 
-    return results;
+    return new Promise<string>((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const fraction =
+            snapshot.totalBytes > 0 ? snapshot.bytesTransferred / snapshot.totalBytes : 0;
+          setProgress(Math.round(((fileIndex + fraction) / totalFiles) * 100));
+        },
+        reject,
+        async () => {
+          try {
+            resolve(await getDownloadURL(uploadTask.snapshot.ref));
+          } catch (error) {
+            reject(error);
+          }
+        }
+      );
+    });
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadError("");
-    setProgress(0);
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length || uploadInProgress.current) return;
+    uploadInProgress.current = true;
     setUploading(true);
-
+    setUploadErrors([]);
+    setProgress(0);
+    const urls: string[] = [];
     try {
-      if (file.size > 10 * 1024 * 1024) {
-        setUploadError("파일 크기는 10MB 이하여야 합니다.");
-        setUploading(false);
-        return;
+      for (const [index, file] of files.entries()) {
+        setFileStatus(`${index + 1}/${files.length} · ${file.name}`);
+        try {
+          urls.push(await uploadFile(file, index, files.length));
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "업로드에 실패했습니다.";
+          setUploadErrors((prev) => [...prev, `${file.name}: ${reason}`]);
+        }
+        setProgress(Math.round(((index + 1) / files.length) * 100));
       }
-
-      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-      if (!validTypes.includes(file.type)) {
-        setUploadError("지원되는 이미지 형식은 JPEG, PNG, GIF, WEBP입니다.");
-        setUploading(false);
-        return;
-      }
-
-      const imageSizes: SizedImageResult[] = await createMultipleSizes(file);
-      const storage = getStorage(app);
-      const timestamp = new Date().getTime();
-      const uploadedUrls: { [key: string]: string } = {};
-
-      for (let i = 0; i < imageSizes.length; i++) {
-        const { file: sizedFile, sizeName } = imageSizes[i];
-        const fileName = `images/${timestamp}_${sizeName}_${sizedFile.name}`;
-        const storageRef = ref(storage, fileName);
-
-        const uploadTask = uploadBytesResumable(storageRef, sizedFile);
-
-        await new Promise<void>((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              const progress =
-                (i / imageSizes.length +
-                  snapshot.bytesTransferred / snapshot.totalBytes / imageSizes.length) *
-                100;
-              setProgress(Math.round(progress));
-            },
-            (error) => {
-              console.error("업로드 오류:", error);
-              setUploadError("이미지 업로드 중 오류가 발생했습니다: " + error.message);
-              reject(error);
-            },
-            async () => {
-              try {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                uploadedUrls[sizeName] = downloadURL;
-                resolve();
-              } catch (err) {
-                console.error("다운로드 URL 가져오기 실패:", err);
-                reject(err);
-              }
-            }
-          );
-        });
-      }
-
-      const urlArray: string[] = [uploadedUrls.card, uploadedUrls.medium, uploadedUrls.large];
-
-      onImageUploaded?.(urlArray);
-      setProgress(100);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error) {
-      console.error("이미지 업로드 오류:", error);
-      setUploadError("이미지 업로드 중 오류가 발생했습니다.");
+      if (urls.length) onImagesUploaded?.(urls);
     } finally {
+      uploadInProgress.current = false;
       setUploading(false);
       setProgress(0);
+      setFileStatus("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -186,6 +166,9 @@ const ImageUploader = ({
       </button>
       <input
         type="file"
+        multiple
+        disabled={uploading}
+        aria-label="사진 선택"
         ref={fileInputRef}
         onChange={handleFileChange}
         style={{ display: "none" }}
@@ -193,16 +176,20 @@ const ImageUploader = ({
       />
       {uploading && (
         <div className={styles.uploadStatus}>
-          <p>업로드 중 ... </p>
+          <p>업로드 중 {fileStatus}</p>
           <div className={styles.progressBar}>
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />
           </div>
           <span>{progress}%</span>
         </div>
       )}
-      {uploadError && (
+      {uploadErrors.length > 0 && (
         <div className={styles.uploadError}>
-          <p style={{ color: "red" }}>{uploadError}</p>
+          <ul role="alert">
+            {uploadErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
