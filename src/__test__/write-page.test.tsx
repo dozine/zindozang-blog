@@ -52,7 +52,24 @@ jest.mock(
       );
     }
 );
-jest.mock("@/components/imageUploader/ImageUploader", () => () => null);
+jest.mock(
+  "@/components/imageUploader/ImageUploader",
+  () =>
+    function MockUploader({
+      onUploadRequested,
+      onImageUploaded,
+    }: {
+      onUploadRequested: () => void;
+      onImageUploaded: (url: string) => void;
+    }) {
+      return (
+        <>
+          <button onClick={onUploadRequested}>사진 선택</button>
+          <button onClick={() => onImageUploaded("/photo.png")}>업로드 완료</button>
+        </>
+      );
+    }
+);
 jest.mock(
   "@/components/postSettingModal/PostSettingModal",
   () =>
@@ -244,4 +261,38 @@ test("이전 저장소 키의 복구본을 새 이름으로 이전한다", () =>
   expect(screen.getByDisplayValue("이전 내용")).toBeTruthy();
   expect(localStorage.getItem(newPostRecoveryKey)).toBe(stored);
   expect(localStorage.getItem("blog:post-draft:v1:local:new")).toBeNull();
+});
+
+test("사진을 본문 중간에 삽입하고 사진 뒤에 커서를 둔다", () => {
+  render(<WritePage />);
+  const editor = screen.getByLabelText("본문") as HTMLTextAreaElement;
+  fireEvent.change(editor, { target: { value: "앞 문단뒤 문단" } });
+  editor.setSelectionRange(4, 7);
+  fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
+  fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
+  const image = "\n\n![image](/photo.png)\n\n";
+  expect(editor.value).toBe("앞 문단" + image + "뒤 문단");
+  expect(editor.selectionStart).toBe(4 + image.length);
+  expect(document.activeElement).toBe(editor);
+});
+
+test("업로드 중 앞쪽에 입력해도 기존 문맥의 삽입 위치를 유지한다", () => {
+  render(<WritePage />);
+  const editor = screen.getByLabelText("본문") as HTMLTextAreaElement;
+  fireEvent.change(editor, { target: { value: "앞뒤" } });
+  editor.setSelectionRange(1, 1);
+  fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
+  fireEvent.change(editor, { target: { value: "추가앞뒤" } });
+  editor.setSelectionRange(4, 4);
+  fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
+  expect(editor.value).toBe("추가앞\n\n![image](/photo.png)\n\n뒤");
+});
+
+test("빈 본문에도 사진을 삽입한다", () => {
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
+  fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
+  expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).toBe(
+    "\n\n![image](/photo.png)\n\n"
+  );
 });
