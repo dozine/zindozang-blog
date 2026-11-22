@@ -263,15 +263,9 @@ const WritePage = () => {
       .replace(/-+/g, "-")
       .toLowerCase();
 
-  const handleImageUploaded = useCallback((url: string | string[]) => {
-    let imageUrl = "";
-    if (Array.isArray(url)) {
-      imageUrl = url[1] || url[0];
-    } else {
-      imageUrl = url;
-    }
-
-    const markdownImage = `\n\n![image](${imageUrl})\n\n`;
+  const handleImagesUploaded = useCallback((imageUrls: string[]) => {
+    if (!imageUrls.length) return;
+    const markdownImage = imageUrls.map((url) => `\n\n![image](${url})\n\n`).join("");
     const position = Math.min(
       imageAnchor.current ?? previousValue.current.length,
       previousValue.current.length
@@ -283,8 +277,8 @@ const WritePage = () => {
     setImageCaret(position + markdownImage.length);
 
     setUploadedImages((prev) => {
-      const next = [...prev, imageUrl];
-      if (next.length === 1) setThumbnailImg(imageUrl);
+      const next = [...prev, ...imageUrls];
+      if (prev.length === 0) setThumbnailImg(imageUrls[0]);
       return next;
     });
   }, []);
@@ -479,7 +473,7 @@ const WritePage = () => {
         {postRecoveryMessage || "작성 내용은 이 브라우저에 자동 보관됩니다."}
       </p>
       <ImageUploader
-        onImageUploaded={handleImageUploaded}
+        onImagesUploaded={handleImagesUploaded}
         onUploadRequested={rememberImagePosition}
         triggerUpload={triggerImageUpload}
         onUploadTriggered={resetImageUploadTrigger}
