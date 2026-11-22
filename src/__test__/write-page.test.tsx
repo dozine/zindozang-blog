@@ -63,6 +63,7 @@ jest.mock(
 
 beforeEach(() => {
   jest.clearAllMocks();
+  localStorage.clear();
   mockEditing = false;
   mockPost = null;
   mockPostFetched = true;
@@ -133,4 +134,114 @@ test("수정 화면은 캐시된 글이 있어도 새 조회가 끝난 뒤 에�
   mockPost = { title: "최신 제목", desc: "최신 내용", img: [], tags: [] };
   rerender(<WritePage />);
   expect(screen.getByDisplayValue("최신 제목")).toBeTruthy();
+});
+
+const newPostRecoveryKey = "blog:post-recovery:v1:local:new";
+
+test("작성 내용을 다시 열면 복구한다", () => {
+  const { unmount } = render(<WritePage />);
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "임시 제목" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "임시 본문" } });
+  unmount();
+  render(<WritePage />);
+  expect(screen.getByDisplayValue("임시 제목")).toBeTruthy();
+  expect(screen.getByDisplayValue("임시 본문")).toBeTruthy();
+  expect(screen.getByText("작성 중이던 내용을 복구했습니다.")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "복구 알림 닫기" }));
+  expect(screen.queryByText("작성 중이던 내용을 복구했습니다.")).toBeNull();
+});
+
+test("저장 성공 시 복구본을 삭제한다", async () => {
+  mockCreate.mockResolvedValue({ slug: "saved" });
+  render(<WritePage />);
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "제목" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "내용" } });
+  expect(localStorage.getItem(newPostRecoveryKey)).not.toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/posts/saved"));
+  expect(localStorage.getItem(newPostRecoveryKey)).toBeNull();
+});
+
+test("저장 실패 시 복구본을 유지한다", async () => {
+  mockCreate.mockRejectedValue(new Error("저장 실패"));
+  jest.spyOn(console, "error").mockImplementation(() => {});
+  render(<WritePage />);
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "제목" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "내용" } });
+  fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() => expect(window.alert).toHaveBeenCalledWith("저장 실패"));
+  expect(localStorage.getItem(newPostRecoveryKey)).not.toBeNull();
+});
+
+test("수정 복구본은 새 글과 구분하고 서버 조회 이후 복구한다", () => {
+  mockEditing = true;
+  mockPostFetched = false;
+  mockPost = { title: "서버 제목", desc: "서버 본문", img: [], tags: [] };
+  localStorage.setItem(
+    "blog:post-recovery:v1:local:edit:hello",
+    JSON.stringify({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      content: {
+        title: "수정 복구본",
+        value: "수정 내용",
+        uploadedImages: ["/photo.png"],
+        thumbnailImg: "/photo.png",
+        catSlug: "dev",
+        tags: [],
+        isPublished: true,
+        tagInput: "태그",
+      },
+    })
+  );
+  const { rerender } = render(<WritePage />);
+  expect(screen.getByText("Loading...")).toBeTruthy();
+  mockPostFetched = true;
+  rerender(<WritePage />);
+  expect(screen.getByDisplayValue("수정 복구본")).toBeTruthy();
+  expect(screen.getByDisplayValue("수정 내용")).toBeTruthy();
+  expect(localStorage.getItem(newPostRecoveryKey)).toBeNull();
+});
+
+test("손상된 복구본이 있어도 작성 화면을 연다", () => {
+  localStorage.setItem(newPostRecoveryKey, "invalid json");
+  render(<WritePage />);
+  expect(screen.getByPlaceholderText("Title")).toBeTruthy();
+  expect(screen.getByRole("status").textContent).toContain("읽을 수 없습니다");
+});
+
+test("게시글에 반영하지 않은 변경이 있으면 탭 닫기를 경고한다", () => {
+  render(<WritePage />);
+  const before = new Event("beforeunload", { cancelable: true });
+  window.dispatchEvent(before);
+  expect(before.defaultPrevented).toBe(false);
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "미저장 내용" } });
+  const after = new Event("beforeunload", { cancelable: true });
+  window.dispatchEvent(after);
+  expect(after.defaultPrevented).toBe(true);
+});
+
+test("저장소 쓰기가 실패하면 안내하고 입력 내용을 유지한다", () => {
+  jest.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    throw new Error("QuotaExceededError");
+  });
+  render(<WritePage />);
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "유지할 내용" } });
+  expect(screen.getByDisplayValue("유지할 내용")).toBeTruthy();
+  expect(screen.getByRole("status").textContent).toContain("자동 보관에 실패");
+});
+
+test("이전 저장소 키의 복구본을 새 이름으로 이전한다", () => {
+  const { unmount } = render(<WritePage />);
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "이전 내용" } });
+  unmount();
+  const stored = localStorage.getItem(newPostRecoveryKey)!;
+  localStorage.removeItem(newPostRecoveryKey);
+  localStorage.setItem("blog:post-draft:v1:local:new", stored);
+  render(<WritePage />);
+  expect(screen.getByDisplayValue("이전 내용")).toBeTruthy();
+  expect(localStorage.getItem(newPostRecoveryKey)).toBe(stored);
+  expect(localStorage.getItem("blog:post-draft:v1:local:new")).toBeNull();
 });
