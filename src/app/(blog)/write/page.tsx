@@ -81,6 +81,43 @@ const WritePage = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [thumbnailImg, setThumbnailImg] = useState<string>("");
   const [value, setValue] = useState<string>("");
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const imageAnchor = useRef<number | null>(null);
+  const previousValue = useRef(value);
+  const [imageCaret, setImageCaret] = useState<number | null>(null);
+
+  // 업로드 중 편집된 구간 앞뒤의 공통 부분을 비교해 삽입 위치를 보정한다.
+  useEffect(() => {
+    const before = previousValue.current;
+    if (imageAnchor.current !== null && before !== value) {
+      let start = 0;
+      while (start < before.length && start < value.length && before[start] === value[start])
+        start++;
+      let oldEnd = before.length;
+      let newEnd = value.length;
+      while (oldEnd > start && newEnd > start && before[oldEnd - 1] === value[newEnd - 1]) {
+        oldEnd--;
+        newEnd--;
+      }
+      if (imageAnchor.current > oldEnd) imageAnchor.current += newEnd - oldEnd;
+      else if (imageAnchor.current >= start) imageAnchor.current = newEnd;
+    }
+    previousValue.current = value;
+  }, [value]);
+
+  useEffect(() => {
+    if (imageCaret === null) return;
+    const textarea = editorContainerRef.current?.querySelector("textarea");
+    textarea?.focus();
+    textarea?.setSelectionRange(imageCaret, imageCaret);
+    setImageCaret(null);
+  }, [value, imageCaret]);
+
+  const rememberImagePosition = useCallback(() => {
+    const textarea = editorContainerRef.current?.querySelector("textarea");
+    imageAnchor.current = textarea?.selectionStart ?? previousValue.current.length;
+  }, []);
+
   const [title, setTitle] = useState<string>("");
   const isSubmitting = isCreating || isUpdating;
 
@@ -235,7 +272,15 @@ const WritePage = () => {
     }
 
     const markdownImage = `\n\n![image](${imageUrl})\n\n`;
-    setValue((prevValue) => prevValue + markdownImage);
+    const position = Math.min(
+      imageAnchor.current ?? previousValue.current.length,
+      previousValue.current.length
+    );
+    imageAnchor.current = null;
+    setValue(
+      (prevValue) => prevValue.slice(0, position) + markdownImage + prevValue.slice(position)
+    );
+    setImageCaret(position + markdownImage.length);
 
     setUploadedImages((prev) => {
       const next = [...prev, imageUrl];
@@ -435,6 +480,7 @@ const WritePage = () => {
       </p>
       <ImageUploader
         onImageUploaded={handleImageUploaded}
+        onUploadRequested={rememberImagePosition}
         triggerUpload={triggerImageUpload}
         onUploadTriggered={resetImageUploadTrigger}
       />
@@ -471,7 +517,7 @@ const WritePage = () => {
         </div>
       )}
 
-      <div data-color-mode="light" className={styles.editorContainer}>
+      <div ref={editorContainerRef} data-color-mode="light" className={styles.editorContainer}>
         <MDEditor
           value={value}
           onChange={(val) => setValue(val || "")}
