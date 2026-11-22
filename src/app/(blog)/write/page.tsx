@@ -475,7 +475,12 @@ const WritePage = () => {
       />
 
       {uploadedImages.length > 0 && (
-        <div className={styles.imagePreviewList}>
+        <div
+          className={styles.imagePreviewList}
+          role="region"
+          aria-label={`업로드한 사진 ${uploadedImages.length}장`}
+          tabIndex={0}
+        >
           {uploadedImages.map((url, i) => (
             <div key={i} className={styles.imagePreviewItem}>
               <img src={url} alt={`uploaded-${i}`} />
