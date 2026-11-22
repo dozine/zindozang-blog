@@ -1,7 +1,9 @@
 "use client";
 import styles from "./writePage.module.css";
+import { ThemeContext } from "@/context/ThemeContext";
+import { formattingCommands } from "@/components/writeEditor/toolbar";
 import { postRecoverySchema } from "@/lib/zod/postRecovery";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
@@ -19,6 +21,7 @@ import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const WritePage = () => {
+  const { theme } = useContext(ThemeContext);
   const { status, data: session } = useSession();
   const router = useRouter();
   const initializedSlug = useRef<string | null>(null);
@@ -511,12 +514,18 @@ const WritePage = () => {
         </div>
       )}
 
-      <div ref={editorContainerRef} data-color-mode="light" className={styles.editorContainer}>
+      <div
+        ref={editorContainerRef}
+        data-color-mode={theme === "dark" ? "dark" : "light"}
+        className={styles.editorContainer}
+      >
         <MDEditor
           value={value}
           onChange={(val) => setValue(val || "")}
-          style={{ minHeight: 500 }}
-          commands={customCommands}
+          height={560}
+          minHeight={400}
+          textareaProps={{ "aria-label": "본문", placeholder: "여기에 이야기를 적어보세요…" }}
+          commands={[...formattingCommands, ...customCommands]}
         />
       </div>
 
