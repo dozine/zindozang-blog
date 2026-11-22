@@ -1,5 +1,6 @@
 "use client";
 import styles from "./writePage.module.css";
+import { postRecoverySchema } from "@/lib/zod/postRecovery";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,7 +19,7 @@ import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 const WritePage = () => {
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const router = useRouter();
   const initializedSlug = useRef<string | null>(null);
   const { mutateAsync: createPost, isPending: isCreating } = useCreatePost();
@@ -91,19 +92,130 @@ const WritePage = () => {
   const [tagInput, setTagInput] = useState<string>("");
   const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
 
+  const postRecoveryKey = `blog:post-recovery:v1:${session?.user?.email ?? "local"}:${isEditing ? `edit:${editSlug}` : "new"}`;
+  const [postRecoveryReady, setPostRecoveryReady] = useState<string | null>(null);
+  const [postRecoveryMessage, setPostRecoveryMessage] = useState("");
+  const [showRecoveryToast, setShowRecoveryToast] = useState(false);
+
   useEffect(() => {
-    if (postToEdit && initializedSlug.current !== editSlug) {
-      initializedSlug.current = editSlug;
-      setTitle(postToEdit.title);
-      setValue(postToEdit.desc);
-      const imgs = postToEdit.img || [];
-      setUploadedImages(Array.isArray(imgs) ? imgs : imgs ? [imgs] : []);
-      setThumbnailImg(Array.isArray(imgs) ? imgs[0] || "" : imgs || "");
-      setCatSlug(postToEdit.catSlug ?? "");
-      setIsPublished(Boolean(postToEdit.isPublished));
-      setTags(postToEdit.tags || []);
+    if (!showRecoveryToast) return;
+    const timer = window.setTimeout(() => setShowRecoveryToast(false), 4000);
+    return () => window.clearTimeout(timer);
+  }, [showRecoveryToast]);
+  const savedSuccessfully = useRef(false);
+  const baseline = useRef("");
+  const lastPersisted = useRef("");
+  const postRecovery = {
+    title,
+    value,
+    uploadedImages,
+    thumbnailImg,
+    catSlug,
+    tags,
+    isPublished,
+    tagInput,
+  };
+  const serializedPostRecovery = JSON.stringify(postRecovery);
+
+  useEffect(() => {
+    if (!isAuthenticated || (isEditing && !postToEdit) || postRecoveryReady === postRecoveryKey)
+      return;
+    const imgs = postToEdit?.img ?? [];
+    const initial = {
+      title: postToEdit?.title ?? "",
+      value: postToEdit?.desc ?? "",
+      uploadedImages: imgs,
+      thumbnailImg: imgs[0] ?? "",
+      catSlug: postToEdit?.catSlug ?? "",
+      tags: postToEdit?.tags ?? [],
+      isPublished: Boolean(postToEdit?.isPublished),
+      tagInput: "",
+    };
+    baseline.current = JSON.stringify(initial);
+    savedSuccessfully.current = false;
+    let restored = initial;
+    try {
+      const legacyKey = postRecoveryKey.replace("blog:post-recovery:", "blog:post-draft:");
+      const stored = localStorage.getItem(postRecoveryKey) ?? localStorage.getItem(legacyKey);
+      if (stored) {
+        const parsed = postRecoverySchema.safeParse(JSON.parse(stored));
+        if (parsed.success) {
+          restored = parsed.data.content;
+          // 기존 이름으로 보관한 내용도 손실 없이 새 키로 옮긴다.
+          localStorage.setItem(postRecoveryKey, stored);
+          localStorage.removeItem(legacyKey);
+          setShowRecoveryToast(true);
+          setPostRecoveryMessage("작성 내용이 이 브라우저에 자동 보관되었습니다.");
+        } else {
+          setPostRecoveryMessage("기존 자동 복구 데이터를 읽을 수 없습니다.");
+        }
+      } else {
+        setPostRecoveryMessage("");
+      }
+    } catch {
+      setPostRecoveryMessage(
+        "자동 복구 데이터를 읽을 수 없습니다. 브라우저 저장소를 확인해주세요."
+      );
     }
-  }, [postToEdit, editSlug]);
+    lastPersisted.current = JSON.stringify(restored);
+    setTitle(restored.title);
+    setValue(restored.value);
+    setUploadedImages(restored.uploadedImages);
+    setThumbnailImg(restored.thumbnailImg);
+    setCatSlug(restored.catSlug);
+    setTags(restored.tags);
+    setIsPublished(restored.isPublished);
+    setTagInput(restored.tagInput);
+    initializedSlug.current = isEditing ? editSlug : null;
+    setPostRecoveryReady(postRecoveryKey);
+  }, [isAuthenticated, isEditing, editSlug, postToEdit, postRecoveryKey, postRecoveryReady]);
+
+  useEffect(() => {
+    if (!isAuthenticated || postRecoveryReady !== postRecoveryKey || savedSuccessfully.current)
+      return;
+    if (serializedPostRecovery === lastPersisted.current) return;
+    try {
+      if (serializedPostRecovery === baseline.current) {
+        localStorage.removeItem(postRecoveryKey);
+        lastPersisted.current = serializedPostRecovery;
+        setPostRecoveryMessage("저장할 변경사항이 없습니다.");
+        return;
+      }
+      localStorage.setItem(
+        postRecoveryKey,
+        JSON.stringify({
+          version: 1,
+          savedAt: new Date().toISOString(),
+          content: JSON.parse(serializedPostRecovery),
+        })
+      );
+      lastPersisted.current = serializedPostRecovery;
+      setPostRecoveryMessage("작성 내용이 이 브라우저에 자동 보관되었습니다.");
+    } catch {
+      setPostRecoveryMessage("자동 보관에 실패했습니다. 브라우저 저장 공간과 설정을 확인해주세요.");
+    }
+  }, [isAuthenticated, postRecoveryKey, postRecoveryReady, serializedPostRecovery]);
+
+  useEffect(() => {
+    if (postRecoveryReady !== postRecoveryKey || serializedPostRecovery === baseline.current)
+      return;
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (savedSuccessfully.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [postRecoveryReady, postRecoveryKey, serializedPostRecovery]);
+
+  const clearPostRecovery = useCallback(() => {
+    savedSuccessfully.current = true;
+    try {
+      localStorage.removeItem(postRecoveryKey);
+    } catch {
+      // 게시글 저장은 성공했으므로 이동을 계속한다.
+    }
+  }, [postRecoveryKey]);
 
   const slugify = (str: string) =>
     str
@@ -157,6 +269,7 @@ const WritePage = () => {
           isPublished,
         };
         await updatePost({ slug: editSlug, body: updateBody });
+        clearPostRecovery();
         alert("게시글이 성공적으로 수정되었습니다.");
         router.push(`/posts/${editSlug}`);
       } else {
@@ -170,6 +283,7 @@ const WritePage = () => {
           isPublished,
         };
         const data = await createPost(createBody);
+        clearPostRecovery();
         router.push(`/posts/${data.slug}`);
       }
     } catch (err) {
@@ -191,6 +305,7 @@ const WritePage = () => {
     closeModal,
     createPost,
     updatePost,
+    clearPostRecovery,
   ]);
 
   const customCommands: ICommand[] = [
@@ -296,6 +411,18 @@ const WritePage = () => {
 
   return (
     <div className={styles.container}>
+      {showRecoveryToast && (
+        <div className={styles.recoveryToast} role="status" aria-live="polite">
+          <span>작성 중이던 내용을 복구했습니다.</span>
+          <button
+            type="button"
+            aria-label="복구 알림 닫기"
+            onClick={() => setShowRecoveryToast(false)}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <input
         type="text"
         placeholder="Title"
@@ -303,6 +430,9 @@ const WritePage = () => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
+      <p role="status" className={styles.postRecoveryStatus}>
+        {postRecoveryMessage || "작성 내용은 이 브라우저에 자동 보관됩니다."}
+      </p>
       <ImageUploader
         onImageUploaded={handleImageUploaded}
         triggerUpload={triggerImageUpload}

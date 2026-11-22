@@ -146,3 +146,38 @@
 .imagePreviewRemove:hover {
   background: rgba(220, 50, 50, 0.8);
 }
+
+.postRecoveryStatus {
+  color: color-mix(in srgb, var(--softTextColor) 75%, var(--bg));
+  font-size: 12px;
+  min-height: 20px;
+}
+
+.recoveryToast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  max-width: calc(100vw - 40px);
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--textColor);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 10%);
+  font-size: 13px;
+}
+
+.recoveryToast button {
+  border: none;
+  background: transparent;
+  color: var(--softTextColor);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
