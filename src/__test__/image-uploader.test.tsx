@@ -24,7 +24,12 @@ jest.mock("firebase/storage", () => ({
   })),
 }));
 
+let mockWidth = 1600;
+let mockHeight = 1200;
+
 beforeEach(() => {
+  mockWidth = 1600;
+  mockHeight = 1200;
   jest.clearAllMocks();
   Object.defineProperty(URL, "createObjectURL", {
     configurable: true,
@@ -37,8 +42,8 @@ beforeEach(() => {
   });
   jest.spyOn(window, "Image").mockImplementation(() => {
     const img = {
-      width: 100,
-      height: 100,
+      width: mockWidth,
+      height: mockHeight,
       onload: () => {},
       set src(_value: string) {
         this.onload();
@@ -90,29 +95,54 @@ test("전부 실패하면 본문 삽입을 요청하지 않는다", async () => 
   expect(onUploaded).not.toHaveBeenCalled();
 });
 
-test("SVG를 PNG로 변환해 업로드한다", async () => {
+test.each([
+  ["diagram.svg", "image/svg+xml"],
+  ["animation.gif", "image/gif"],
+])("%s 원본을 변환 없이 업로드한다", async (name, type) => {
+  const onUploaded = jest.fn();
+  const file = new File(["original"], name, { type });
+  render(<ImageUploader onImagesUploaded={onUploaded} />);
+  fireEvent.change(screen.getByLabelText("사진 선택"), { target: { files: [file] } });
+  await waitFor(() => expect(onUploaded).toHaveBeenCalledTimes(1));
+  expect(jest.mocked(uploadBytesResumable).mock.calls[0][1]).toBe(file);
+  expect(HTMLCanvasElement.prototype.toBlob).not.toHaveBeenCalled();
+});
+
+test("작은 이미지는 확대하거나 재인코딩하지 않는다", async () => {
+  mockWidth = 400;
+  mockHeight = 300;
+  const file = new File(["original"], "small.png", { type: "image/png" });
   const onUploaded = jest.fn();
   render(<ImageUploader onImagesUploaded={onUploaded} />);
-  fireEvent.change(screen.getByLabelText("사진 선택"), {
-    target: {
-      files: [
-        new File(
-          ['<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>'],
-          "diagram.svg",
-          { type: "image/svg+xml" }
-        ),
-      ],
-    },
-  });
-  await waitFor(() =>
-    expect(onUploaded).toHaveBeenCalledWith(["https://storage/images/upload-id_medium_diagram.png"])
-  );
-  expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledWith(
-    expect.any(Function),
-    "image/png",
-    0.8
-  );
-  expect(uploadBytesResumable).toHaveBeenCalledTimes(1);
-  expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledTimes(1);
-  expect(screen.queryByRole("alert")).toBeNull();
+  fireEvent.change(screen.getByLabelText("사진 선택"), { target: { files: [file] } });
+  await waitFor(() => expect(onUploaded).toHaveBeenCalledTimes(1));
+  expect(jest.mocked(uploadBytesResumable).mock.calls[0][1]).toBe(file);
+  expect(HTMLCanvasElement.prototype.toBlob).not.toHaveBeenCalled();
 });
+
+test.each([
+  [2000, 1000, 800, 400],
+  [1000, 2000, 300, 600],
+])(
+  "%s × %s 이미지를 비율을 유지해 축소한다",
+  async (width, height, expectedWidth, expectedHeight) => {
+    mockWidth = width;
+    mockHeight = height;
+    const onUploaded = jest.fn();
+    render(<ImageUploader onImagesUploaded={onUploaded} />);
+    fireEvent.change(screen.getByLabelText("사진 선택"), {
+      target: { files: [new File(["photo"], "large.png", { type: "image/png" })] },
+    });
+    await waitFor(() => expect(onUploaded).toHaveBeenCalledTimes(1));
+    const ctx = jest.mocked(HTMLCanvasElement.prototype.getContext).mock.results[0]
+      .value as CanvasRenderingContext2D;
+    expect(ctx.drawImage).toHaveBeenCalledWith(
+      expect.anything(),
+      0,
+      0,
+      expectedWidth,
+      expectedHeight
+    );
+    expect(uploadBytesResumable).toHaveBeenCalledTimes(1);
+  }
+);

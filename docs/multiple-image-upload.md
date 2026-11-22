@@ -85,24 +85,24 @@ setImageCaret(position + markdownImage.length);
 
 ## 파일 형식과 현재 Storage 처리
 
-파일별 최대 크기는 10MB이며 JPEG, PNG, GIF, WEBP, SVG를 허용한다. SVG는 브라우저에서 이미지로 읽어 Canvas에 그린 뒤 PNG로 변환한다. 벡터 원본은 보관하지 않는다. GIF도 Canvas를 거치므로 애니메이션 보존을 제공하지 않는다.
+파일별 최대 크기는 10MB이며 JPEG, PNG, GIF, WEBP, SVG를 허용한다. SVG와 GIF는 Canvas 변환을 건너뛰고 원본 파일을 업로드하여 벡터 특성과 애니메이션을 유지한다.
 
-현재는 원본 한 장당 `medium` 이미지 하나만 생성하고 업로드한다. 800 × 600 범위에 원본 비율을 맞추며, SVG는 PNG로 변환한다. 기존 리사이징 계산을 유지하므로 작은 이미지도 확대될 수 있다.
+현재는 원본 한 장당 `medium` 이미지 하나만 생성하고 업로드한다. JPEG, PNG, WEBP는 800 × 600 범위를 넘을 때만 원본 비율을 유지하며 축소한다. 범위 안의 작은 이미지는 확대하거나 재인코딩하지 않고 원본을 업로드한다.
 
 기존에는 `card` 400 × 300, `medium` 800 × 600, `large` 1200 × 900의 세 파일을 업로드했지만 작성 화면에서는 `medium`만 사용했다. 사용하지 않는 변환과 업로드를 제거해 사진 5장이 모두 성공하면 Storage에도 5개 파일만 생성되도록 단순화했다.
 
-변환 함수는 `createMediumImage`로, 반환값은 파일 배열에서 단일 `File`로 변경했다. `uploadFile`도 크기별 반복문 대신 한 번의 업로드와 다운로드 URL 조회를 수행한다. 업로드 경로에는 `crypto.randomUUID()`로 생성한 ID와 `medium`, 파일명을 사용한다. 기존 Storage 파일이나 게시글 URL은 변경·삭제하지 않는다.
+파일 준비 함수는 `prepareImage`이며, 형식과 크기에 따라 원본 또는 축소한 단일 `File`을 반환한다. `uploadFile`도 크기별 반복문 대신 한 번의 업로드와 다운로드 URL 조회를 수행한다. 업로드 경로에는 `crypto.randomUUID()`로 생성한 ID와 `medium`, 파일명을 사용한다. 기존 Storage 파일이나 게시글 URL은 변경·삭제하지 않는다.
 
 사진은 게시글 저장 전에 Storage에 즉시 업로드된다. 게시글을 저장하지 않고 나가거나 본문에서 사진을 제거해도 Storage 파일은 자동 삭제되지 않는다. 업로드 완료 후 URL 조회가 실패한 경우에도 파일은 남을 수 있다. 자동 복구본에는 사진 URL이 보관되지만, 미사용 Storage 파일의 정리 기능은 구현하지 않았다.
 
 ## 구현 파일과 검증
 
-- [이미지 업로더](../src/components/imageUploader/ImageUploader.tsx): 다중 선택, 파일별 순차 처리, 진행 상태와 오류 표시, SVG 변환
+- [이미지 업로더](../src/components/imageUploader/ImageUploader.tsx): 다중 선택, 파일별 순차 처리, 진행 상태와 오류 표시, 형식별 원본 보존 및 축소
 - [작성 화면](<../src/app/(blog)/write/page.tsx>): URL 목록을 커서 위치에 일괄 삽입
-- [업로더 테스트](../src/__test__/image-uploader.test.tsx): 부분 실패 후 순서 유지, 전체 실패 시 삽입 요청 생략, SVG의 PNG 변환, 사진당 한 번의 변환과 업로드
+- [업로더 테스트](../src/__test__/image-uploader.test.tsx): 부분 실패 후 순서 유지, 전체 실패 시 삽입 요청 생략, SVG·GIF 원본 보존, 작은 이미지 원본 유지, 큰 이미지 비율 유지 축소, 사진당 한 번의 업로드
 - [작성 화면 테스트](../src/__test__/write-page.test.tsx): 여러 사진을 커서 위치에 순서대로 삽입하고 사진 목록 갱신
 
-관련 테스트 19개와 TypeScript 타입 검사를 통과했다. 테스트에서는 편집기·이미지 변환·Firebase 업로드를 모의 처리한다. 실제 파일 선택창과 이미지 변환 결과, Firebase 업로드를 포함한 브라우저 동작은 별도 확인 대상이다.
+관련 테스트 23개와 TypeScript 타입 검사를 통과했다. 테스트에서는 편집기·이미지 변환·Firebase 업로드를 모의 처리한다. 실제 파일 선택창과 이미지 변환 결과, Firebase 업로드를 포함한 브라우저 동작은 별도 확인 대상이다.
 
 ```sh
 npx jest src/__test__/image-uploader.test.tsx src/__test__/write-page.test.tsx --runInBand

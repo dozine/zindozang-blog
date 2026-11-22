@@ -40,13 +40,8 @@ const ImageUploader = ({
     }
   }, [triggerUpload, onUploadTriggered, handlePlusButtonClick]);
 
-  const createMediumImage = async (file: File): Promise<File> => {
-    const outputType = file.type === "image/svg+xml" ? "image/png" : file.type;
-    const outputName =
-      file.type === "image/svg+xml" ? `${file.name.replace(/\.svg$/i, "")}.png` : file.name;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+  const prepareImage = async (file: File): Promise<File> => {
+    if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
     const img = new window.Image();
 
     return new Promise<File>((resolve, reject) => {
@@ -57,22 +52,20 @@ const ImageUploader = ({
       };
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-        if (!ctx) {
-          reject(new Error("이미지를 변환할 수 없습니다."));
-          return;
-        }
         try {
-          // 원본 비율 유지하면서 리사이징
-          const aspectRatio = img.width / img.height;
-          let width = 800;
-          let height = 600;
-
-          if (aspectRatio > width / height) {
-            height = width / aspectRatio;
-          } else {
-            width = height * aspectRatio;
+          const scale = Math.min(1, 800 / img.width, 600 / img.height);
+          if (scale === 1) {
+            resolve(file);
+            return;
           }
-
+          const width = Math.max(1, Math.round(img.width * scale));
+          const height = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("이미지를 변환할 수 없습니다."));
+            return;
+          }
           canvas.width = width;
           canvas.height = height;
 
@@ -81,16 +74,20 @@ const ImageUploader = ({
           canvas.toBlob(
             (blob) => {
               if (blob) {
-                const resizedFile = new File([blob], outputName, {
-                  type: blob.type,
-                  lastModified: Date.now(),
-                });
+                const resizedFile = new File(
+                  [blob],
+                  blob.type === file.type ? file.name : `${file.name.replace(/\.[^.]+$/, "")}.png`,
+                  {
+                    type: blob.type,
+                    lastModified: Date.now(),
+                  }
+                );
                 resolve(resizedFile);
               } else {
                 reject(new Error("이미지 변환에 실패했습니다."));
               }
             },
-            outputType,
+            file.type,
             0.8
           );
         } catch {
@@ -106,7 +103,7 @@ const ImageUploader = ({
     const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
     if (!validTypes.includes(file.type))
       throw new Error("지원되는 이미지 형식은 JPEG, PNG, GIF, WEBP, SVG입니다.");
-    const sizedFile = await createMediumImage(file);
+    const sizedFile = await prepareImage(file);
     const storage = getStorage(app);
     const uploadId = crypto.randomUUID();
     const fileName = `images/${uploadId}_medium_${sizedFile.name}`;
