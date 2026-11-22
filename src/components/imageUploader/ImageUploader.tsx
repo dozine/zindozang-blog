@@ -13,11 +13,6 @@ interface ImageUploaderProps {
   onUploadRequested?: () => void;
 }
 
-interface SizedImageResult {
-  file: File;
-  sizeName: string;
-}
-
 const ImageUploader = ({
   onImagesUploaded,
   triggerUpload = false,
@@ -45,80 +40,65 @@ const ImageUploader = ({
     }
   }, [triggerUpload, onUploadTriggered, handlePlusButtonClick]);
 
-  const createMultipleSizes = async (file: File): Promise<SizedImageResult[]> => {
-    const sizes = [
-      { name: "card", width: 400, height: 300 },
-      { name: "medium", width: 800, height: 600 },
-      { name: "large", width: 1200, height: 900 },
-    ];
-
+  const createMediumImage = async (file: File): Promise<File> => {
     const outputType = file.type === "image/svg+xml" ? "image/png" : file.type;
     const outputName =
       file.type === "image/svg+xml" ? `${file.name.replace(/\.svg$/i, "")}.png` : file.name;
-    const results: SizedImageResult[] = [];
 
-    for (const size of sizes) {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const img = new window.Image();
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new window.Image();
 
-      const resizedFile = await new Promise<File>((resolve, reject) => {
-        const objectUrl = URL.createObjectURL(file);
-        img.onerror = () => {
-          URL.revokeObjectURL(objectUrl);
-          reject(new Error("이미지를 읽을 수 없습니다."));
-        };
-        img.onload = () => {
-          URL.revokeObjectURL(objectUrl);
-          if (!ctx) {
-            reject(new Error("이미지를 변환할 수 없습니다."));
-            return;
+    return new Promise<File>((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("이미지를 읽을 수 없습니다."));
+      };
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        if (!ctx) {
+          reject(new Error("이미지를 변환할 수 없습니다."));
+          return;
+        }
+        try {
+          // 원본 비율 유지하면서 리사이징
+          const aspectRatio = img.width / img.height;
+          let width = 800;
+          let height = 600;
+
+          if (aspectRatio > width / height) {
+            height = width / aspectRatio;
+          } else {
+            width = height * aspectRatio;
           }
-          try {
-            // 원본 비율 유지하면서 리사이징
-            const aspectRatio = img.width / img.height;
-            let { width, height } = size;
 
-            if (aspectRatio > width / height) {
-              height = width / aspectRatio;
-            } else {
-              width = height * aspectRatio;
-            }
+          canvas.width = width;
+          canvas.height = height;
 
-            canvas.width = width;
-            canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
 
-            ctx?.drawImage(img, 0, 0, width, height);
-
-            canvas.toBlob(
-              (blob) => {
-                if (blob) {
-                  const resizedFile = new File([blob], outputName, {
-                    type: blob.type,
-                    lastModified: Date.now(),
-                  });
-                  resolve(resizedFile);
-                } else {
-                  reject(new Error("이미지 변환에 실패했습니다."));
-                }
-              },
-              outputType,
-              0.8
-            );
-          } catch {
-            reject(new Error("이미지 변환에 실패했습니다."));
-          }
-        };
-        img.src = objectUrl;
-      });
-
-      results.push({
-        file: resizedFile,
-        sizeName: size.name,
-      });
-    }
-
-    return results;
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const resizedFile = new File([blob], outputName, {
+                  type: blob.type,
+                  lastModified: Date.now(),
+                });
+                resolve(resizedFile);
+              } else {
+                reject(new Error("이미지 변환에 실패했습니다."));
+              }
+            },
+            outputType,
+            0.8
+          );
+        } catch {
+          reject(new Error("이미지 변환에 실패했습니다."));
+        }
+      };
+      img.src = objectUrl;
+    });
   };
 
   const uploadFile = async (file: File, fileIndex: number, totalFiles: number) => {
@@ -126,47 +106,31 @@ const ImageUploader = ({
     const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
     if (!validTypes.includes(file.type))
       throw new Error("지원되는 이미지 형식은 JPEG, PNG, GIF, WEBP, SVG입니다.");
-    const imageSizes: SizedImageResult[] = await createMultipleSizes(file);
+    const sizedFile = await createMediumImage(file);
     const storage = getStorage(app);
     const uploadId = crypto.randomUUID();
-    const uploadedUrls: { [key: string]: string } = {};
+    const fileName = `images/${uploadId}_medium_${sizedFile.name}`;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, sizedFile);
 
-    for (let i = 0; i < imageSizes.length; i++) {
-      const { file: sizedFile, sizeName } = imageSizes[i];
-      const fileName = `images/${uploadId}_${sizeName}_${sizedFile.name}`;
-      const storageRef = ref(storage, fileName);
-
-      const uploadTask = uploadBytesResumable(storageRef, sizedFile);
-
-      await new Promise<void>((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress =
-              (i / imageSizes.length +
-                snapshot.bytesTransferred / snapshot.totalBytes / imageSizes.length) *
-              100;
-            setProgress(Math.round((fileIndex * 100 + progress) / totalFiles));
-          },
-          (error) => {
-            console.error("업로드 오류:", error);
+    return new Promise<string>((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const fraction =
+            snapshot.totalBytes > 0 ? snapshot.bytesTransferred / snapshot.totalBytes : 0;
+          setProgress(Math.round(((fileIndex + fraction) / totalFiles) * 100));
+        },
+        reject,
+        async () => {
+          try {
+            resolve(await getDownloadURL(uploadTask.snapshot.ref));
+          } catch (error) {
             reject(error);
-          },
-          async () => {
-            try {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              uploadedUrls[sizeName] = downloadURL;
-              resolve();
-            } catch (err) {
-              console.error("다운로드 URL 가져오기 실패:", err);
-              reject(err);
-            }
           }
-        );
-      });
-    }
-
-    return uploadedUrls.medium;
+        }
+      );
+    });
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

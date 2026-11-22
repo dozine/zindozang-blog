@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { uploadBytesResumable } from "firebase/storage";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
 
 jest.mock(
@@ -14,16 +15,17 @@ jest.mock("firebase/storage", () => ({
   getStorage: () => ({}),
   ref: (_storage: unknown, path: string) => path,
   getDownloadURL: async (path: string) => `https://storage/${path}`,
-  uploadBytesResumable: (path: string) => ({
+  uploadBytesResumable: jest.fn((path: string) => ({
     snapshot: { ref: path },
     on: (_event: string, progress: (value: unknown) => void, _error: unknown, done: () => void) => {
       progress({ bytesTransferred: 1, totalBytes: 1 });
       done();
     },
-  }),
+  })),
 }));
 
 beforeEach(() => {
+  jest.clearAllMocks();
   Object.defineProperty(URL, "createObjectURL", {
     configurable: true,
     value: jest.fn(() => "blob:photo"),
@@ -72,6 +74,8 @@ test("여러 사진 중 잘못된 파일은 건너뛰고 성공한 사진 순서
     "https://storage/images/upload-id_medium_first.png",
     "https://storage/images/upload-id_medium_second.png",
   ]);
+  expect(uploadBytesResumable).toHaveBeenCalledTimes(2);
+  expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledTimes(2);
   expect(screen.getByRole("alert").textContent).toContain("invalid.txt");
   expect((input as HTMLInputElement).disabled).toBe(false);
 });
@@ -108,5 +112,7 @@ test("SVG를 PNG로 변환해 업로드한다", async () => {
     "image/png",
     0.8
   );
+  expect(uploadBytesResumable).toHaveBeenCalledTimes(1);
+  expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole("alert")).toBeNull();
 });
