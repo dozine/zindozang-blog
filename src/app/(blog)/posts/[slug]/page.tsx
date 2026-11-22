@@ -27,7 +27,7 @@ const SinglePage = async ({ params }: { params: Promise<{ slug: string }> }) => 
     notFound();
   }
 
-  return <SinglePageClient data={data} slug={slug as string} />;
+  return <SinglePageClient data={data} slug={data.slug} />;
 };
 
 export default SinglePage;
