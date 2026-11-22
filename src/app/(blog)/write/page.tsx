@@ -1,5 +1,7 @@
 "use client";
 import styles from "./writePage.module.css";
+import ImageGridPicker from "@/components/imageGridPicker/ImageGridPicker";
+import { arrangeImageGrid } from "@/lib/utils/imageGrid";
 import { ThemeContext } from "@/context/ThemeContext";
 import { formattingCommands } from "@/components/writeEditor/toolbar";
 import { postRecoverySchema } from "@/lib/zod/postRecovery";
@@ -130,6 +132,8 @@ const WritePage = () => {
   const [tags, setTags] = useState<TagData[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [tagInput, setTagInput] = useState<string>("");
+  const [gridColumns, setGridColumns] = useState<2 | 3 | null>(null);
+  const gridPosition = useRef(0);
   const [triggerImageUpload, setTriggerImageUpload] = useState<boolean>(false);
 
   const postRecoveryKey = `blog:post-recovery:v1:${session?.user?.email ?? "local"}:${isEditing ? `edit:${editSlug}` : "new"}`;
@@ -392,16 +396,9 @@ const WritePage = () => {
           <rect x="13" y="3" width="8" height="18" rx="1" />
         </svg>
       ),
-      execute: (state, api) => {
-        api.replaceSelection(
-          `<div class="img-grid-2">
-
-![](이미지URL1)
-
-![](이미지URL2)
-
-</div>`
-        );
+      execute: (state) => {
+        gridPosition.current = state.selection.start;
+        setGridColumns(2);
       },
     },
     {
@@ -422,14 +419,9 @@ const WritePage = () => {
           <rect x="16" y="3" width="6" height="18" rx="1" />
         </svg>
       ),
-      execute: (state, api) => {
-        api.replaceSelection(
-          `<div class="img-grid-3">
-          ![](이미지URL1)
-          ![](이미지URL2)
-          ![](이미지URL3)
-          </div>`
-        );
+      execute: (state) => {
+        gridPosition.current = state.selection.start;
+        setGridColumns(3);
       },
     },
   ];
@@ -533,6 +525,24 @@ const WritePage = () => {
         {isEditing ? "Edit" : "Publish"}
       </button>
 
+      {gridColumns !== null && (
+        <ImageGridPicker
+          columns={gridColumns}
+          images={[
+            ...new Set([
+              ...uploadedImages,
+              ...Array.from(value.matchAll(/!\[[^\]]*\]\(([^\s)]+)\)/g), (match) => match[1]),
+            ]),
+          ]}
+          onClose={() => setGridColumns(null)}
+          onConfirm={(urls) => {
+            const result = arrangeImageGrid(value, urls, gridColumns, gridPosition.current);
+            setValue(result.value);
+            setImageCaret(result.caret);
+            setGridColumns(null);
+          }}
+        />
+      )}
       {showSettingsModal && (
         <PostSettingModal
           isOpen={showSettingsModal}
