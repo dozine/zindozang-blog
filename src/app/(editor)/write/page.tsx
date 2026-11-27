@@ -1,5 +1,6 @@
+"use client";
 import { normalizePostFont } from "@/lib/utils/post";
-("use client");
+
 import styles from "./writePage.module.css";
 import ImageGridPicker from "@/components/imageGridPicker/ImageGridPicker";
 import { arrangeImageGrid } from "@/lib/utils/imageGrid";
