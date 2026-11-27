@@ -56,6 +56,8 @@ export const formattingCommands: ICommand[] = [
   commands.divider,
   labeled(commands.link, "링크"),
   labeled(commands.quote, "인용"),
+  labeled(commands.table, "표 삽입"),
+  labeled(commands.hr, "가로 구분선"),
   labeled(commands.unorderedListCommand, "글머리 목록"),
   labeled(commands.orderedListCommand, "번호 목록"),
   labeled(commands.checkedListCommand, "체크 목록"),
