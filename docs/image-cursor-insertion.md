@@ -101,7 +101,7 @@ useEffect(() => {
 
 ## 구현 파일과 검증
 
-- [작성 화면](<../src/app/(blog)/write/page.tsx>): 위치 기억·보정, 이미지 삽입, 포커스와 커서 복원
+- [작성 화면](<../src/app/(editor)/write/page.tsx>): 위치 기억·보정, 이미지 삽입, 포커스와 커서 복원
 - [이미지 업로더](../src/components/imageUploader/ImageUploader.tsx): 파일 선택창을 열기 전 `onUploadRequested` 호출
 - [작성 화면 테스트](../src/__test__/write-page.test.tsx): 본문 중간 삽입과 선택 텍스트 유지, 삽입 후 포커스·커서 위치, 업로드 중 앞쪽 입력에 따른 보정, 빈 본문 삽입 검증
 

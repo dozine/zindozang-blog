@@ -98,7 +98,7 @@ setImageCaret(position + markdownImage.length);
 ## 구현 파일과 검증
 
 - [이미지 업로더](../src/components/imageUploader/ImageUploader.tsx): 다중 선택, 파일별 순차 처리, 진행 상태와 오류 표시, 형식별 원본 보존 및 축소
-- [작성 화면](<../src/app/(blog)/write/page.tsx>): URL 목록을 커서 위치에 일괄 삽입
+- [작성 화면](<../src/app/(editor)/write/page.tsx>): URL 목록을 커서 위치에 일괄 삽입
 - [업로더 테스트](../src/__test__/image-uploader.test.tsx): 부분 실패 후 순서 유지, 전체 실패 시 삽입 요청 생략, SVG·GIF 원본 보존, 작은 이미지 원본 유지, 큰 이미지 비율 유지 축소, 사진당 한 번의 업로드
 - [작성 화면 테스트](../src/__test__/write-page.test.tsx): 여러 사진을 커서 위치에 순서대로 삽입하고 사진 목록 갱신
 

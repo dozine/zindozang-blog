@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import WritePage from "@/app/(blog)/write/page";
+import WritePage from "@/app/(editor)/write/page";
 
 function render(ui: React.ReactElement) {
   const client = new QueryClient({
@@ -521,4 +521,13 @@ test("작성 중인 초안을 삭제해도 편집 내용은 새 글로 유지하
       content: expect.objectContaining({ value: "삭제 후에도 남을 편집 내용" }),
     })
   );
+});
+
+test("작성 전용 상단 메뉴에 서비스 이름과 작성 버튼을 표시한다", () => {
+  render(<WritePage />);
+  expect(screen.getByRole("navigation", { name: "글 작성 메뉴" })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "zindozang" }).getAttribute("href")).toBe("/");
+  expect(screen.getByRole("button", { name: "내 초안" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "저장 및 게시" })).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Blog" })).toBeNull();
 });
