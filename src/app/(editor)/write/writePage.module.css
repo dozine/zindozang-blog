@@ -19,7 +19,7 @@
   font-family: var(--font-noto-sans-kr), sans-serif;
   font-weight: 700;
   border: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--softTextColor) 18%, var(--bg));
+  border-bottom: 1px solid #1a1a1a;
   outline: none;
   background-color: transparent;
   color: var(--textColor);
@@ -159,7 +159,7 @@
   width: max-content;
   max-width: calc(100vw - 40px);
   padding: 12px 16px;
-  border: 1px solid color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  border: 1px solid #444;
   border-radius: 10px;
   background: var(--bg);
   color: var(--textColor);
@@ -177,7 +177,7 @@
 }
 
 .editorContainer {
-  --editor-border: color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  --editor-border: #444;
   --editor-accent: #b66b42;
   margin-top: 4px;
   min-width: 0;

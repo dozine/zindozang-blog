@@ -3,7 +3,7 @@
   top: 0;
   z-index: 30;
   background: var(--bg);
-  border-bottom: 1px solid color-mix(in srgb, var(--softTextColor) 18%, var(--bg));
+  border-bottom: 1px solid #1a1a1a;
 }
 .inner {
   display: flex;
@@ -39,7 +39,7 @@
   transition: background-color 150ms ease;
 }
 .drafts {
-  border: 1px solid color-mix(in srgb, var(--softTextColor) 40%, var(--bg));
+  border: 1px solid #444;
   background: var(--bg);
   color: var(--textColor);
 }
