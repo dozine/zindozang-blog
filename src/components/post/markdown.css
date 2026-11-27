@@ -1,6 +1,6 @@
 .post-content-container {
   font-size: 16px;
-  font-family: var(--font-noto-serif-kr), serif;
+  font-family: var(--post-font-family, var(--font-noto-serif-kr), serif);
   line-height: 1.8;
   color: #333;
   word-break: break-word;

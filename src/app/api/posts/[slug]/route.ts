@@ -178,6 +178,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<PostSl
       const updateData: Prisma.PostUpdateInput = {
         title: title.trim(),
         desc: desc.trim(),
+        ...(body.fontFamily !== undefined ? { fontFamily: body.fontFamily } : {}),
         img: formattedImg,
         isPublished: isPublished ?? post.isPublished,
       };

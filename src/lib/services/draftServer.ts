@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import type { DraftResponse } from "@/types/api/draft";
 
 export class DraftError extends Error {
   constructor(
@@ -34,24 +33,6 @@ export function draftError(error: unknown) {
 }
 
 export const draftInclude = { tags: { include: { tag: true } } } as const;
-type DraftPost = Prisma.PostGetPayload<{ include: typeof draftInclude }>;
-export function toDraftResponse(post: DraftPost): DraftResponse {
-  return {
-    id: post.id,
-    updatedAt: post.updatedAt?.toISOString() ?? null,
-    content: {
-      title: post.title,
-      value: post.desc,
-      uploadedImages: post.img,
-      thumbnailImg: post.img[0] ?? "",
-      catSlug: post.catSlug ?? "",
-      tags: post.tags.map(({ tag }) => ({ id: tag.id, name: tag.name })),
-      isPublished: post.isPublished,
-      tagInput: "",
-    },
-  };
-}
-
 export async function replaceDraftTags(
   tx: Prisma.TransactionClient,
   postId: string,

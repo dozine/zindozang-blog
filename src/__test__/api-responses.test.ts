@@ -86,6 +86,7 @@ const post = {
 };
 const relation = { id: "relation-1", postId: post.id, tagId: tag.id, tag };
 const publicPostFields = {
+  fontFamily: "serif",
   id: post.id,
   createdAt: date.toISOString(),
   slug: post.slug,
@@ -480,4 +481,38 @@ test("administrators also exclude drafts from the ordinary post list", async () 
     if (previousEmail === undefined) delete process.env.MYEMAIL;
     else process.env.MYEMAIL = previousEmail;
   }
+});
+
+test("post creation and update persist the selected body font", async () => {
+  db.post.create.mockResolvedValue({ ...post, fontFamily: "nanum" });
+  db.post.findUnique.mockResolvedValue({ ...fullPost, fontFamily: "nanum" });
+  const response = await createPost(
+    request("POST", { title: post.title, desc: post.desc, slug: post.slug, fontFamily: "nanum" })
+  );
+  expect(response.status).toBe(200);
+  expect((await response.json()).fontFamily).toBe("nanum");
+  expect(db.post.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({ fontFamily: "nanum" }),
+  });
+  db.post.update.mockResolvedValue({ ...post, fontFamily: "sans" });
+  await updatePost(
+    request("PUT", { title: post.title, desc: post.desc, fontFamily: "sans" }),
+    slugParams
+  );
+  expect(db.post.update).toHaveBeenCalledWith(
+    expect.objectContaining({ data: expect.objectContaining({ fontFamily: "sans" }) })
+  );
+});
+
+test("unknown body fonts are rejected before writing a post", async () => {
+  const response = await createPost(
+    request("POST", {
+      title: post.title,
+      desc: post.desc,
+      slug: post.slug,
+      fontFamily: "arbitrary-font",
+    })
+  );
+  expect(response.status).toBe(400);
+  expect(db.post.create).not.toHaveBeenCalled();
 });

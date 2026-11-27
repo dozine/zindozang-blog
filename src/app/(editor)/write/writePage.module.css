@@ -270,7 +270,7 @@
 .editorContainer :global(.wmde-markdown) {
   background: var(--bg);
   color: var(--textColor);
-  font-family: var(--font-noto-sans-kr), sans-serif;
+  font-family: var(--post-font-family, var(--font-noto-serif-kr), serif);
   font-size: 15px;
   line-height: 1.85;
 }

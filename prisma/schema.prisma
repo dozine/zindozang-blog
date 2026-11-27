@@ -83,6 +83,7 @@ model Post {
   slug      String    @unique
   title     String
   desc      String
+  fontFamily String? @default("serif")
   img       String[]
   views     Int       @default(0)
   isPublished Boolean   @default(true)

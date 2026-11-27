@@ -1,6 +1,9 @@
 import {
   Noto_Sans_KR,
   Nanum_Gothic,
+  Nanum_Myeongjo,
+  Gowun_Batang,
+  Gowun_Dodum,
   Noto_Serif_KR,
   Bebas_Neue,
   Cormorant_Garamond,
@@ -28,6 +31,28 @@ const nanumGothic = Nanum_Gothic({
   weight: ["400", "700"],
   variable: "--font-nanum-gothic",
   display: "swap",
+});
+
+const nanumMyeongjo = Nanum_Myeongjo({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-nanum-myeongjo",
+  display: "swap",
+  preload: false,
+});
+const gowunBatang = Gowun_Batang({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-gowun-batang",
+  display: "swap",
+  preload: false,
+});
+const gowunDodum = Gowun_Dodum({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-gowun-dodum",
+  display: "swap",
+  preload: false,
 });
 
 const satoshi = LocalFont({
@@ -92,7 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
       </head>
       <body
-        className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable} ${notoSerifKR.variable} ${bebasNeue.variable} ${cormorant.variable} ${syne.variable}`}
+        className={`${satoshi.variable} ${notoSansKr.variable} ${nanumGothic.variable} ${notoSerifKR.variable} ${bebasNeue.variable} ${cormorant.variable} ${syne.variable} ${nanumMyeongjo.variable} ${gowunBatang.variable} ${gowunDodum.variable}`}
       >
         <QueryProvider>
           <AuthProvider>

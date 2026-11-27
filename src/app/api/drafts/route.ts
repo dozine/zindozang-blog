@@ -1,3 +1,4 @@
+import { toDraftResponse } from "@/lib/serializers/responses";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
@@ -11,7 +12,6 @@ import {
   draftInclude,
   privateDraftHeaders,
   replaceDraftTags,
-  toDraftResponse,
 } from "@/lib/services/draftServer";
 
 export async function GET() {
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
   const data = {
     title: content.title,
     desc: content.value,
+    fontFamily: content.fontFamily,
     img: [...new Set([content.thumbnailImg, ...content.uploadedImages].filter(Boolean))],
     catSlug: content.catSlug || null,
     isPublished: content.isPublished,

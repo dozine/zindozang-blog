@@ -1,3 +1,5 @@
+import type { PostFont } from "@/types/post";
+import FontSelect from "./FontSelect";
 import * as commands from "@uiw/react-md-editor/commands";
 import type { ICommand } from "@uiw/react-md-editor";
 
@@ -73,3 +75,13 @@ export const formattingCommands: ICommand[] = [
   ),
   commands.divider,
 ];
+
+export function fontFamilyCommand(value: PostFont, onChange: (font: PostFont) => void): ICommand {
+  return {
+    name: "font-family",
+    keyCommand: "font-family",
+    render: (_command, disabled) => (
+      <FontSelect value={value} onChange={onChange} disabled={disabled} />
+    ),
+  };
+}

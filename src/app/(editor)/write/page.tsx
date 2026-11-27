@@ -1,11 +1,12 @@
-"use client";
+import { normalizePostFont } from "@/lib/utils/post";
+("use client");
 import styles from "./writePage.module.css";
 import ImageGridPicker from "@/components/imageGridPicker/ImageGridPicker";
 import { arrangeImageGrid } from "@/lib/utils/imageGrid";
 import { ThemeContext } from "@/context/ThemeContext";
-import { formattingCommands } from "@/components/writeEditor/toolbar";
+import { formattingCommands, fontFamilyCommand } from "@/components/writeEditor/toolbar";
 import { postRecoverySchema } from "@/lib/zod/postRecovery";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
@@ -18,6 +19,8 @@ import { useTagsQuery } from "@/queries/tag";
 import { getErrorMessage } from "@/lib/utils/error";
 import type { TagData } from "@/types/tag";
 import type { UpdatePostRequest } from "@/types/api/post";
+import { DEFAULT_POST_FONT, POST_FONTS } from "@/lib/constants/post";
+import type { PostFont } from "@/types/post";
 import WriteHeader from "@/components/writeHeader/WriteHeader";
 import DraftPicker from "@/components/draftPicker/DraftPicker";
 import { useDraftQuery, useSaveDraft, usePublishDraft } from "@/queries/draft";
@@ -186,6 +189,7 @@ const WritePage = () => {
     imageAnchor.current = textarea?.selectionStart ?? previousValue.current.length;
   }, []);
 
+  const [fontFamily, setFontFamily] = useState<PostFont>(DEFAULT_POST_FONT);
   const [title, setTitle] = useState<string>("");
   const isSubmitting = isCreating || isUpdating || isPublishingDraft || draftBusy;
 
@@ -213,6 +217,7 @@ const WritePage = () => {
   const baseline = useRef("");
   const lastPersisted = useRef("");
   const postRecovery = {
+    fontFamily,
     title,
     value,
     uploadedImages,
@@ -234,6 +239,7 @@ const WritePage = () => {
       return;
     const imgs = postToEdit?.img ?? [];
     const initial = (!isEditing ? draft?.content : null) ?? {
+      fontFamily: normalizePostFont(postToEdit?.fontFamily),
       title: postToEdit?.title ?? "",
       value: postToEdit?.desc ?? "",
       uploadedImages: imgs,
@@ -277,6 +283,7 @@ const WritePage = () => {
       }
     detachedDraftContent.current = null;
     lastPersisted.current = JSON.stringify(detached ? initial : restored);
+    setFontFamily(normalizePostFont(restored.fontFamily));
     setTitle(restored.title);
     setValue(restored.value);
     setUploadedImages(restored.uploadedImages);
@@ -452,6 +459,7 @@ const WritePage = () => {
         const updateBody: UpdatePostRequest = {
           title,
           desc: value,
+          fontFamily,
           img: thumbnailImg ? [thumbnailImg] : [],
           catSlug: finalCatSlug,
           tags: tagIds,
@@ -468,6 +476,7 @@ const WritePage = () => {
           body: {
             title,
             desc: value,
+            fontFamily,
             img: thumbnailImg ? [thumbnailImg] : [],
             catSlug: finalCatSlug,
             tags: tagIds,
@@ -482,6 +491,7 @@ const WritePage = () => {
         const createBody = {
           title,
           desc: value,
+          fontFamily,
           img: thumbnailImg ? [thumbnailImg] : [],
           slug: slugify(title) || `post-${crypto.randomUUID()}`,
           catSlug: finalCatSlug,
@@ -504,6 +514,7 @@ const WritePage = () => {
     editSlug,
     title,
     value,
+    fontFamily,
     thumbnailImg,
     catSlug,
     tags,
@@ -712,6 +723,7 @@ const WritePage = () => {
             ref={editorContainerRef}
             data-color-mode={theme === "dark" ? "dark" : "light"}
             className={styles.editorContainer}
+            style={{ "--post-font-family": POST_FONTS[fontFamily].family } as CSSProperties}
           >
             <MDEditor
               value={value}
@@ -719,7 +731,11 @@ const WritePage = () => {
               height={560}
               minHeight={400}
               textareaProps={{ "aria-label": "본문", placeholder: "여기에 이야기를 적어보세요…" }}
-              commands={[...formattingCommands, ...customCommands]}
+              commands={[
+                fontFamilyCommand(fontFamily, setFontFamily),
+                ...formattingCommands,
+                ...customCommands,
+              ]}
             />
           </div>
 

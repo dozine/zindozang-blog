@@ -1,4 +1,5 @@
 import React from "react";
+import type { ICommand } from "@uiw/react-md-editor";
 import { fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import WritePage from "@/app/(editor)/write/page";
@@ -73,13 +74,30 @@ jest.mock("@/queries/tag", () => ({
 jest.mock(
   "next/dynamic",
   () => () =>
-    function MockEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+    function MockEditor({
+      value,
+      onChange,
+      commands = [],
+    }: {
+      value: string;
+      onChange: (value: string) => void;
+      commands?: ICommand[];
+    }) {
       return (
-        <textarea
-          aria-label="본문"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        />
+        <>
+          {commands
+            .filter((command) => command.name === "font-family")
+            .map((command, index) => (
+              <div key={command.name}>
+                {command.render?.(command, false, jest.fn(), index) || null}
+              </div>
+            ))}
+          <textarea
+            aria-label="본문"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          />
+        </>
       );
     }
 );
@@ -365,6 +383,7 @@ test("여러 사진을 기억한 커서 위치에 순서대로 삽입한다", ()
 });
 
 const draftContent = {
+  fontFamily: "serif" as const,
   title: "저장한 제목",
   value: "작성 중인 내용",
   uploadedImages: [],
@@ -530,4 +549,43 @@ test("작성 전용 상단 메뉴에 서비스 이름과 작성 버튼을 표시
   expect(screen.getByRole("button", { name: "내 초안" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "저장 및 게시" })).toBeTruthy();
   expect(screen.queryByRole("link", { name: "Blog" })).toBeNull();
+});
+
+test("본문 글꼴을 바꾸면 미리보기 스타일과 게시 요청에 반영한다", async () => {
+  mockCreate.mockResolvedValue({ slug: "font-post" });
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("combobox", { name: "본문 글꼴" }));
+  fireEvent.click(screen.getByRole("option", { name: /고딕체/ }));
+  const preview = screen.getByLabelText("본문").closest("[data-color-mode]") as HTMLElement;
+  expect(preview.style.getPropertyValue("--post-font-family")).toBe(
+    "var(--font-noto-sans-kr), sans-serif"
+  );
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "글꼴 테스트" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "본문" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() =>
+    expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ fontFamily: "sans" }))
+  );
+});
+
+test("초안의 본문 글꼴을 불러오고 변경한 글꼴을 다시 저장한다", async () => {
+  mockDraftId = "draft-1";
+  mockLoadDraft.mockResolvedValue({
+    ...savedDraft,
+    content: { ...draftContent, fontFamily: "nanum" },
+  });
+  mockSaveDraft.mockResolvedValue(savedDraft);
+  render(<WritePage />);
+  await screen.findByDisplayValue("저장한 제목");
+  expect(screen.getByRole("combobox", { name: "본문 글꼴" }).textContent).toContain("나눔고딕");
+  fireEvent.click(screen.getByRole("combobox", { name: "본문 글꼴" }));
+  fireEvent.click(screen.getByRole("option", { name: /고딕체/ }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ content: expect.objectContaining({ fontFamily: "sans" }) })
+    )
+  );
 });

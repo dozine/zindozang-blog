@@ -1,3 +1,4 @@
+import { DEFAULT_POST_FONT } from "@/lib/constants/post";
 import { publishedPostWhere } from "@/lib/data/postStatus";
 import { getAuthSession } from "@/lib/services/authService";
 import prisma from "@/lib/db/prisma";
@@ -140,6 +141,7 @@ export const POST = async (req: NextRequest) => {
           title: body.title,
           slug: body.slug,
           desc: body.desc,
+          fontFamily: body.fontFamily ?? DEFAULT_POST_FONT,
           img: safeImg,
           user: {
             connect: { email: userEmail },

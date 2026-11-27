@@ -1,5 +1,8 @@
-import type { PostResponse } from "@/types/api/post";
-import type { Post, Tag, User } from "@prisma/client";
+import type { PostFieldsResponse, PostResponse } from "@/types/api/post";
+import type { Post, Prisma, Tag, User } from "@prisma/client";
+
+/** 게시글 본문에 적용할 글꼴. */
+export type PostFont = PostFieldsResponse["fontFamily"];
 
 /** 서버에서 직접 조회한 게시글의 작성자 정보. */
 export type PostAuthor = Pick<User, "id" | "name" | "image">;
@@ -21,3 +24,8 @@ export type PostView = Omit<PostResponse, "createdAt"> & { createdAt: Date };
 
 /** 상세 화면에서만 사용하는 작성자 여부. 서버에서 세션을 확인해 계산한다. */
 export type PostDetailView = PostView & { isAuthor: boolean };
+
+/** 태그 관계를 포함한 Prisma 게시글 조회 결과. */
+export type PostWithTagRelations = Prisma.PostGetPayload<{
+  include: { tags: { include: { tag: true } } };
+}>;

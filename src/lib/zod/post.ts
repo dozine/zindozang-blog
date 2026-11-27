@@ -1,10 +1,22 @@
+import { DEFAULT_POST_FONT } from "@/lib/constants/post";
 import { z } from "zod";
 import { requiredText } from "./common";
 import { tagResponseSchema } from "./tag";
 
+export const postFontSchema = z.enum([
+  "serif",
+  "sans",
+  "nanum",
+  "nanum-myeongjo",
+  "gowun-batang",
+  "gowun-dodum",
+  "system",
+]);
+
 const postFields = {
   title: requiredText("제목을 입력해주세요."),
   desc: requiredText("내용을 입력해주세요."),
+  fontFamily: postFontSchema.optional(),
   img: z
     .union([z.string(), z.array(z.string()), z.null()], {
       error: "이미지 형식을 확인해주세요.",
@@ -39,6 +51,7 @@ export const postFieldsResponseSchema = z.object({
   slug: z.string(),
   title: z.string(),
   desc: z.string(),
+  fontFamily: postFontSchema.default(DEFAULT_POST_FONT),
   img: z.array(z.string()),
   views: z.number(),
   isPublished: z.boolean(),

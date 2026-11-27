@@ -38,6 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<Draft
           createdAt: new Date(),
           title: body.title,
           desc: body.desc,
+          ...(body.fontFamily !== undefined ? { fontFamily: body.fontFamily } : {}),
           img: Array.isArray(body.img) ? body.img : body.img ? [body.img] : [],
           catSlug: body.catSlug || null,
           isPublished: body.isPublished ?? false,

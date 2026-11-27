@@ -1,5 +1,8 @@
+import { normalizePostFont } from "@/lib/utils/post";
+import { POST_FONTS } from "@/lib/constants/post";
+import type { PostFont } from "@/types/post";
 import ReactMarkdown, { type ExtraProps } from "react-markdown";
-import type { ComponentPropsWithoutRef } from "react";
+import type { CSSProperties, ComponentPropsWithoutRef } from "react";
 import type { Pluggable } from "unified";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -10,13 +13,19 @@ import "./markdown.css";
 interface PostContentProps {
   desc: string;
   isDark: boolean;
+  fontFamily?: PostFont;
 }
 
 type CodeProps = ComponentPropsWithoutRef<"code"> & ExtraProps & { inline?: boolean };
 
-const PostContent = ({ desc, isDark }: PostContentProps) => {
+const PostContent = ({ desc, isDark, fontFamily }: PostContentProps) => {
   return (
-    <div className="post-content-container">
+    <div
+      className="post-content-container"
+      style={
+        { "--post-font-family": POST_FONTS[normalizePostFont(fontFamily)].family } as CSSProperties
+      }
+    >
       <ReactMarkdown
         // remark-breaks와 react-markdown이 사용하는 unified 버전의 타입 차이를 연결한다.
         remarkPlugins={[remarkGfm, remarkBreaks as unknown as Pluggable]}
