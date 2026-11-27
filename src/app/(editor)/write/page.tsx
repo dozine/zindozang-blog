@@ -1,4 +1,5 @@
 "use client";
+import { postSlugInputSchema } from "@/lib/zod/post";
 import { normalizePostFont } from "@/lib/utils/post";
 
 import styles from "./writePage.module.css";
@@ -27,6 +28,9 @@ import DraftPicker from "@/components/draftPicker/DraftPicker";
 import { useDraftQuery, useSaveDraft, usePublishDraft } from "@/queries/draft";
 import type { DraftContent, DraftResponse } from "@/types/api/draft";
 import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
+
+const serializeRecoveryContent = (content: DraftContent) =>
+  JSON.stringify(postRecoverySchema.shape.content.parse(content));
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -199,6 +203,7 @@ const WritePage = () => {
   const [catSlug, setCatSlug] = useState<string>("");
   const [tags, setTags] = useState<TagData[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [slugInput, setSlugInput] = useState("");
   const [tagInput, setTagInput] = useState<string>("");
   const [gridColumns, setGridColumns] = useState<2 | 3 | null>(null);
   const gridPosition = useRef(0);
@@ -218,6 +223,7 @@ const WritePage = () => {
   const baseline = useRef("");
   const lastPersisted = useRef("");
   const postRecovery = {
+    slugInput,
     fontFamily,
     title,
     value,
@@ -228,7 +234,7 @@ const WritePage = () => {
     isPublished,
     tagInput,
   };
-  const serializedPostRecovery = JSON.stringify(postRecovery);
+  const serializedPostRecovery = serializeRecoveryContent(postRecovery);
 
   useEffect(() => {
     if (
@@ -241,6 +247,7 @@ const WritePage = () => {
     const imgs = postToEdit?.img ?? [];
     const initial = (!isEditing ? draft?.content : null) ?? {
       fontFamily: normalizePostFont(postToEdit?.fontFamily),
+      slugInput: isEditing ? (postToEdit?.slug ?? "") : "",
       title: postToEdit?.title ?? "",
       value: postToEdit?.desc ?? "",
       uploadedImages: imgs,
@@ -250,7 +257,7 @@ const WritePage = () => {
       isPublished: Boolean(postToEdit?.isPublished),
       tagInput: "",
     };
-    baseline.current = JSON.stringify(initial);
+    baseline.current = serializeRecoveryContent(initial);
     savedSuccessfully.current = false;
     const detached = !isEditing && !draftId ? detachedDraftContent.current : null;
     let restored = detached ?? initial;
@@ -283,7 +290,7 @@ const WritePage = () => {
         );
       }
     detachedDraftContent.current = null;
-    lastPersisted.current = JSON.stringify(detached ? initial : restored);
+    lastPersisted.current = serializeRecoveryContent(detached ? initial : restored);
     setFontFamily(normalizePostFont(restored.fontFamily));
     setTitle(restored.title);
     setValue(restored.value);
@@ -292,6 +299,7 @@ const WritePage = () => {
     setCatSlug(restored.catSlug);
     setTags(restored.tags);
     setIsPublished(restored.isPublished);
+    setSlugInput(isEditing ? (postToEdit?.slug ?? "") : (restored.slugInput ?? ""));
     setTagInput(restored.tagInput);
     initializedSlug.current = isEditing ? editSlug : null;
     setPostRecoveryReady(postRecoveryKey);
@@ -353,15 +361,6 @@ const WritePage = () => {
       // 게시글 저장은 성공했으므로 이동을 계속한다.
     }
   }, [postRecoveryKey]);
-
-  const slugify = (str: string) =>
-    str
-      .normalize("NFC")
-      .trim()
-      .replace(/[^\w가-힣\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .toLowerCase();
 
   const handleImagesUploaded = useCallback((imageUrls: string[]) => {
     if (!imageUrls.length) return;
@@ -451,6 +450,10 @@ const WritePage = () => {
     if (actionInProgress.current || uploading) return;
     if (!title.trim()) return alert("제목을 입력해주세요.");
     if (!value.trim()) return alert("내용을 입력해주세요.");
+    if (!isEditing) {
+      const validation = postSlugInputSchema.safeParse(slugInput);
+      if (!validation.success) return alert(validation.error.issues[0].message);
+    }
     actionInProgress.current = true;
     const tagIds: string[] = tags.map((tag) => tag.id);
     const finalCatSlug = catSlug || null;
@@ -483,6 +486,7 @@ const WritePage = () => {
             tags: tagIds,
             isPublished,
             updatedAt: draft.updatedAt,
+            slug: slugInput,
           },
         });
         clearPostRecovery();
@@ -494,7 +498,7 @@ const WritePage = () => {
           desc: value,
           fontFamily,
           img: thumbnailImg ? [thumbnailImg] : [],
-          slug: slugify(title) || `post-${crypto.randomUUID()}`,
+          slug: slugInput,
           catSlug: finalCatSlug,
           tags: tagIds,
           isPublished,
@@ -516,6 +520,7 @@ const WritePage = () => {
     title,
     value,
     fontFamily,
+    slugInput,
     thumbnailImg,
     catSlug,
     tags,
@@ -774,6 +779,9 @@ const WritePage = () => {
         {showSettingsModal && (
           <PostSettingModal
             isOpen={showSettingsModal}
+            postTitle={title}
+            slugInput={slugInput}
+            setSlugInput={setSlugInput}
             onClose={closeModal}
             catSlug={catSlug}
             setCatSlug={setCatSlug}

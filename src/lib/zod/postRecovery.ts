@@ -7,6 +7,7 @@ export const postRecoverySchema = z.object({
   version: z.literal(1),
   savedAt: z.string(),
   content: z.object({
+    slugInput: z.string().default(""),
     fontFamily: postFontSchema.default(DEFAULT_POST_FONT),
     title: z.string(),
     value: z.string(),

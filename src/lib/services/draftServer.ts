@@ -20,7 +20,7 @@ export function draftError(error: unknown) {
       {
         message:
           error.code === "P2002"
-            ? "같은 주소의 글이 있습니다. 제목을 바꿔 다시 게시해주세요."
+            ? "이미 사용 중인 게시글 주소입니다. 다른 주소를 입력해주세요."
             : "다른 작업과 충돌했습니다. 초안을 다시 불러와주세요.",
       },
       { status: 409 }

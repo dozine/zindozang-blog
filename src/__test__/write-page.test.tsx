@@ -129,13 +129,25 @@ jest.mock(
       onPublish,
       onSaveDraft,
       feedback,
+      slugInput,
+      setSlugInput,
+      isEditing,
     }: {
       onPublish: () => void;
       onSaveDraft?: () => void;
       feedback?: string;
+      slugInput: string;
+      setSlugInput: (value: string) => void;
+      isEditing: boolean;
     }) {
       return (
         <div role="dialog">
+          <input
+            aria-label="게시글 주소"
+            value={slugInput}
+            onChange={(event) => setSlugInput(event.target.value)}
+            readOnly={isEditing}
+          />
           <button onClick={onPublish}>저장 확인</button>
           {onSaveDraft && <button onClick={onSaveDraft}>초안 저장</button>}
           {feedback && <p role="status">{feedback}</p>}
@@ -173,7 +185,7 @@ test("새 글을 작성하고 저장한다", async () => {
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() =>
     expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ title: "New Post", desc: "내용", slug: "new-post" })
+      expect.objectContaining({ title: "New Post", desc: "내용", slug: "" })
     )
   );
   expect(mockPush).toHaveBeenCalledWith("/posts/new-post");
@@ -383,6 +395,7 @@ test("여러 사진을 기억한 커서 위치에 순서대로 삽입한다", ()
 });
 
 const draftContent = {
+  slugInput: "",
   fontFamily: "serif" as const,
   title: "저장한 제목",
   value: "작성 중인 내용",
@@ -586,6 +599,33 @@ test("초안의 본문 글꼴을 불러오고 변경한 글꼴을 다시 저장�
   await waitFor(() =>
     expect(mockSaveDraft).toHaveBeenCalledWith(
       expect.objectContaining({ content: expect.objectContaining({ fontFamily: "sans" }) })
+    )
+  );
+});
+
+test("직접 입력한 주소는 게시 요청에 전달하고 초안 저장에도 보관한다", async () => {
+  mockPublishDraft.mockResolvedValue({ slug: "custom-address" });
+  mockSaveDraft.mockResolvedValue({
+    ...savedDraft,
+    content: { ...draftContent, slugInput: "Custom Address" },
+  });
+  render(<WritePage />);
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "다른 제목" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "본문" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.change(screen.getByLabelText("게시글 주소"), { target: { value: "Custom Address" } });
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ content: expect.objectContaining({ slugInput: "Custom Address" }) })
+    )
+  );
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() =>
+    expect(mockPublishDraft).toHaveBeenCalledWith(
+      savedDraft.id,
+      expect.objectContaining({ slug: "Custom Address" })
     )
   );
 });

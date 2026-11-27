@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
   const { id, updatedAt, content } = parsed.data;
   const data = {
     title: content.title,
+    draftSlug: content.slugInput || null,
     desc: content.value,
     fontFamily: content.fontFamily,
     img: [...new Set([content.thumbnailImg, ...content.uploadedImages].filter(Boolean))],

@@ -70,6 +70,7 @@ export function toDraftResponse(post: PostWithTagRelations): DraftResponse {
     id: post.id,
     updatedAt: post.updatedAt?.toISOString() ?? null,
     content: {
+      slugInput: post.draftSlug ?? "",
       title: post.title,
       value: post.desc,
       fontFamily: normalizePostFont(post.fontFamily),

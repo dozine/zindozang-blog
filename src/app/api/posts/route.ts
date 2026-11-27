@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+import { resolvePostSlug } from "@/lib/utils/slug";
 import { DEFAULT_POST_FONT } from "@/lib/constants/post";
 import { publishedPostWhere } from "@/lib/data/postStatus";
 import { getAuthSession } from "@/lib/services/authService";
@@ -139,7 +141,7 @@ export const POST = async (req: NextRequest) => {
         data: {
           status: "PUBLISHED",
           title: body.title,
-          slug: body.slug,
+          slug: resolvePostSlug(body.title, body.slug) || `post-${randomUUID()}`,
           desc: body.desc,
           fontFamily: body.fontFamily ?? DEFAULT_POST_FONT,
           img: safeImg,
@@ -197,6 +199,12 @@ export const POST = async (req: NextRequest) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json(
+        { message: "이미 사용 중인 게시글 주소입니다. 다른 주소를 입력해주세요." },
+        { status: 409 }
+      );
+    }
     console.log("Error creating post:", err);
     return new NextResponse(JSON.stringify({ message: "Something went wrong!" }), { status: 500 });
   }

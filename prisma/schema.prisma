@@ -81,6 +81,7 @@ model Post {
   updatedAt DateTime? @default(now()) @updatedAt
   status    PostStatus? @default(PUBLISHED)
   slug      String    @unique
+  draftSlug String?
   title     String
   desc      String
   fontFamily String? @default("serif")

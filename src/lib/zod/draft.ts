@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { postRecoverySchema } from "./postRecovery";
-import { updatePostSchema } from "./post";
+import { updatePostSchema, postSlugInputSchema } from "./post";
 
 export const draftContentSchema = postRecoverySchema.shape.content;
 export const saveDraftSchema = z
@@ -11,6 +11,7 @@ export const saveDraftSchema = z
   })
   .refine((data) => !data.id || data.updatedAt !== undefined, "초안을 다시 불러와주세요.");
 export const publishDraftSchema = updatePostSchema.extend({
+  slug: postSlugInputSchema,
   updatedAt: z.iso.datetime().nullable(),
 });
 export const deleteDraftSchema = z.object({ updatedAt: z.iso.datetime().nullable() });

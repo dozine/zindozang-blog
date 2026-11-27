@@ -32,6 +32,7 @@ jest.mock("@/lib/services/draftService", () => ({
 }));
 const account = "me@example.test";
 const content = {
+  slugInput: "",
   fontFamily: "serif" as const,
   title: "초안",
   value: "본문",

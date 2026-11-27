@@ -1,5 +1,6 @@
 /** @jest-environment node */
 import { publishedPostWhere } from "@/lib/data/postStatus";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { getAuthSession } from "@/lib/services/authService";
@@ -514,5 +515,55 @@ test("unknown body fonts are rejected before writing a post", async () => {
     })
   );
   expect(response.status).toBe(400);
+  expect(db.post.create).not.toHaveBeenCalled();
+});
+
+test.each([undefined, "", "   "])("an empty optional slug uses the title: %s", async (slug) => {
+  db.post.create.mockResolvedValue(post);
+  db.post.findUnique.mockResolvedValue(fullPost);
+  const response = await createPost(
+    request("POST", {
+      title: " 새 글 제목 ",
+      desc: "본문",
+      ...(slug !== undefined ? { slug } : {}),
+    })
+  );
+  expect(response.status).toBe(200);
+  expect(db.post.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({ slug: "새-글-제목" }),
+  });
+});
+
+test("a custom slug overrides the title and is normalized", async () => {
+  db.post.create.mockResolvedValue(post);
+  db.post.findUnique.mockResolvedValue(fullPost);
+  const response = await createPost(
+    request("POST", { title: "원래 제목", desc: "본문", slug: "  My Custom 주소!  " })
+  );
+  expect(response.status).toBe(200);
+  expect(db.post.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({ slug: "my-custom-주소" }),
+  });
+});
+
+test("a duplicate slug returns a useful conflict response", async () => {
+  db.post.create.mockRejectedValue(
+    new Prisma.PrismaClientKnownRequestError("duplicate", {
+      code: "P2002",
+      clientVersion: "6.19.2",
+      meta: { target: ["slug"] },
+    })
+  );
+  const response = await createPost(
+    request("POST", { title: "제목", desc: "본문", slug: "taken" })
+  );
+  expect(response.status).toBe(409);
+  expect((await response.json()).message).toContain("다른 주소");
+});
+
+test.each(["!!!", "undefined"])("unusable custom slugs are rejected: %s", async (slug) => {
+  expect((await createPost(request("POST", { title: "제목", desc: "본문", slug }))).status).toBe(
+    400
+  );
   expect(db.post.create).not.toHaveBeenCalled();
 });

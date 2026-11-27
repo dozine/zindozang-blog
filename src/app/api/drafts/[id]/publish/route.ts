@@ -1,3 +1,4 @@
+import { resolvePostSlug } from "@/lib/utils/slug";
 import type { DraftIdRequest } from "@/types/api/draft";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,21 +21,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<Draft
   if (!parsed.success) return parsed.response;
   const { id } = await params;
   const body = parsed.data;
-  const slug =
-    body.title
-      .normalize("NFC")
-      .trim()
-      .replace(/[^\w가-힣\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .toLowerCase() || `post-${randomUUID()}`;
   try {
     const post = await prisma.$transaction(async (tx) => {
+      const previous =
+        body.slug === undefined
+          ? await tx.post.findFirst({
+              where: { id, userEmail: email, status: "DRAFT" },
+              select: { draftSlug: true },
+            })
+          : null;
+      const slug =
+        resolvePostSlug(body.title, body.slug ?? previous?.draftSlug) || `post-${randomUUID()}`;
       const result = await tx.post.updateMany({
         where: { id, userEmail: email, status: "DRAFT", ...draftVersionWhere(body.updatedAt) },
         data: {
           status: "PUBLISHED",
           slug,
+          draftSlug: null,
           createdAt: new Date(),
           title: body.title,
           desc: body.desc,

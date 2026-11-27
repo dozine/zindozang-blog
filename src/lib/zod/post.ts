@@ -1,3 +1,4 @@
+import { normalizePostSlug } from "@/lib/utils/slug";
 import { DEFAULT_POST_FONT } from "@/lib/constants/post";
 import { z } from "zod";
 import { requiredText } from "./common";
@@ -12,6 +13,17 @@ export const postFontSchema = z.enum([
   "gowun-dodum",
   "system",
 ]);
+
+/** 빈 값은 제목 기반 주소 생성을 뜻한다. */
+export const postSlugInputSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => !value || !!normalizePostSlug(value),
+    "게시글 주소에 한글, 영문 또는 숫자를 포함해주세요."
+  )
+  .transform(normalizePostSlug)
+  .optional();
 
 const postFields = {
   title: requiredText("제목을 입력해주세요."),
@@ -33,7 +45,7 @@ const postFields = {
 
 export const createPostSchema = z.object({
   ...postFields,
-  slug: requiredText("게시글 주소를 입력해주세요."),
+  slug: postSlugInputSchema,
 });
 
 export const postSlugSchema = z.object({
