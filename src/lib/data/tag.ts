@@ -1,3 +1,4 @@
+import { publishedPostWhere } from "@/lib/data/postStatus";
 import prisma from "@/lib/db/prisma";
 import { toTagWithPostCountResponse } from "@/lib/serializers/responses";
 import type { TagWithPostCount, TagWithPosts } from "@/types/tag";
@@ -12,6 +13,7 @@ export async function getAllTags(): Promise<TagWithPostCount[]> {
               where: {
                 post: {
                   isPublished: true,
+                  AND: [publishedPostWhere],
                 },
               },
             },
@@ -40,7 +42,7 @@ export async function getTagById(id: string): Promise<TagWithPosts | null> {
       where: { id },
       include: {
         posts: {
-          where: { post: { isPublished: true } },
+          where: { post: { isPublished: true, AND: [publishedPostWhere] } },
           include: {
             post: true,
           },

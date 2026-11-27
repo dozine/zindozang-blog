@@ -24,7 +24,7 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<PostSl
       include: { user: true },
     });
 
-    if (!postExists) {
+    if (!postExists || postExists.status === "DRAFT") {
       return new NextResponse(JSON.stringify({ message: "Post not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
@@ -82,7 +82,7 @@ export const DELETE = async (
     const post: Post | null = await prisma.post.findUnique({
       where: { slug },
     });
-    if (!post) {
+    if (!post || post.status === "DRAFT") {
       return new NextResponse(JSON.stringify({ message: "Post not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
@@ -148,6 +148,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<PostSl
     const post = await prisma.post.findUnique({
       where: { slug },
       select: {
+        status: true,
         id: true,
         userEmail: true,
         isPublished: true,
@@ -155,7 +156,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Promise<PostSl
       },
     });
 
-    if (!post) {
+    if (!post || post.status === "DRAFT") {
       return new NextResponse(JSON.stringify({ message: "Post not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },

@@ -1,3 +1,4 @@
+import { publishedPostWhere } from "@/lib/data/postStatus";
 import { tagByIdSchema } from "@/lib/zod/tag";
 import { requireAdmin } from "@/lib/services/requireAdmin";
 import prisma from "@/lib/db/prisma";
@@ -7,16 +8,10 @@ import type { TagByIdRequest } from "@/types/api/tag";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<TagByIdRequest> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<TagByIdRequest> }) {
   const { id } = await params;
   if (!tagByIdSchema.safeParse({ id }).success) {
-    return NextResponse.json(
-      { message: "유효하지 않은 태그 ID입니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "유효하지 않은 태그 ID입니다." }, { status: 400 });
   }
   try {
     const tag: TagWithPosts | null = await prisma.tag.findUnique({
@@ -26,6 +21,7 @@ export async function GET(
           where: {
             post: {
               isPublished: true,
+              AND: [publishedPostWhere],
             },
           },
           include: {
@@ -36,36 +32,24 @@ export async function GET(
     });
 
     if (!tag) {
-      return NextResponse.json(
-        { message: "태그를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "태그를 찾을 수 없습니다." }, { status: 404 });
     }
 
     return NextResponse.json(toTagDetailResponse(tag), { status: 200 });
   } catch (error) {
     console.error("태그 조회 중 오류 발생:", error);
-    return NextResponse.json(
-      { message: "태그 조회 중 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "태그 조회 중 오류가 발생했습니다." }, { status: 500 });
   }
 }
 
 // DELETE: 태그 삭제
-export async function DELETE(
-  res: NextRequest,
-  { params }: { params: Promise<TagByIdRequest> },
-) {
+export async function DELETE(res: NextRequest, { params }: { params: Promise<TagByIdRequest> }) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
   const { id } = await params;
   if (!tagByIdSchema.safeParse({ id }).success) {
-    return NextResponse.json(
-      { message: "유효하지 않은 태그 ID입니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "유효하지 않은 태그 ID입니다." }, { status: 400 });
   }
   try {
     await prisma.$transaction(async (tx) => {
@@ -78,23 +62,14 @@ export async function DELETE(
       });
     });
 
-    return NextResponse.json(
-      { message: "태그가 삭제되었습니다." },
-      { status: 200 },
-    );
+    return NextResponse.json({ message: "태그가 삭제되었습니다." }, { status: 200 });
   } catch (error) {
     console.error("태그 삭제 중 오류 발생:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
-        return NextResponse.json(
-          { message: "삭제할 태그를 찾을 수 없습니다." },
-          { status: 404 },
-        );
+        return NextResponse.json({ message: "삭제할 태그를 찾을 수 없습니다." }, { status: 404 });
       }
     }
-    return NextResponse.json(
-      { message: "태그 삭제 중 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "태그 삭제 중 오류가 발생했습니다." }, { status: 500 });
   }
 }

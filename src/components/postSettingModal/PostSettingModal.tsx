@@ -2,6 +2,7 @@
 
 import { getErrorMessage } from "@/lib/utils/error";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import CategorySelect from "./CategorySelect";
 import styles from "./postSettingModal.module.css";
 import type { CategoryData } from "@/types/category";
 import type { TagData, TagWithPostCount } from "@/types/tag";
@@ -20,6 +21,10 @@ export interface PostSettingModalProps {
   setTags: (tags: TagData[]) => void;
   categories: CategoryData[];
   availableTags: TagWithPostCount[];
+  onSaveDraft?: () => void;
+  isSavingDraft?: boolean;
+  isEditing?: boolean;
+  feedback?: string;
   onPublish: () => void;
   isSubmitting?: boolean;
   uploadedImages: string[];
@@ -40,6 +45,10 @@ const PostSettingModal = ({
   setTags,
   categories,
   availableTags,
+  onSaveDraft,
+  isSavingDraft = false,
+  isEditing = false,
+  feedback,
   onPublish,
   isSubmitting = false,
   uploadedImages,
@@ -130,130 +139,164 @@ const PostSettingModal = ({
 
   return (
     <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h2 className={styles.modalTitle}>게시 설정</h2>
-
-        {/* 썸네일 선택 */}
-        {uploadedImages && uploadedImages.length > 0 && (
-          <div className={styles.settingSection}>
-            <h3>썸네일 선택</h3>
-            <div className={styles.thumbnailGrid}>
-              {uploadedImages.map((url, i) => (
-                <div
-                  key={i}
-                  className={`${styles.thumbnailItem} ${
-                    thumbnailImg === url ? styles.thumbnailSelected : ""
-                  }`}
-                  onClick={() => setThumbnailImg(url)}
-                >
-                  <img src={url} alt={`thumbnail-${i}`} />
-                  {thumbnailImg === url && <span className={styles.thumbnailCheck}>✓</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 카테고리 */}
-        <div className={styles.settingSection}>
-          <h3>카테고리</h3>
-          <select
-            className={styles.select}
-            value={catSlug}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => setCatSlug(e.target.value)}
-          >
-            <option value="">카테고리 없음</option>
-            {categories.map((cat: CategoryData) => (
-              <option key={cat.slug} value={cat.slug}>
-                {cat.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* 태그 */}
-        <div className={styles.settingSection}>
-          <h3>태그 설정</h3>
-          <div className={styles.tagsContainer}>
-            <div className={styles.tagInputWrapper}>
-              <input
-                ref={tagInputRef}
-                type="text"
-                placeholder={tags.length >= 5 ? "태그 최대 5개" : "태그 입력 (최대 5개)"}
-                className={styles.tagInput}
-                value={tagInput}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setTagInput(e.target.value);
-                  setShowTagSuggestions(true);
-                }}
-                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    if (filteredTags.length > 0) {
-                      addTag(filteredTags[0]);
-                    } else if (tagInput.trim()) {
-                      createNewTag();
-                    }
-                  }
-                }}
-                disabled={tags.length >= 5 || isCreatingTag}
-              />
-              {tags.length < 5 && tagInput && (
-                <button
-                  className={styles.addTagButton}
-                  onClick={createNewTag}
-                  disabled={isCreatingTag}
-                >
-                  +
-                </button>
-              )}
-            </div>
-
-            {showTagSuggestions && filteredTags.length > 0 && (
-              <div className={styles.tagSuggestions}>
-                {filteredTags.slice(0, 5).map((tag: TagWithPostCount) => (
-                  <div key={tag.id} className={styles.tagSuggestion} onClick={() => addTag(tag)}>
-                    {tag.name}
+      <div
+        className={styles.modalContent}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="post-settings-title"
+      >
+        <h2 id="post-settings-title" className={styles.modalTitle}>
+          {isEditing ? "게시글 수정" : "저장 및 게시"}
+        </h2>
+        <fieldset className={styles.settingsFields} disabled={isSubmitting || isCreatingTag}>
+          {/* 썸네일 선택 */}
+          {uploadedImages && uploadedImages.length > 0 && (
+            <div className={styles.settingSection}>
+              <h3>썸네일 선택</h3>
+              <div className={styles.thumbnailGrid}>
+                {uploadedImages.map((url, i) => (
+                  <div
+                    key={i}
+                    className={`${styles.thumbnailItem} ${
+                      thumbnailImg === url ? styles.thumbnailSelected : ""
+                    }`}
+                    onClick={() => {
+                      if (!isSubmitting && !isCreatingTag) setThumbnailImg(url);
+                    }}
+                  >
+                    <img src={url} alt={`thumbnail-${i}`} />
+                    {thumbnailImg === url && <span className={styles.thumbnailCheck}>✓</span>}
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            <div className={styles.selectedTags}>
-              {tags.map((tag: TagData) => (
-                <span key={tag.id} className={styles.tagBadge}>
-                  {tag.name}
-                  <button className={styles.removeTagButton} onClick={() => removeTag(tag.id)}>
-                    ×
+          {/* 카테고리 */}
+          <div className={styles.settingSection}>
+            <h3>카테고리</h3>
+            <CategorySelect
+              value={catSlug}
+              categories={categories}
+              onChange={setCatSlug}
+              disabled={isSubmitting || isCreatingTag}
+            />
+          </div>
+
+          {/* 태그 */}
+          <div className={styles.settingSection}>
+            <h3>태그 설정</h3>
+            <div className={styles.tagsContainer}>
+              <div className={styles.tagInputWrapper}>
+                <input
+                  ref={tagInputRef}
+                  type="text"
+                  placeholder={tags.length >= 5 ? "태그 최대 5개" : "태그 입력 (최대 5개)"}
+                  className={styles.tagInput}
+                  value={tagInput}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    setTagInput(e.target.value);
+                    setShowTagSuggestions(true);
+                  }}
+                  onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (filteredTags.length > 0) {
+                        addTag(filteredTags[0]);
+                      } else if (tagInput.trim()) {
+                        createNewTag();
+                      }
+                    }
+                  }}
+                  disabled={tags.length >= 5 || isCreatingTag}
+                />
+                {tags.length < 5 && tagInput && (
+                  <button
+                    className={styles.addTagButton}
+                    onClick={createNewTag}
+                    disabled={isCreatingTag}
+                  >
+                    +
                   </button>
-                </span>
-              ))}
+                )}
+              </div>
+
+              {showTagSuggestions && filteredTags.length > 0 && (
+                <div className={styles.tagSuggestions}>
+                  {filteredTags.slice(0, 5).map((tag: TagWithPostCount) => (
+                    <button
+                      type="button"
+                      key={tag.id}
+                      className={styles.tagSuggestion}
+                      onClick={() => {
+                        if (!isSubmitting && !isCreatingTag) addTag(tag);
+                      }}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className={styles.selectedTags}>
+                {tags.map((tag: TagData) => (
+                  <span key={tag.id} className={styles.tagBadge}>
+                    {tag.name}
+                    <button className={styles.removeTagButton} onClick={() => removeTag(tag.id)}>
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* 공개 설정 */}
-        <div className={styles.settingSection}>
-          <h3>공개 설정</h3>
-          <label className={styles.toggleLabel}>
-            <input
-              type="checkbox"
-              aria-label="공개 설정"
-              checked={isPublished}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setIsPublished(e.target.checked)}
-              className={styles.toggleInput}
-            />
-            <span className={styles.toggleSlider}></span>
-            <span className={styles.toggleText}>{isPublished ? "공개됨" : "비공개"}</span>
-          </label>
-        </div>
-
+          {/* 공개 설정 */}
+          <div className={styles.settingSection}>
+            <h3>공개 설정</h3>
+            <label className={styles.toggleLabel}>
+              <input
+                type="checkbox"
+                aria-label="공개 설정"
+                checked={isPublished}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setIsPublished(e.target.checked)}
+                className={styles.toggleInput}
+              />
+              <span className={styles.toggleSlider}></span>
+              <span className={styles.toggleText}>{isPublished ? "공개" : "비공개"}</span>
+            </label>
+          </div>
+        </fieldset>
+        {feedback && (
+          <p role="status" className={styles.feedback}>
+            {feedback}
+          </p>
+        )}
         <div className={styles.modalActions}>
-          <button className={styles.cancelButton} onClick={onClose}>
+          <button className={styles.cancelButton} onClick={onClose} disabled={isSubmitting}>
             취소
           </button>
-          <button className={styles.publishButton} onClick={onPublish} disabled={isSubmitting}>
-            {isSubmitting ? "저장 중..." : "게시하기"}
+          {!isEditing && onSaveDraft && (
+            <button
+              className={styles.draftButton}
+              onClick={onSaveDraft}
+              disabled={isSubmitting || isCreatingTag}
+            >
+              {isSavingDraft ? "초안 저장 중…" : "초안 저장"}
+            </button>
+          )}
+          <button
+            className={styles.publishButton}
+            onClick={onPublish}
+            disabled={isSubmitting || isCreatingTag}
+          >
+            {isSubmitting && !isSavingDraft
+              ? "저장 중..."
+              : isEditing
+                ? "수정 반영"
+                : isPublished
+                  ? "공개 게시"
+                  : "비공개 게시"}
           </button>
         </div>
       </div>

@@ -1,0 +1,124 @@
+.dialog {
+  width: min(600px, calc(100vw - 32px));
+  max-height: min(720px, 85dvh);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--softTextColor);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--textColor);
+  box-shadow: 0 16px 60px rgb(0 0 0 / 20%);
+  overflow-y: auto;
+}
+.dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+.content {
+  padding: 24px;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.header button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--textColor);
+  font-size: 1.75rem;
+  cursor: pointer;
+}
+.description {
+  margin: 8px 0 20px;
+  color: var(--softTextColor);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--textColor);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+.item:hover,
+.header button:hover {
+  background: var(--softBg);
+}
+.dialog button:focus-visible {
+  outline: 2px solid #b66b42;
+  outline-offset: 2px;
+}
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.meta {
+  color: var(--softTextColor);
+  font-size: 0.875rem;
+}
+@media (max-width: 480px) {
+  .content {
+    padding: 16px;
+  }
+}
+
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding-right: 12px;
+  border: 1px solid color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  border-radius: 10px;
+  background: var(--bg);
+}
+.row .item {
+  flex: 1;
+  min-width: 0;
+}
+.deleteButton {
+  align-self: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--softTextColor) 30%, var(--bg));
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--softTextColor);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.deleteButton:hover {
+  color: #c24444;
+  border-color: #c24444;
+}
+.dialog button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

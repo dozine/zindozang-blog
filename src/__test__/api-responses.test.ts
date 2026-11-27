@@ -1,4 +1,5 @@
 /** @jest-environment node */
+import { publishedPostWhere } from "@/lib/data/postStatus";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { getAuthSession } from "@/lib/services/authService";
@@ -190,7 +191,7 @@ test("tag list, duplicate response and detail expose only declared fields", asyn
     posts: [{ id: relation.id, postId: post.id, tagId: tag.id, post: publicPostFields }],
   });
   expect(db.tag.findUnique.mock.calls[1][0].include.posts.where).toEqual({
-    post: { isPublished: true },
+    post: { isPublished: true, AND: [publishedPostWhere] },
   });
 });
 
@@ -370,7 +371,8 @@ test("a session without an email cannot remove the public-post filter", async ()
   const response = await listPosts(request());
 
   expect(response.status).toBe(200);
-  expect(db.post.findMany.mock.calls[0][0].where.isPublished).toBe(true);
+  expect(db.post.findMany.mock.calls[0][0].where.AND).toContainEqual(publishedPostWhere);
+  expect(db.post.findMany.mock.calls[0][0].where.AND[0].isPublished).toBe(true);
 });
 
 test("visitor tracking retries a transaction conflict and counts the visit", async () => {
@@ -385,7 +387,6 @@ test("visitor tracking retries a transaction conflict and counts the visit", asy
   expect(db.$transaction).toHaveBeenCalledTimes(2);
 });
 
-
 test("전체 글 조회는 미분류 글을 포함하고 카테고리 필터는 해당 글만 조회한다", async () => {
   const postWithoutCategory = { ...fullPost, catSlug: null };
   db.post.findMany.mockResolvedValue([postWithoutCategory]);
@@ -399,12 +400,13 @@ test("전체 글 조회는 미분류 글을 포함하고 카테고리 필터는 
   expect(db.post.findMany.mock.calls[1][0].where.catSlug).toBe("notes");
 });
 
-
 test("카테고리 없이 글을 생성하고 응답에도 null을 반환한다", async () => {
   const noCategory = { ...post, catSlug: null };
   db.post.create.mockResolvedValue(noCategory);
   db.post.findUnique.mockResolvedValue({ ...fullPost, catSlug: null });
-  const response = await createPost(request("POST", { title: post.title, desc: post.desc, slug: post.slug, catSlug: null }));
+  const response = await createPost(
+    request("POST", { title: post.title, desc: post.desc, slug: post.slug, catSlug: null })
+  );
   expect(response.status).toBe(200);
   expect((await response.json()).catSlug).toBeNull();
   expect(db.post.create.mock.calls[0][0].data.cat).toBeUndefined();
@@ -413,7 +415,10 @@ test("카테고리 없이 글을 생성하고 응답에도 null을 반환한다"
 test("글 수정 시 null은 카테고리를 해제하고 생략은 기존 분류를 유지한다", async () => {
   db.post.findUnique.mockResolvedValue(fullPost);
   db.post.update.mockResolvedValue(post);
-  const response = await updatePost(request("PUT", { title: post.title, desc: post.desc, catSlug: null }), slugParams);
+  const response = await updatePost(
+    request("PUT", { title: post.title, desc: post.desc, catSlug: null }),
+    slugParams
+  );
   expect(response.status).toBe(200);
   expect(db.post.update.mock.calls[0][0].data.cat).toEqual({ disconnect: true });
 
@@ -424,7 +429,10 @@ test("글 수정 시 null은 카테고리를 해제하고 생략은 기존 분�
 test("글 수정 시 선택한 카테고리를 연결한다", async () => {
   db.post.findUnique.mockResolvedValue(fullPost);
   db.post.update.mockResolvedValue(post);
-  const response = await updatePost(request("PUT", { title: post.title, desc: post.desc, catSlug: "life" }), slugParams);
+  const response = await updatePost(
+    request("PUT", { title: post.title, desc: post.desc, catSlug: "life" }),
+    slugParams
+  );
   expect(response.status).toBe(200);
   expect(db.post.update.mock.calls[0][0].data.cat).toEqual({ connect: { slug: "life" } });
 });
@@ -438,4 +446,38 @@ test("기존 미분류 slug도 일반 카테고리로 생성할 수 있다", asy
 
   expect(response.status).toBe(201);
   expect((await response.json()).category.slug).toBe(other.slug);
+});
+
+test("draft posts stay hidden from the detail endpoint even for their author", async () => {
+  db.post.findUnique.mockResolvedValue({ ...fullPost, status: "DRAFT", isPublished: true });
+  const response = await readPost(request(), slugParams);
+  expect(response.status).toBe(404);
+  expect(db.post.update).not.toHaveBeenCalled();
+});
+
+test("draft posts cannot be edited through the published post update endpoint", async () => {
+  db.post.findUnique.mockResolvedValue({ ...fullPost, status: "DRAFT" });
+  const response = await updatePost(request("PUT", { title: "Changed", desc: "Body" }), slugParams);
+  expect(response.status).toBe(404);
+  expect(db.post.update).not.toHaveBeenCalled();
+});
+
+test("server rendered detail never increments views or displays draft content", async () => {
+  db.post.findUnique.mockResolvedValue({ ...fullPost, status: "DRAFT" });
+  expect(await getPostData("hello")).toBeNull();
+  expect(db.post.update).not.toHaveBeenCalled();
+});
+
+test("administrators also exclude drafts from the ordinary post list", async () => {
+  const previousEmail = process.env.MYEMAIL;
+  process.env.MYEMAIL = author.email;
+  try {
+    db.post.findMany.mockResolvedValue([]);
+    db.post.count.mockResolvedValue(0);
+    await listPosts(request());
+    expect(db.post.findMany.mock.calls[0][0].where.AND).toContainEqual(publishedPostWhere);
+  } finally {
+    if (previousEmail === undefined) delete process.env.MYEMAIL;
+    else process.env.MYEMAIL = previousEmail;
+  }
 });

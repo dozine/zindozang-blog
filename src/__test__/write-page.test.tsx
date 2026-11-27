@@ -1,8 +1,27 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import WritePage from "@/app/(blog)/write/page";
 
+function render(ui: React.ReactElement) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
+  });
+  return rtlRender(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
+}
+
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockPublishDraft = jest.fn();
+const mockLoadDraft = jest.fn();
+const mockSaveDraft = jest.fn();
+const mockListDrafts = jest.fn();
+const mockDeleteDraft = jest.fn();
+let mockDraftId = "";
 const mockCreate = jest.fn();
 const mockUpdate = jest.fn();
 let mockEditing = false;
@@ -12,11 +31,22 @@ let mockCategoryError: Error | null = null;
 const mockCategoryRefetch = jest.fn();
 
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
-  useSearchParams: () => new URLSearchParams(mockEditing ? "edit=true&slug=hello" : ""),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
+  useSearchParams: () =>
+    new URLSearchParams(
+      mockEditing ? "edit=true&slug=hello" : mockDraftId ? `draft=${mockDraftId}` : ""
+    ),
 }));
 jest.mock("next-auth/react", () => ({ useSession: () => ({ status: "authenticated" }) }));
+jest.mock("@/lib/services/draftService", () => ({
+  publishDraft: (...args: unknown[]) => mockPublishDraft(...args),
+  loadDraft: (...args: unknown[]) => mockLoadDraft(...args),
+  saveDraft: (...args: unknown[]) => mockSaveDraft(...args),
+  listDrafts: () => mockListDrafts(),
+  deleteDraft: (...args: unknown[]) => mockDeleteDraft(...args),
+}));
 jest.mock("@/queries/post", () => ({
+  postQueryKeys: { all: ["posts"] },
   useCreatePost: () => ({ mutateAsync: mockCreate }),
   useUpdatePost: () => ({ mutateAsync: mockUpdate }),
   usePostQuery: () => ({
@@ -37,6 +67,7 @@ jest.mock("@/queries/category", () => ({
   }),
 }));
 jest.mock("@/queries/tag", () => ({
+  tagQueryKeys: { all: ["tags"] },
   useTagsQuery: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 jest.mock(
@@ -76,14 +107,36 @@ jest.mock(
 jest.mock(
   "@/components/postSettingModal/PostSettingModal",
   () =>
-    function MockSettings({ onPublish }: { onPublish: () => void }) {
-      return <button onClick={onPublish}>저장 확인</button>;
+    function MockSettings({
+      onPublish,
+      onSaveDraft,
+      feedback,
+    }: {
+      onPublish: () => void;
+      onSaveDraft?: () => void;
+      feedback?: string;
+    }) {
+      return (
+        <div role="dialog">
+          <button onClick={onPublish}>저장 확인</button>
+          {onSaveDraft && <button onClick={onSaveDraft}>초안 저장</button>}
+          {feedback && <p role="status">{feedback}</p>}
+        </div>
+      );
     }
 );
 
 beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
+  mockDraftId = "";
+  mockListDrafts.mockResolvedValue([]);
+  Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    },
+  });
   mockEditing = false;
   mockPost = null;
   mockPostFetched = true;
@@ -98,7 +151,7 @@ test("새 글을 작성하고 저장한다", async () => {
   render(<WritePage />);
   fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "New Post" } });
   fireEvent.change(screen.getByLabelText("본문"), { target: { value: "내용" } });
-  fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() =>
     expect(mockCreate).toHaveBeenCalledWith(
@@ -122,7 +175,7 @@ test("기존 글을 불러와 수정한 내용을 저장한다", async () => {
   render(<WritePage />);
   await waitFor(() => expect(screen.getByDisplayValue("기존 제목")).toBeTruthy());
   fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "수정한 제목" } });
-  fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+  fireEvent.click(screen.getByRole("button", { name: "수정 반영" }));
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() =>
     expect(mockUpdate).toHaveBeenCalledWith(
@@ -177,7 +230,7 @@ test("저장 성공 시 복구본을 삭제한다", async () => {
   fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "제목" } });
   fireEvent.change(screen.getByLabelText("본문"), { target: { value: "내용" } });
   expect(localStorage.getItem(newPostRecoveryKey)).not.toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/posts/saved"));
   expect(localStorage.getItem(newPostRecoveryKey)).toBeNull();
@@ -189,7 +242,7 @@ test("저장 실패 시 복구본을 유지한다", async () => {
   render(<WritePage />);
   fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "제목" } });
   fireEvent.change(screen.getByLabelText("본문"), { target: { value: "내용" } });
-  fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() => expect(window.alert).toHaveBeenCalledWith("저장 실패"));
   expect(localStorage.getItem(newPostRecoveryKey)).not.toBeNull();
@@ -309,4 +362,163 @@ test("여러 사진을 기억한 커서 위치에 순서대로 삽입한다", ()
   fireEvent.click(screen.getByRole("button", { name: "여러 장 완료" }));
   expect(editor.value).toBe("앞\n\n![image](/first.png)\n\n\n\n![image](/second.png)\n\n뒤");
   expect(screen.getAllByAltText(/uploaded-/)).toHaveLength(2);
+});
+
+const draftContent = {
+  title: "저장한 제목",
+  value: "작성 중인 내용",
+  uploadedImages: [],
+  thumbnailImg: "",
+  catSlug: "",
+  tags: [],
+  isPublished: false,
+  tagInput: "",
+};
+const savedDraft = { id: "draft-1", updatedAt: "2026-11-27T03:00:00.000Z", content: draftContent };
+
+test("제목 없이 모달에서 초안을 저장하고 같은 초안의 주소를 유지한다", async () => {
+  mockSaveDraft.mockResolvedValue({ ...savedDraft, content: { ...draftContent, title: "" } });
+  render(<WritePage />);
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "미완성 내용" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  expect(window.alert).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith({
+      content: expect.objectContaining({ title: "", value: "미완성 내용" }),
+    })
+  );
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/write?draft=draft-1"));
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("저장된 초안을 불러와 다시 저장할 때 같은 ID와 저장 시각을 보낸다", async () => {
+  mockDraftId = "draft-1";
+  mockLoadDraft.mockResolvedValue(savedDraft);
+  mockSaveDraft.mockResolvedValue({ ...savedDraft, updatedAt: "2026-11-27T04:00:00.000Z" });
+  render(<WritePage />);
+  await screen.findByDisplayValue("저장한 제목");
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "이어서 작성" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith({
+      id: "draft-1",
+      updatedAt: savedDraft.updatedAt,
+      content: expect.objectContaining({ value: "이어서 작성" }),
+    })
+  );
+  expect(mockCreate).not.toHaveBeenCalled();
+});
+
+test("초안을 게시하면 새 글 생성 대신 같은 글의 게시 전환을 요청한다", async () => {
+  mockDraftId = "draft-1";
+  mockLoadDraft.mockResolvedValue(savedDraft);
+  mockPublishDraft.mockResolvedValue({ slug: "published-draft" });
+  render(<WritePage />);
+  await screen.findByDisplayValue("저장한 제목");
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() =>
+    expect(mockPublishDraft).toHaveBeenCalledWith(
+      "draft-1",
+      expect.objectContaining({ title: draftContent.title, updatedAt: savedDraft.updatedAt })
+    )
+  );
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(mockUpdate).not.toHaveBeenCalled();
+  expect(mockPush).toHaveBeenCalledWith("/posts/published-draft");
+});
+
+test("게시된 글의 수정 화면에는 초안 불러오기와 저장을 제공하지 않는다", async () => {
+  mockEditing = true;
+  mockPost = { title: "게시된 글", desc: "본문", img: [], tags: [], isPublished: true };
+  render(<WritePage />);
+  await screen.findByDisplayValue("게시된 글");
+  expect(screen.queryByRole("button", { name: "내 초안" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "수정 반영" }));
+  expect(screen.queryByRole("button", { name: "초안 저장" })).toBeNull();
+});
+
+test("내 초안은 목록 모달을 열고 선택한 초안을 작성 화면에서 불러온다", async () => {
+  mockListDrafts.mockResolvedValue([savedDraft]);
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("button", { name: "내 초안" }));
+  fireEvent.click(await screen.findByRole("button", { name: "저장한 제목 초안 불러오기" }));
+  expect(mockReplace).toHaveBeenCalledWith("/write?draft=draft-1");
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("초안 저장 실패 시 모달과 입력 내용을 유지한다", async () => {
+  mockSaveDraft.mockRejectedValue(new Error("초안을 저장할 수 없습니다."));
+  render(<WritePage />);
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "실패해도 남을 내용" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(screen.getByRole("dialog").textContent).toContain("초안을 저장할 수 없습니다.")
+  );
+  expect(screen.getByDisplayValue("실패해도 남을 내용")).toBeTruthy();
+});
+
+test("목록에서 삭제 확인 후 초안을 제거하고 브라우저 복구본도 지운다", async () => {
+  mockListDrafts.mockResolvedValue([savedDraft]);
+  mockDeleteDraft.mockResolvedValue(undefined);
+  const confirm = jest
+    .spyOn(window, "confirm")
+    .mockReturnValueOnce(false)
+    .mockReturnValueOnce(true);
+  const key = "blog:post-recovery:v1:local:draft:draft-1";
+  localStorage.setItem(key, "recovery");
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("button", { name: "내 초안" }));
+  const button = await screen.findByRole("button", { name: "저장한 제목 초안 삭제" });
+  fireEvent.click(button);
+  expect(mockDeleteDraft).not.toHaveBeenCalled();
+  fireEvent.click(button);
+  await screen.findByText(/저장한 초안이 없습니다/);
+  expect(confirm).toHaveBeenCalledTimes(2);
+  expect(mockDeleteDraft).toHaveBeenCalledWith(savedDraft);
+  expect(localStorage.getItem(key)).toBeNull();
+});
+
+test("삭제 실패 시 목록을 유지하고 오류를 표시한다", async () => {
+  mockListDrafts.mockResolvedValue([savedDraft]);
+  mockDeleteDraft.mockRejectedValue(new Error("다른 탭에서 초안이 변경되었습니다."));
+  jest.spyOn(window, "confirm").mockReturnValue(true);
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("button", { name: "내 초안" }));
+  fireEvent.click(await screen.findByRole("button", { name: "저장한 제목 초안 삭제" }));
+  expect((await screen.findByRole("alert")).textContent).toContain(
+    "다른 탭에서 초안이 변경되었습니다."
+  );
+  expect(screen.getByRole("button", { name: "저장한 제목 초안 불러오기" })).toBeTruthy();
+});
+
+test("작성 중인 초안을 삭제해도 편집 내용은 새 글로 유지하고 다음 저장은 새 초안으로 한다", async () => {
+  mockDraftId = "draft-1";
+  mockLoadDraft.mockResolvedValue(savedDraft);
+  mockListDrafts.mockResolvedValue([savedDraft]);
+  mockDeleteDraft.mockResolvedValue(undefined);
+  mockSaveDraft.mockResolvedValue({ ...savedDraft, id: "new-draft" });
+  jest.spyOn(window, "confirm").mockReturnValue(true);
+  const { rerender } = render(<WritePage />);
+  await screen.findByDisplayValue("저장한 제목");
+  fireEvent.change(screen.getByLabelText("본문"), {
+    target: { value: "삭제 후에도 남을 편집 내용" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "내 초안" }));
+  fireEvent.click(await screen.findByRole("button", { name: "저장한 제목 초안 삭제" }));
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/write"));
+  mockDraftId = "";
+  rerender(<WritePage />);
+  await screen.findByDisplayValue("삭제 후에도 남을 편집 내용");
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith({
+      content: expect.objectContaining({ value: "삭제 후에도 남을 편집 내용" }),
+    })
+  );
 });

@@ -8,6 +8,11 @@ export const API_ENDPOINTS = {
     list: "/api/posts",
     detail: (slug: string) => `/api/posts/${encodeURIComponent(slug)}`,
   },
+  drafts: {
+    list: "/api/drafts",
+    detail: (id: string) => `/api/drafts/${encodeURIComponent(id)}`,
+    publish: (id: string) => `/api/drafts/${encodeURIComponent(id)}/publish`,
+  },
   tags: {
     list: "/api/tags",
     detail: (id: string) => `/api/tags/${encodeURIComponent(id)}`,
