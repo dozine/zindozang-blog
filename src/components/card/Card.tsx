@@ -2,6 +2,8 @@ import Image from "next/image";
 import styles from "./card.module.css";
 import Link from "next/link";
 import type { PostView } from "@/types/post";
+import { POST_FONTS } from "@/lib/constants/post";
+import { normalizePostFont } from "@/lib/utils/post";
 import { extractTextFromMarkdown } from "@/lib/utils/markdown";
 
 interface CardProps {
@@ -11,6 +13,7 @@ interface CardProps {
 }
 
 const Card = ({ item, priority = false, index = 0 }: CardProps) => {
+  const descText = extractTextFromMarkdown(item.desc).replace(/\s+/g, " ").trim();
   const shouldPrioritize = priority || index < 3;
   return (
     <Link href={`/posts/${item.slug}`}>
@@ -21,12 +24,10 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
               ? item.createdAt.toISOString().substring(0, 10)
               : new Date(item.createdAt).toISOString().substring(0, 10)}
           </span>
-          {item.catSlug && (
-            <span className={styles.category}>{item.catSlug}</span>
-          )}
+          {item.catSlug && <span className={styles.category}>{item.catSlug}</span>}
         </div>
 
-        {/* 2. 이미지 */}
+        {/* 이미지 또는 본문 미리보기 */}
         {Array.isArray(item.img) && item.img.length > 0 && item.img[0].trim() !== "" ? (
           <div className={styles.imageContainer}>
             <div className={styles.image}>
@@ -45,20 +46,12 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
             </div>
           </div>
         ) : (
-          <div className={styles.imagePlaceholder}>
-            <svg
-              className={styles.imagePlaceholderIcon}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              width="36"
-              height="36"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
-            </svg>
+          <div
+            className={styles.textPreview}
+            aria-hidden="true"
+            style={{ fontFamily: POST_FONTS[normalizePostFont(item.fontFamily)].family }}
+          >
+            <p className={styles.previewText}>{descText || item.title}</p>
           </div>
         )}
 
@@ -67,11 +60,7 @@ const Card = ({ item, priority = false, index = 0 }: CardProps) => {
             <h1 className={styles.title}>{item.title}</h1>
           </div>
           <p className={styles.desc}>
-            {(() => {
-              if (!item.desc) return "";
-              const descText = extractTextFromMarkdown(item.desc);
-              return descText.length > 60 ? descText.substring(0, 60) + "..." : descText;
-            })()}
+            {descText.length > 60 ? descText.substring(0, 60) + "..." : descText}
           </p>
           {/* {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
             <div className={styles.tagContainer}>
