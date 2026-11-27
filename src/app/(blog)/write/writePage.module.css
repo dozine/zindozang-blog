@@ -11,6 +11,10 @@
 }
 
 .titleInput {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 20px 0;
   font-size: 32px;
   font-family: var(--font-noto-sans-kr), sans-serif;
@@ -346,4 +350,40 @@
   .editorContainer :global(.wmde-markdown .img-grid-3) {
     grid-template-columns: 1fr;
   }
+}
+
+.editorFields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.draftActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 8px;
+}
+.draftActions .publish {
+  position: static;
+  margin: 0;
+  min-height: 44px;
+}
+.secondaryAction {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--softTextColor);
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--textColor);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.draftActions button:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }

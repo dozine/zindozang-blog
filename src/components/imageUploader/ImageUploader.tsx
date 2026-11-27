@@ -7,6 +7,7 @@ import styles from "./ImageUploader.module.css";
 import { app } from "@/lib/external/firebase";
 
 interface ImageUploaderProps {
+  onUploadingChange?: (uploading: boolean) => void;
   onImagesUploaded?: (urls: string[]) => void;
   triggerUpload?: boolean;
   onUploadTriggered?: () => void;
@@ -14,6 +15,7 @@ interface ImageUploaderProps {
 }
 
 const ImageUploader = ({
+  onUploadingChange,
   onImagesUploaded,
   triggerUpload = false,
   onUploadTriggered,
@@ -135,6 +137,7 @@ const ImageUploader = ({
     if (!files.length || uploadInProgress.current) return;
     uploadInProgress.current = true;
     setUploading(true);
+    onUploadingChange?.(true);
     setUploadErrors([]);
     setProgress(0);
     const urls: string[] = [];
@@ -153,6 +156,7 @@ const ImageUploader = ({
     } finally {
       uploadInProgress.current = false;
       setUploading(false);
+      onUploadingChange?.(false);
       setProgress(0);
       setFileStatus("");
       if (fileInputRef.current) fileInputRef.current.value = "";

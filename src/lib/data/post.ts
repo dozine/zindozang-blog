@@ -1,3 +1,4 @@
+import { publishedPostWhere } from "@/lib/data/postStatus";
 import type { PostData, PostDetailView, PostListData } from "@/types/post";
 import prisma from "@/lib/db/prisma";
 import { toPostView } from "@/lib/serializers/responses";
@@ -51,12 +52,13 @@ export const getPostData = cache(async (slug: string): Promise<PostDetailView | 
     const postCheck = await prisma.post.findUnique({
       where: { slug: decodedSlug },
       select: {
+        status: true,
         id: true,
         isPublished: true,
         userEmail: true,
       },
     });
-    if (!postCheck) return null;
+    if (!postCheck || postCheck.status === "DRAFT") return null;
 
     const isAuthor = Boolean(userEmail && userEmail === postCheck.userEmail);
     if (!postCheck.isPublished && !isAuthor) {
@@ -100,6 +102,7 @@ export const getPosts = cache(
         : [];
 
     let where: Prisma.PostWhereInput = {
+      AND: [publishedPostWhere],
       ...(cat && { catSlug: cat }),
       ...(selectedTags.length > 0 && {
         tags: {
