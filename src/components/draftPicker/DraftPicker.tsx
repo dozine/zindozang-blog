@@ -108,7 +108,9 @@ export default function DraftPicker({
             </button>
           </div>
         ) : !drafts.length ? (
-          <p>저장한 초안이 없습니다. ‘저장 및 게시’에서 초안을 저장할 수 있습니다.</p>
+          <p className={styles.emptyMessage}>
+            저장한 초안이 없습니다. ‘저장 및 게시’에서 초안을 저장할 수 있습니다.
+          </p>
         ) : (
           <ul className={styles.list}>
             {drafts.map((draft) => (
