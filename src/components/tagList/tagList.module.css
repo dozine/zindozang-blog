@@ -169,3 +169,40 @@
     font-size: 10px;
   }
 }
+
+:global(.dark) .label span,
+:global(.dark) .menuButton,
+:global(.dark) .menu button {
+  color: var(--softTextColor);
+}
+
+:global(.dark) .divider {
+  background-color: var(--softTextColor);
+}
+
+:global(.dark) .tag {
+  background-color: var(--bg);
+  color: var(--textColor);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .tag:hover {
+  border-color: var(--textColor);
+}
+
+:global(.dark) .activeTag {
+  background-color: var(--textColor);
+  color: var(--bg);
+  border-color: var(--textColor);
+}
+
+:global(.dark) .menu {
+  background: var(--bg);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .menuButton:hover,
+:global(.dark) .menu button:hover {
+  background: var(--softBg);
+  color: var(--textColor);
+}

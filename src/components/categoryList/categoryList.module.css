@@ -192,3 +192,40 @@
     padding-right: 14px;
   }
 }
+
+/* 기존 .dark 래퍼의 테마 색상을 사용한다. */
+:global(.dark) .label span,
+:global(.dark) .categoryText,
+:global(.dark) .menuButton,
+:global(.dark) .menu button {
+  color: var(--softTextColor);
+}
+
+:global(.dark) .divider {
+  background-color: var(--softTextColor);
+}
+
+:global(.dark) .category,
+:global(.dark) .allCategory {
+  background-color: var(--bg);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .category:hover {
+  border-color: var(--textColor);
+}
+
+:global(.dark) .category:hover .categoryText {
+  color: var(--textColor);
+}
+
+:global(.dark) .menu {
+  background: var(--bg);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .menuButton:hover,
+:global(.dark) .menu button:hover {
+  background: var(--softBg);
+  color: var(--textColor);
+}

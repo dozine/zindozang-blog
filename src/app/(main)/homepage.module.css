@@ -73,9 +73,20 @@
   word-break: break-all;
 }
 
+:global(.dark) .page {
+  background-color: var(--bg);
+  color: var(--textColor);
+}
+
+:global(.dark) .meta,
 :global(.dark) .titleDesc {
-  color: #eee;
-  border-top: 2px solid #444;
+  color: var(--textColor);
+}
+
+:global(.dark) .left,
+:global(.dark) .right,
+:global(.dark) .catItem {
+  border-color: var(--softTextColor);
 }
 
 .right {
@@ -124,7 +135,12 @@
 }
 
 :global(.dark) .catName {
-  color: #eee;
+  color: var(--textColor);
+}
+
+:global(.dark) .catNum,
+:global(.dark) .catArrow {
+  color: var(--softTextColor);
 }
 .catArrow {
   font-size: 18px;

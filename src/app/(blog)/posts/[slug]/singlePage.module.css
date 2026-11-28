@@ -206,3 +206,34 @@
     margin-top: 3rem;
   }
 }
+
+:global(.dark) .title {
+  color: var(--textColor);
+}
+
+:global(.dark) .date,
+:global(.dark) .published,
+:global(.dark) .unpublished,
+:global(.dark) .menuButton,
+:global(.dark) .menuItem,
+:global(.dark) .tag,
+:global(.dark) .views {
+  color: var(--softTextColor);
+}
+
+:global(.dark) .menu,
+:global(.dark) .tag {
+  background: var(--bg);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .menuButton:hover,
+:global(.dark) .menuItem:hover {
+  background: var(--softBg);
+  color: var(--textColor);
+}
+
+:global(.dark) .tag:hover {
+  border-color: var(--textColor);
+  color: var(--textColor);
+}

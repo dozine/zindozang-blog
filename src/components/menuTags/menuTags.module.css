@@ -96,3 +96,28 @@
     display: none;
   }
 }
+
+:global(.dark) .title {
+  color: var(--textColor);
+}
+
+:global(.dark) .tag {
+  background-color: var(--softBg);
+  color: var(--textColor);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .viewMoreLink {
+  background-color: var(--softBg);
+  color: var(--textColor);
+}
+
+:global(.dark) .viewMoreBtn {
+  color: var(--softTextColor);
+}
+
+:global(.dark) .viewMoreLink:hover,
+:global(.dark) .viewMoreBtn:hover {
+  background-color: var(--softBg);
+  color: var(--textColor);
+}
