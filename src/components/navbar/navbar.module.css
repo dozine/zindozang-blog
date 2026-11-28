@@ -34,8 +34,11 @@
 }
 
 .burger {
-  width: 20px;
-  height: 16px;
+  width: 44px;
+  height: 44px;
+  padding: 13px 10px;
+  border: none;
+  background: transparent;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
@@ -49,23 +52,44 @@
 }
 
 .responsiveMenu {
-  position: fixed;
-  top: 100px;
-  left: 0;
+  position: absolute;
+  top: 100%;
   right: 0;
+  width: min(320px, 90vw);
+  max-height: calc(100dvh - 110px);
+  overflow-y: auto;
+  padding: 12px 20px;
   background-color: var(--bg);
-  height: 100%;
-  width: 100%;
-  display: flex;
+  color: var(--textColor);
+  border: 1px solid var(--softTextColor);
+  display: none;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 50px;
   z-index: 999;
 }
 
 .burgerLink {
-  font-size: medium;
+  padding: 14px 0;
+  font-size: 14px;
+}
+
+.burgerLink:hover {
+  color: #e07040;
+}
+
+.mobileTheme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--softTextColor);
+  margin-top: 8px;
+  padding: 16px 0 4px;
+  font-size: 13px;
+}
+
+.burger:focus-visible {
+  outline: 2px solid var(--textColor);
+  outline-offset: 2px;
 }
 
 @media screen and (max-width: 1280px) {
@@ -85,6 +109,12 @@
 }
 
 @media screen and (max-width: 768px) {
+  .desktopTheme {
+    display: none;
+  }
+  .responsiveMenu {
+    display: flex;
+  }
   .burger {
     display: flex;
   }

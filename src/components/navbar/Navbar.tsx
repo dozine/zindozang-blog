@@ -42,20 +42,39 @@ const Navbar = () => {
           </>
         )}
 
-        <div className={styles.burger} onClick={() => setOpen(!open)}>
-          <div className={styles.line}></div>
-          <div className={styles.line}></div>
-          <div className={styles.line}></div>
+        <button
+          type="button"
+          className={styles.burger}
+          onClick={() => setOpen((value) => !value)}
+          aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
+          aria-expanded={open}
+          aria-controls="mobile-navigation"
+        >
+          <span className={styles.line} />
+          <span className={styles.line} />
+          <span className={styles.line} />
+        </button>
+        <div className={styles.desktopTheme}>
+          <ThemeToggle />
         </div>
-        <ThemeToggle />
         {open && (
-          <div className={styles.responsiveMenu}>
-            <Link
-              href="/blog
-            "
-              className={styles.burgerLink}
-              onClick={() => setOpen(false)}
-            >
+          <nav
+            id="mobile-navigation"
+            className={styles.responsiveMenu}
+            aria-label="모바일 메뉴"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setOpen(false);
+                document
+                  .querySelector<HTMLButtonElement>(`[aria-controls="mobile-navigation"]`)
+                  ?.focus();
+              }
+            }}
+          >
+            <Link href="/" className={styles.burgerLink} onClick={() => setOpen(false)}>
+              Home
+            </Link>
+            <Link href="/blog" className={styles.burgerLink} onClick={() => setOpen(false)}>
               Blog
             </Link>
             <Link href="/tags" className={styles.burgerLink} onClick={() => setOpen(false)}>
@@ -68,7 +87,7 @@ const Navbar = () => {
               <Link href="/login" className={styles.burgerLink} onClick={() => setOpen(false)}>
                 Login
               </Link>
-            ) : (
+            ) : status === "authenticated" ? (
               <>
                 <Link href="/write" className={styles.burgerLink} onClick={() => setOpen(false)}>
                   Write
@@ -84,8 +103,12 @@ const Navbar = () => {
                   Logout
                 </span>
               </>
-            )}
-          </div>
+            ) : null}
+            <div className={styles.mobileTheme}>
+              <span>화면 테마</span>
+              <ThemeToggle />
+            </div>
+          </nav>
         )}
       </div>
     </div>
