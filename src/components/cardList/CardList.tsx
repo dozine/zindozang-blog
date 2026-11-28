@@ -11,7 +11,7 @@ interface CardListProps {
   tags?: string | string[];
 }
 
-const POSTS_PER_PAGE = 9;
+const POSTS_PER_PAGE = 12;
 
 const CardList = async ({ page, cat, tags }: CardListProps) => {
   const data = await getPosts({ page, cat, tags, postPerPage: POSTS_PER_PAGE });

@@ -9,19 +9,20 @@
   margin-top: 5rem;
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  /* border-bottom: 1px solid #e0e0e0; */
+  border-bottom: 1px solid var(--softTextColor);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
 /* ── 제목 ── */
 .title {
-  font-size: 30px;
+  font-size: clamp(30px, 4vw, 48px);
   font-weight: 600;
   font-family: var(--font-noto-serif-kr), serif;
   letter-spacing: -0.02em;
-  line-height: 1.3;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
   color: #111;
   margin: 0;
 }
@@ -31,6 +32,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .date {
@@ -110,15 +113,6 @@
   color: #222;
 }
 
-/* ── 태그 · 조회수 행 ── */
-.bottomRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .tagContainer {
   display: flex;
   flex-wrap: wrap;
@@ -138,19 +132,17 @@
   font-weight: 500;
   letter-spacing: 0.3px;
   text-decoration: none;
-  transition: all 0.25s ease;
-}
-
-.tag:hover {
-  border-color: #aaa;
-  transform: translateY(-1px);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .views {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #ccc;
+  color: var(--softTextColor);
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -166,7 +158,7 @@
 
 .post {
   flex: 1;
-  margin-top: 20px;
+  margin-top: 0;
   min-width: 0;
   overflow-wrap: break-word;
 }
@@ -177,32 +169,95 @@
   max-width: 100%;
 }
 
-.post img {
-  max-width: 50%;
-  height: auto;
-  display: block;
-  margin: 1rem 0;
-}
-
-.post ul,
-.post ol {
-  margin: 1em 0;
-  padding-left: 1.5em;
-}
-
-.post li {
-  margin: 0.25em 0;
-  line-height: 1.6;
-  word-break: break-word;
-}
-
 /* ── 반응형 ── */
 @media screen and (max-width: 640px) {
-  .title {
-    font-size: 24px;
-  }
-
   .infoContainer {
     margin-top: 3rem;
   }
+}
+
+:global(.dark) .title {
+  color: var(--textColor);
+}
+
+:global(.dark) .date,
+:global(.dark) .published,
+:global(.dark) .unpublished,
+:global(.dark) .menuButton,
+:global(.dark) .menuItem,
+:global(.dark) .tag,
+:global(.dark) .views {
+  color: var(--softTextColor);
+}
+
+:global(.dark) .menu,
+:global(.dark) .tag {
+  background: var(--bg);
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .menuButton:hover,
+:global(.dark) .menuItem:hover {
+  background: var(--softBg);
+  color: var(--textColor);
+}
+
+/* 상세 화면에서도 목록과 동일한 태그 상호작용을 사용한다. */
+.tag:hover,
+.tag:focus-visible {
+  background: var(--textColor);
+  border-color: var(--textColor);
+  color: var(--bg);
+}
+
+.tag:focus-visible,
+.category:focus-visible {
+  outline: 2px solid var(--textColor);
+  outline-offset: 3px;
+}
+
+.category {
+  align-self: flex-start;
+  font-family: SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--softTextColor);
+}
+
+.category:hover {
+  color: var(--textColor);
+}
+
+.metaDetails {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.postFooter {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--softTextColor);
+}
+
+.comments {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--softTextColor);
+}
+
+.sectionTitle {
+  color: var(--textColor);
+  font-family: var(--font-syne), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.commentsContainer {
+  min-height: 400px;
 }

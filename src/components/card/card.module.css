@@ -132,3 +132,34 @@
   gap: 6px;
   overflow: hidden;
 }
+
+/* 기존 .dark 래퍼의 테마 색상을 사용한다. */
+:global(.dark) .container {
+  background-color: var(--bg);
+  outline-color: var(--softTextColor);
+}
+
+:global(.dark) .title {
+  color: var(--textColor);
+}
+
+:global(.dark) .date,
+:global(.dark) .category,
+:global(.dark) .desc,
+:global(.dark) .tag {
+  color: var(--softTextColor);
+}
+
+:global(.dark) .category,
+:global(.dark) .tag {
+  border-color: var(--softTextColor);
+}
+
+:global(.dark) .imageContainer,
+:global(.dark) .textPreview {
+  background: var(--softBg);
+}
+
+:global(.dark) .textPreview {
+  color: var(--textColor);
+}

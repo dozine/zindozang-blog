@@ -172,3 +172,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* 기존 테마 래퍼에 맞춰 본문과 제목을 밝게 표시한다. */
+.dark .post-content-container,
+.dark .post-content-container h1,
+.dark .post-content-container h2,
+.dark .post-content-container h3,
+.dark .post-content-container h4,
+.dark .post-content-container th {
+  color: var(--textColor);
+}
+
+.dark .post-content-container blockquote {
+  color: var(--textColor);
+  background: var(--softBg);
+  border-left-color: var(--softTextColor);
+}
+
+.dark .post-content-container th,
+.dark .post-content-container tr:nth-child(even) td {
+  background: var(--softBg);
+}
+
+.dark .post-content-container h2,
+.dark .post-content-container hr,
+.dark .post-content-container th,
+.dark .post-content-container td {
+  border-color: var(--softTextColor);
+}
