@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PostDeleteModal from "@/components/modal/postModal/PostDeleteModal";
 import styles from "./singlePage.module.css";
 import type { PostDetailView } from "@/types/post";
@@ -31,19 +32,31 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   }, [data.desc, data.fontFamily, isDark]);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.infoContainer}>
+    <article className={styles.container}>
+      <header className={styles.infoContainer}>
+        {data.catSlug && (
+          <Link href={`/blog?cat=${encodeURIComponent(data.catSlug)}`} className={styles.category}>
+            {data.catSlug}
+          </Link>
+        )}
         <h1 className={styles.title}>{data.title}</h1>
         <div className={styles.metaRow}>
-          <span className={styles.date}>
-            {new Date(data.createdAt).toLocaleString("ko-KR", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
+          <div className={styles.metaDetails}>
+            <time className={styles.date} dateTime={new Date(data.createdAt).toISOString()}>
+              {new Date(data.createdAt).toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: "Asia/Seoul",
+              })}
+            </time>
+            <span className={styles.views} aria-label={`조회수 ${data.views || 0}`}>
+              <FaEye className={styles.viewIcon} aria-hidden="true" />
+              {data.views || 0}
+            </span>
+          </div>
           <div className={styles.metaRight}>
             {data.isAuthor && (
               <>
@@ -54,7 +67,9 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
                   <button
                     className={styles.menuButton}
                     onClick={toggleMenu}
+                    type="button"
                     aria-label="포스트 메뉴 열기"
+                    aria-expanded={menuOpen}
                   >
                     <FaEllipsisH />
                   </button>
@@ -73,44 +88,39 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
             )}
           </div>
         </div>
-        <div className={styles.bottomRow}>
-          {data?.tags && data.tags.length > 0 && (
-            <div className={styles.tagContainer}>
-              {data.tags.map((tag) => (
-                <a
-                  key={tag.id || tag.name}
-                  href={`/tags?tags=${encodeURIComponent(tag.name)}`}
-                  className={styles.tag}
-                >
-                  #{tag.name}
-                </a>
-              ))}
-            </div>
-          )}
-          <span className={styles.views}>
-            <FaEye className={styles.viewIcon} />
-            {`${data.views || 0}`}
-          </span>
-        </div>
-      </div>
+      </header>
 
       <div className={styles.content}>
         <div className={styles.post}>{renderedContent}</div>
       </div>
-      <div
-        id="comments-container"
-        style={{
-          marginTop: "3rem",
-          minHeight: "400px",
-        }}
-      />
+      {data.tags && data.tags.length > 0 && (
+        <footer className={styles.postFooter}>
+          <nav className={styles.tagContainer} aria-label="게시글 태그">
+            {data.tags.map((tag) => (
+              <Link
+                key={tag.id || tag.name}
+                href={`/tags?tags=${encodeURIComponent(tag.name)}`}
+                className={styles.tag}
+              >
+                #{tag.name}
+              </Link>
+            ))}
+          </nav>
+        </footer>
+      )}
+      <section className={styles.comments} aria-labelledby="post-comments-heading">
+        <h2 id="post-comments-heading" className={styles.sectionTitle}>
+          Comments
+        </h2>
+        <div id="comments-container" className={styles.commentsContainer} />
+      </section>
       <PostDeleteModal
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
         slug={slug}
         onSuccess={handlePostDeleteSuccess}
       />
-    </div>
+    </article>
   );
 };
 
