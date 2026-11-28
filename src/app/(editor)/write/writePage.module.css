@@ -267,14 +267,6 @@
   padding: 24px 28px;
 }
 
-.editorContainer :global(.wmde-markdown) {
-  background: var(--bg);
-  color: var(--textColor);
-  font-family: var(--post-font-family, var(--font-noto-serif-kr), serif);
-  font-size: 15px;
-  line-height: 1.85;
-}
-
 .editorContainer :global(.w-md-editor-bar) {
   color: var(--softTextColor);
   border-radius: 0 0 12px 12px;
@@ -299,36 +291,6 @@
 
   .editorContainer :global(.w-md-editor-preview) {
     padding: 16px;
-  }
-}
-
-.editorContainer :global(.wmde-markdown .img-grid-2),
-.editorContainer :global(.wmde-markdown .img-grid-3) {
-  display: grid;
-  gap: 8px;
-  margin: 1.5em 0;
-}
-.editorContainer :global(.wmde-markdown .img-grid-2) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.editorContainer :global(.wmde-markdown .img-grid-3) {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.editorContainer :global(.wmde-markdown [class^="img-grid-"] p) {
-  margin: 0;
-  min-width: 0;
-}
-.editorContainer :global(.wmde-markdown [class^="img-grid-"] img) {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  margin: 0;
-  border-radius: 2px;
-}
-@media screen and (max-width: 640px) {
-  .editorContainer :global(.wmde-markdown .img-grid-2),
-  .editorContainer :global(.wmde-markdown .img-grid-3) {
-    grid-template-columns: 1fr;
   }
 }
 

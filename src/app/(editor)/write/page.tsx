@@ -28,6 +28,7 @@ import DraftPicker from "@/components/draftPicker/DraftPicker";
 import { useDraftQuery, useSaveDraft, usePublishDraft } from "@/queries/draft";
 import type { DraftContent, DraftResponse } from "@/types/api/draft";
 import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
+import PostContent from "@/components/post/PostContent";
 
 const serializeRecoveryContent = (content: DraftContent) =>
   JSON.stringify(postRecoverySchema.shape.content.parse(content));
@@ -736,6 +737,15 @@ const WritePage = () => {
               onChange={(val) => setValue(val || "")}
               height={560}
               minHeight={400}
+              components={{
+                preview: (source) => (
+                  <PostContent
+                    desc={source}
+                    isDark={theme === "dark"}
+                    fontFamily={fontFamily}
+                  />
+                ),
+              }}
               textareaProps={{ "aria-label": "본문", placeholder: "여기에 이야기를 적어보세요…" }}
               commands={[
                 fontFamilyCommand(fontFamily, setFontFamily),

@@ -72,16 +72,24 @@ jest.mock("@/queries/tag", () => ({
   useTagsQuery: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 jest.mock(
+  "@/components/post/PostContent",
+  () => function MockPostContent({ desc, fontFamily }: { desc: string; fontFamily: string }) {
+    return <div data-testid="post-preview" data-font={fontFamily}>{desc}</div>;
+  }
+);
+jest.mock(
   "next/dynamic",
   () => () =>
     function MockEditor({
       value,
       onChange,
       commands = [],
+      components,
     }: {
       value: string;
       onChange: (value: string) => void;
       commands?: ICommand[];
+      components?: { preview: (source: string) => React.ReactNode };
     }) {
       return (
         <>
@@ -97,6 +105,7 @@ jest.mock(
             value={value}
             onChange={(event) => onChange(event.target.value)}
           />
+          {components?.preview(value)}
         </>
       );
     }
@@ -575,6 +584,8 @@ test("본문 글꼴을 바꾸면 미리보기 스타일과 게시 요청에 반�
   );
   fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "글꼴 테스트" } });
   fireEvent.change(screen.getByLabelText("본문"), { target: { value: "본문" } });
+  expect(screen.getByTestId("post-preview").textContent).toBe("본문");
+  expect(screen.getByTestId("post-preview").getAttribute("data-font")).toBe("sans");
   fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() =>
