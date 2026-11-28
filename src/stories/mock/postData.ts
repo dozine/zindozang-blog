@@ -12,6 +12,7 @@ const mockTags = [
 ];
 
 export const mockPostDefault: PostView = {
+  fontFamily: "serif",
   id: "post_1",
   createdAt: new Date("2023-10-26"),
   slug: "storybook-guide",

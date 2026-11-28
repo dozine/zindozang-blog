@@ -377,3 +377,41 @@
   opacity: 0.5;
   cursor: wait;
 }
+
+.slugField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--field-border);
+  border-radius: 14px;
+  background: var(--field-bg);
+}
+.slugField span {
+  flex-shrink: 0;
+  color: var(--softTextColor);
+  font-size: 0.875rem;
+}
+.slugField input {
+  min-width: 0;
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  background: transparent;
+  color: var(--textColor);
+  font: inherit;
+  outline: none;
+}
+.slugField:focus-within {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+}
+.slugHint,
+.slugPreview {
+  margin-top: 8px;
+  color: var(--softTextColor);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}

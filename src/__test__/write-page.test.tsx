@@ -1,7 +1,8 @@
 import React from "react";
+import type { ICommand } from "@uiw/react-md-editor";
 import { fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import WritePage from "@/app/(blog)/write/page";
+import WritePage from "@/app/(editor)/write/page";
 
 function render(ui: React.ReactElement) {
   const client = new QueryClient({
@@ -71,15 +72,41 @@ jest.mock("@/queries/tag", () => ({
   useTagsQuery: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 jest.mock(
+  "@/components/post/PostContent",
+  () => function MockPostContent({ desc, fontFamily }: { desc: string; fontFamily: string }) {
+    return <div data-testid="post-preview" data-font={fontFamily}>{desc}</div>;
+  }
+);
+jest.mock(
   "next/dynamic",
   () => () =>
-    function MockEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+    function MockEditor({
+      value,
+      onChange,
+      commands = [],
+      components,
+    }: {
+      value: string;
+      onChange: (value: string) => void;
+      commands?: ICommand[];
+      components?: { preview: (source: string) => React.ReactNode };
+    }) {
       return (
-        <textarea
-          aria-label="본문"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        />
+        <>
+          {commands
+            .filter((command) => command.name === "font-family")
+            .map((command, index) => (
+              <div key={command.name}>
+                {command.render?.(command, false, jest.fn(), index) || null}
+              </div>
+            ))}
+          <textarea
+            aria-label="본문"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          />
+          {components?.preview(value)}
+        </>
       );
     }
 );
@@ -111,13 +138,25 @@ jest.mock(
       onPublish,
       onSaveDraft,
       feedback,
+      slugInput,
+      setSlugInput,
+      isEditing,
     }: {
       onPublish: () => void;
       onSaveDraft?: () => void;
       feedback?: string;
+      slugInput: string;
+      setSlugInput: (value: string) => void;
+      isEditing: boolean;
     }) {
       return (
         <div role="dialog">
+          <input
+            aria-label="게시글 주소"
+            value={slugInput}
+            onChange={(event) => setSlugInput(event.target.value)}
+            readOnly={isEditing}
+          />
           <button onClick={onPublish}>저장 확인</button>
           {onSaveDraft && <button onClick={onSaveDraft}>초안 저장</button>}
           {feedback && <p role="status">{feedback}</p>}
@@ -155,7 +194,7 @@ test("새 글을 작성하고 저장한다", async () => {
   fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
   await waitFor(() =>
     expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ title: "New Post", desc: "내용", slug: "new-post" })
+      expect.objectContaining({ title: "New Post", desc: "내용", slug: "" })
     )
   );
   expect(mockPush).toHaveBeenCalledWith("/posts/new-post");
@@ -319,6 +358,19 @@ test("이전 저장소 키의 복구본을 새 이름으로 이전한다", () =>
   expect(localStorage.getItem("blog:post-draft:v1:local:new")).toBeNull();
 });
 
+test("사진 설명을 본문에 반영하고 설명을 바꾼 사진도 삭제한다", () => {
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
+  fireEvent.change(screen.getByLabelText("사진 1 캡션"), {
+    target: { value: "바닷가의 노을" },
+  });
+  expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).toContain(
+    '![](/photo.png "바닷가의 노을")'
+  );
+  fireEvent.click(screen.getByRole("button", { name: "사진 1 삭제" }));
+  expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).not.toContain("/photo.png");
+});
+
 test("사진을 본문 중간에 삽입하고 사진 뒤에 커서를 둔다", () => {
   render(<WritePage />);
   const editor = screen.getByLabelText("본문") as HTMLTextAreaElement;
@@ -326,7 +378,7 @@ test("사진을 본문 중간에 삽입하고 사진 뒤에 커서를 둔다", (
   editor.setSelectionRange(4, 7);
   fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
   fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
-  const image = "\n\n![image](/photo.png)\n\n";
+  const image = "\n\n![](/photo.png)\n\n";
   expect(editor.value).toBe("앞 문단" + image + "뒤 문단");
   expect(editor.selectionStart).toBe(4 + image.length);
   expect(document.activeElement).toBe(editor);
@@ -341,7 +393,7 @@ test("업로드 중 앞쪽에 입력해도 기존 문맥의 삽입 위치를 유
   fireEvent.change(editor, { target: { value: "추가앞뒤" } });
   editor.setSelectionRange(4, 4);
   fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
-  expect(editor.value).toBe("추가앞\n\n![image](/photo.png)\n\n뒤");
+  expect(editor.value).toBe("추가앞\n\n![](/photo.png)\n\n뒤");
 });
 
 test("빈 본문에도 사진을 삽입한다", () => {
@@ -349,7 +401,7 @@ test("빈 본문에도 사진을 삽입한다", () => {
   fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
   fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
   expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).toBe(
-    "\n\n![image](/photo.png)\n\n"
+    "\n\n![](/photo.png)\n\n"
   );
 });
 
@@ -360,11 +412,13 @@ test("여러 사진을 기억한 커서 위치에 순서대로 삽입한다", ()
   editor.setSelectionRange(1, 1);
   fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
   fireEvent.click(screen.getByRole("button", { name: "여러 장 완료" }));
-  expect(editor.value).toBe("앞\n\n![image](/first.png)\n\n\n\n![image](/second.png)\n\n뒤");
-  expect(screen.getAllByAltText(/uploaded-/)).toHaveLength(2);
+  expect(editor.value).toBe("앞\n\n![](/first.png)\n\n\n\n![](/second.png)\n\n뒤");
+  expect(screen.getAllByLabelText(/사진 \d 캡션/)).toHaveLength(2);
 });
 
 const draftContent = {
+  slugInput: "",
+  fontFamily: "serif" as const,
   title: "저장한 제목",
   value: "작성 중인 내용",
   uploadedImages: [],
@@ -520,5 +574,82 @@ test("작성 중인 초안을 삭제해도 편집 내용은 새 글로 유지하
     expect(mockSaveDraft).toHaveBeenCalledWith({
       content: expect.objectContaining({ value: "삭제 후에도 남을 편집 내용" }),
     })
+  );
+});
+
+test("작성 전용 상단 메뉴에 서비스 이름과 작성 버튼을 표시한다", () => {
+  render(<WritePage />);
+  expect(screen.getByRole("navigation", { name: "글 작성 메뉴" })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "zindozang" }).getAttribute("href")).toBe("/");
+  expect(screen.getByRole("button", { name: "내 초안" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "저장 및 게시" })).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Blog" })).toBeNull();
+});
+
+test("본문 글꼴을 바꾸면 미리보기 스타일과 게시 요청에 반영한다", async () => {
+  mockCreate.mockResolvedValue({ slug: "font-post" });
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("combobox", { name: "본문 글꼴" }));
+  fireEvent.click(screen.getByRole("option", { name: /고딕체/ }));
+  const preview = screen.getByLabelText("본문").closest("[data-color-mode]") as HTMLElement;
+  expect(preview.style.getPropertyValue("--post-font-family")).toBe(
+    "var(--font-noto-sans-kr), sans-serif"
+  );
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "글꼴 테스트" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "본문" } });
+  expect(screen.getByTestId("post-preview").textContent).toBe("본문");
+  expect(screen.getByTestId("post-preview").getAttribute("data-font")).toBe("sans");
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() =>
+    expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ fontFamily: "sans" }))
+  );
+});
+
+test("초안의 본문 글꼴을 불러오고 변경한 글꼴을 다시 저장한다", async () => {
+  mockDraftId = "draft-1";
+  mockLoadDraft.mockResolvedValue({
+    ...savedDraft,
+    content: { ...draftContent, fontFamily: "nanum" },
+  });
+  mockSaveDraft.mockResolvedValue(savedDraft);
+  render(<WritePage />);
+  await screen.findByDisplayValue("저장한 제목");
+  expect(screen.getByRole("combobox", { name: "본문 글꼴" }).textContent).toContain("나눔고딕");
+  fireEvent.click(screen.getByRole("combobox", { name: "본문 글꼴" }));
+  fireEvent.click(screen.getByRole("option", { name: /고딕체/ }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ content: expect.objectContaining({ fontFamily: "sans" }) })
+    )
+  );
+});
+
+test("직접 입력한 주소는 게시 요청에 전달하고 초안 저장에도 보관한다", async () => {
+  mockPublishDraft.mockResolvedValue({ slug: "custom-address" });
+  mockSaveDraft.mockResolvedValue({
+    ...savedDraft,
+    content: { ...draftContent, slugInput: "Custom Address" },
+  });
+  render(<WritePage />);
+  fireEvent.change(screen.getByPlaceholderText("Title"), { target: { value: "다른 제목" } });
+  fireEvent.change(screen.getByLabelText("본문"), { target: { value: "본문" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.change(screen.getByLabelText("게시글 주소"), { target: { value: "Custom Address" } });
+  fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+  await waitFor(() =>
+    expect(mockSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ content: expect.objectContaining({ slugInput: "Custom Address" }) })
+    )
+  );
+  fireEvent.click(screen.getByRole("button", { name: "저장 및 게시" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장 확인" }));
+  await waitFor(() =>
+    expect(mockPublishDraft).toHaveBeenCalledWith(
+      savedDraft.id,
+      expect.objectContaining({ slug: "Custom Address" })
+    )
   );
 });

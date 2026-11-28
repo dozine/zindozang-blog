@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import type { DraftResponse } from "@/types/api/draft";
 
 export class DraftError extends Error {
   constructor(
@@ -21,7 +20,7 @@ export function draftError(error: unknown) {
       {
         message:
           error.code === "P2002"
-            ? "같은 주소의 글이 있습니다. 제목을 바꿔 다시 게시해주세요."
+            ? "이미 사용 중인 게시글 주소입니다. 다른 주소를 입력해주세요."
             : "다른 작업과 충돌했습니다. 초안을 다시 불러와주세요.",
       },
       { status: 409 }
@@ -34,24 +33,6 @@ export function draftError(error: unknown) {
 }
 
 export const draftInclude = { tags: { include: { tag: true } } } as const;
-type DraftPost = Prisma.PostGetPayload<{ include: typeof draftInclude }>;
-export function toDraftResponse(post: DraftPost): DraftResponse {
-  return {
-    id: post.id,
-    updatedAt: post.updatedAt?.toISOString() ?? null,
-    content: {
-      title: post.title,
-      value: post.desc,
-      uploadedImages: post.img,
-      thumbnailImg: post.img[0] ?? "",
-      catSlug: post.catSlug ?? "",
-      tags: post.tags.map(({ tag }) => ({ id: tag.id, name: tag.name })),
-      isPublished: post.isPublished,
-      tagInput: "",
-    },
-  };
-}
-
 export async function replaceDraftTags(
   tx: Prisma.TransactionClient,
   postId: string,

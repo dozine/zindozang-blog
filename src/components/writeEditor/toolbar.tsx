@@ -1,3 +1,5 @@
+import type { PostFont } from "@/types/post";
+import FontSelect from "./FontSelect";
 import * as commands from "@uiw/react-md-editor/commands";
 import type { ICommand } from "@uiw/react-md-editor";
 
@@ -56,6 +58,8 @@ export const formattingCommands: ICommand[] = [
   commands.divider,
   labeled(commands.link, "링크"),
   labeled(commands.quote, "인용"),
+  labeled(commands.table, "표 삽입"),
+  labeled(commands.hr, "가로 구분선"),
   labeled(commands.unorderedListCommand, "글머리 목록"),
   labeled(commands.orderedListCommand, "번호 목록"),
   labeled(commands.checkedListCommand, "체크 목록"),
@@ -71,3 +75,13 @@ export const formattingCommands: ICommand[] = [
   ),
   commands.divider,
 ];
+
+export function fontFamilyCommand(value: PostFont, onChange: (font: PostFont) => void): ICommand {
+  return {
+    name: "font-family",
+    keyCommand: "font-family",
+    render: (_command, disabled) => (
+      <FontSelect value={value} onChange={onChange} disabled={disabled} />
+    ),
+  };
+}

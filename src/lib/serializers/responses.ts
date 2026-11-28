@@ -1,5 +1,7 @@
+import type { DraftResponse } from "@/types/api/draft";
+import { normalizePostFont } from "@/lib/utils/post";
 import type { Category, Post, Tag } from "@prisma/client";
-import type { PostData, PostView } from "@/types/post";
+import type { PostData, PostView, PostWithTagRelations } from "@/types/post";
 import type { TagWithPosts } from "@/types/tag";
 import type { CategoryResponse } from "@/types/api/category";
 import type { PostFieldsResponse, PostResponse } from "@/types/api/post";
@@ -26,6 +28,7 @@ export function toPostFieldsResponse(post: Post): PostFieldsResponse {
     slug: post.slug,
     title: post.title,
     desc: post.desc,
+    fontFamily: normalizePostFont(post.fontFamily),
     img: post.img,
     views: post.views,
     isPublished: post.isPublished,
@@ -59,5 +62,24 @@ export function toTagDetailResponse(tag: TagWithPosts): TagDetailResponse {
       tagId: relation.tagId,
       post: toPostFieldsResponse(relation.post),
     })),
+  };
+}
+
+export function toDraftResponse(post: PostWithTagRelations): DraftResponse {
+  return {
+    id: post.id,
+    updatedAt: post.updatedAt?.toISOString() ?? null,
+    content: {
+      slugInput: post.draftSlug ?? "",
+      title: post.title,
+      value: post.desc,
+      fontFamily: normalizePostFont(post.fontFamily),
+      uploadedImages: post.img,
+      thumbnailImg: post.img[0] ?? "",
+      catSlug: post.catSlug ?? "",
+      tags: post.tags.map(({ tag }) => toTagResponse(tag)),
+      isPublished: post.isPublished,
+      tagInput: "",
+    },
   };
 }

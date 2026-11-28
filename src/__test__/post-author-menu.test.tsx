@@ -23,6 +23,7 @@ jest.mock(
 );
 
 const data: PostDetailView = {
+  fontFamily: "serif",
   id: "post-1",
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
   slug: "hello",
@@ -38,7 +39,9 @@ const data: PostDetailView = {
 };
 
 test("only the verified author sees post management controls", () => {
-  const { rerender } = render(<SinglePageClient data={data} slug="hello" />, { wrapper: QueryProvider });
+  const { rerender } = render(<SinglePageClient data={data} slug="hello" />, {
+    wrapper: QueryProvider,
+  });
   expect(screen.queryByRole("button", { name: "포스트 메뉴 열기" })).toBeNull();
 
   rerender(<SinglePageClient data={{ ...data, isAuthor: true }} slug="hello" />);

@@ -1,3 +1,4 @@
+import { toDraftResponse } from "@/lib/serializers/responses";
 import type { DraftIdRequest } from "@/types/api/draft";
 import { parseApiRequest } from "@/lib/zod/request";
 import { deleteDraftSchema } from "@/lib/zod/draft";
@@ -10,7 +11,6 @@ import {
   draftError,
   draftInclude,
   privateDraftHeaders,
-  toDraftResponse,
 } from "@/lib/services/draftServer";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<DraftIdRequest> }) {

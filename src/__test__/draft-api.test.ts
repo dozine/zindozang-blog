@@ -30,6 +30,8 @@ const db = prisma as unknown as {
 const email = "me@example.test";
 const date = new Date("2026-11-27T03:00:00Z");
 const content = {
+  slugInput: "",
+  fontFamily: "serif" as const,
   title: "",
   value: "미완성 내용",
   uploadedImages: ["/a.png", "/b.png"],
@@ -237,4 +239,64 @@ test("다른 탭에서 저장한 초안은 오래된 목록에서 삭제하지 �
 test("삭제 요청에 저장 시각이 빠지면 거절한다", async () => {
   expect((await remove(req({}), context)).status).toBe(400);
   expect(db.$transaction).not.toHaveBeenCalled();
+});
+
+test("초안 저장과 게시 전환에 선택한 본문 글꼴을 유지한다", async () => {
+  db.post.findUniqueOrThrow.mockResolvedValue({ ...post, fontFamily: "nanum" });
+  const saved = await save(req({ content: { ...content, fontFamily: "nanum" } }));
+  expect(saved.status).toBe(200);
+  expect((await saved.json()).content.fontFamily).toBe("nanum");
+  expect(db.post.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({ fontFamily: "nanum" }),
+  });
+  db.post.updateMany.mockResolvedValue({ count: 1 });
+  const published = await publish(
+    req({ title: "제목", desc: "본문", updatedAt: date.toISOString(), fontFamily: "nanum" }),
+    context
+  );
+  expect(published.status).toBe(200);
+  expect(db.post.updateMany).toHaveBeenCalledWith(
+    expect.objectContaining({ data: expect.objectContaining({ fontFamily: "nanum" }) })
+  );
+});
+
+test("직접 입력한 주소를 초안에 보관하고 불러온다", async () => {
+  db.post.findUniqueOrThrow.mockResolvedValue({ ...post, draftSlug: "custom-address" });
+  const response = await save(req({ content: { ...content, slugInput: "custom-address" } }));
+  expect(response.status).toBe(200);
+  expect(db.post.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({
+      draftSlug: "custom-address",
+      slug: expect.stringMatching(/^draft-/),
+    }),
+  });
+  expect((await response.json()).content.slugInput).toBe("custom-address");
+});
+
+test("초안 게시 시 직접 입력한 주소를 제목보다 우선하고 임시 설정을 정리한다", async () => {
+  db.post.updateMany.mockResolvedValue({ count: 1 });
+  const response = await publish(
+    req({
+      title: "원래 제목",
+      desc: "본문",
+      slug: "Custom Address",
+      updatedAt: date.toISOString(),
+    }),
+    context
+  );
+  expect(response.status).toBe(200);
+  expect(db.post.updateMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: expect.objectContaining({ slug: "custom-address", draftSlug: null }),
+    })
+  );
+});
+
+test("게시 요청에서 주소를 생략하면 초안에 보관한 주소를 사용한다", async () => {
+  db.post.findFirst.mockResolvedValue({ draftSlug: "saved-address" });
+  db.post.updateMany.mockResolvedValue({ count: 1 });
+  await publish(req({ title: "제목", desc: "본문", updatedAt: date.toISOString() }), context);
+  expect(db.post.updateMany).toHaveBeenCalledWith(
+    expect.objectContaining({ data: expect.objectContaining({ slug: "saved-address" }) })
+  );
 });

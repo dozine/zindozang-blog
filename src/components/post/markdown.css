@@ -1,6 +1,6 @@
 .post-content-container {
   font-size: 16px;
-  font-family: var(--font-noto-serif-kr), serif;
+  font-family: var(--post-font-family, var(--font-noto-serif-kr), serif);
   line-height: 1.8;
   color: #333;
   word-break: break-word;
@@ -93,6 +93,26 @@
   border-radius: 2px;
 }
 
+/* 사진 캡션 */
+.post-content-container .post-image {
+  display: block;
+  margin: 1.5em 0;
+}
+
+.post-content-container .post-image img {
+  margin: 0 auto;
+}
+
+.post-content-container .post-image-caption {
+  display: block;
+  margin-top: 8px;
+  color: var(--softTextColor, #777);
+  font-size: 0.85em;
+  line-height: 1.6;
+  text-align: center;
+  white-space: pre-wrap;
+}
+
 /* 테이블 */
 .post-content-container table {
   width: 100%;
@@ -131,7 +151,9 @@
 }
 
 .post-content-container .img-grid-2 p,
-.post-content-container .img-grid-3 p {
+.post-content-container .img-grid-3 p,
+.post-content-container .img-grid-2 .post-image,
+.post-content-container .img-grid-3 .post-image {
   margin: 0;
 }
 

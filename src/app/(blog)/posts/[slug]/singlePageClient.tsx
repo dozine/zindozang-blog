@@ -27,8 +27,8 @@ const SinglePageClient = ({ data, slug }: SinglePageClientProps) => {
   const { menuOpen, toggleMenu, isDeleteModalOpen, openDeleteModal, closeDeleteModal, handleEdit } =
     usePostActions(slug);
   const renderedContent = useMemo(() => {
-    return <PostContent desc={data.desc} isDark={isDark} />;
-  }, [data.desc, isDark]);
+    return <PostContent desc={data.desc} isDark={isDark} fontFamily={data.fontFamily} />;
+  }, [data.desc, data.fontFamily, isDark]);
 
   return (
     <div className={styles.container}>

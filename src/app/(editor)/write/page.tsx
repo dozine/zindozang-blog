@@ -1,11 +1,15 @@
 "use client";
+import { postSlugInputSchema } from "@/lib/zod/post";
+import { normalizePostFont } from "@/lib/utils/post";
+
 import styles from "./writePage.module.css";
 import ImageGridPicker from "@/components/imageGridPicker/ImageGridPicker";
 import { arrangeImageGrid } from "@/lib/utils/imageGrid";
+import { findMarkdownImages, removeMarkdownImage, updateImageCaption } from "@/lib/utils/markdownImage";
 import { ThemeContext } from "@/context/ThemeContext";
-import { formattingCommands } from "@/components/writeEditor/toolbar";
+import { formattingCommands, fontFamilyCommand } from "@/components/writeEditor/toolbar";
 import { postRecoverySchema } from "@/lib/zod/postRecovery";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ImageUploader from "@/components/imageUploader/ImageUploader";
@@ -18,10 +22,17 @@ import { useTagsQuery } from "@/queries/tag";
 import { getErrorMessage } from "@/lib/utils/error";
 import type { TagData } from "@/types/tag";
 import type { UpdatePostRequest } from "@/types/api/post";
+import { DEFAULT_POST_FONT, POST_FONTS } from "@/lib/constants/post";
+import type { PostFont } from "@/types/post";
+import WriteHeader from "@/components/writeHeader/WriteHeader";
 import DraftPicker from "@/components/draftPicker/DraftPicker";
 import { useDraftQuery, useSaveDraft, usePublishDraft } from "@/queries/draft";
 import type { DraftContent, DraftResponse } from "@/types/api/draft";
 import PostSettingModal from "@/components/postSettingModal/PostSettingModal";
+import PostContent from "@/components/post/PostContent";
+
+const serializeRecoveryContent = (content: DraftContent) =>
+  JSON.stringify(postRecoverySchema.shape.content.parse(content));
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -185,6 +196,7 @@ const WritePage = () => {
     imageAnchor.current = textarea?.selectionStart ?? previousValue.current.length;
   }, []);
 
+  const [fontFamily, setFontFamily] = useState<PostFont>(DEFAULT_POST_FONT);
   const [title, setTitle] = useState<string>("");
   const isSubmitting = isCreating || isUpdating || isPublishingDraft || draftBusy;
 
@@ -193,6 +205,7 @@ const WritePage = () => {
   const [catSlug, setCatSlug] = useState<string>("");
   const [tags, setTags] = useState<TagData[]>([]);
   const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [slugInput, setSlugInput] = useState("");
   const [tagInput, setTagInput] = useState<string>("");
   const [gridColumns, setGridColumns] = useState<2 | 3 | null>(null);
   const gridPosition = useRef(0);
@@ -212,6 +225,8 @@ const WritePage = () => {
   const baseline = useRef("");
   const lastPersisted = useRef("");
   const postRecovery = {
+    slugInput,
+    fontFamily,
     title,
     value,
     uploadedImages,
@@ -221,7 +236,7 @@ const WritePage = () => {
     isPublished,
     tagInput,
   };
-  const serializedPostRecovery = JSON.stringify(postRecovery);
+  const serializedPostRecovery = serializeRecoveryContent(postRecovery);
 
   useEffect(() => {
     if (
@@ -233,6 +248,8 @@ const WritePage = () => {
       return;
     const imgs = postToEdit?.img ?? [];
     const initial = (!isEditing ? draft?.content : null) ?? {
+      fontFamily: normalizePostFont(postToEdit?.fontFamily),
+      slugInput: isEditing ? (postToEdit?.slug ?? "") : "",
       title: postToEdit?.title ?? "",
       value: postToEdit?.desc ?? "",
       uploadedImages: imgs,
@@ -242,7 +259,7 @@ const WritePage = () => {
       isPublished: Boolean(postToEdit?.isPublished),
       tagInput: "",
     };
-    baseline.current = JSON.stringify(initial);
+    baseline.current = serializeRecoveryContent(initial);
     savedSuccessfully.current = false;
     const detached = !isEditing && !draftId ? detachedDraftContent.current : null;
     let restored = detached ?? initial;
@@ -275,7 +292,8 @@ const WritePage = () => {
         );
       }
     detachedDraftContent.current = null;
-    lastPersisted.current = JSON.stringify(detached ? initial : restored);
+    lastPersisted.current = serializeRecoveryContent(detached ? initial : restored);
+    setFontFamily(normalizePostFont(restored.fontFamily));
     setTitle(restored.title);
     setValue(restored.value);
     setUploadedImages(restored.uploadedImages);
@@ -283,6 +301,7 @@ const WritePage = () => {
     setCatSlug(restored.catSlug);
     setTags(restored.tags);
     setIsPublished(restored.isPublished);
+    setSlugInput(isEditing ? (postToEdit?.slug ?? "") : (restored.slugInput ?? ""));
     setTagInput(restored.tagInput);
     initializedSlug.current = isEditing ? editSlug : null;
     setPostRecoveryReady(postRecoveryKey);
@@ -345,18 +364,9 @@ const WritePage = () => {
     }
   }, [postRecoveryKey]);
 
-  const slugify = (str: string) =>
-    str
-      .normalize("NFC")
-      .trim()
-      .replace(/[^\w가-힣\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .toLowerCase();
-
   const handleImagesUploaded = useCallback((imageUrls: string[]) => {
     if (!imageUrls.length) return;
-    const markdownImage = imageUrls.map((url) => `\n\n![image](${url})\n\n`).join("");
+    const markdownImage = imageUrls.map((url) => `\n\n![](${url})\n\n`).join("");
     const position = Math.min(
       imageAnchor.current ?? previousValue.current.length,
       previousValue.current.length
@@ -442,6 +452,10 @@ const WritePage = () => {
     if (actionInProgress.current || uploading) return;
     if (!title.trim()) return alert("제목을 입력해주세요.");
     if (!value.trim()) return alert("내용을 입력해주세요.");
+    if (!isEditing) {
+      const validation = postSlugInputSchema.safeParse(slugInput);
+      if (!validation.success) return alert(validation.error.issues[0].message);
+    }
     actionInProgress.current = true;
     const tagIds: string[] = tags.map((tag) => tag.id);
     const finalCatSlug = catSlug || null;
@@ -451,6 +465,7 @@ const WritePage = () => {
         const updateBody: UpdatePostRequest = {
           title,
           desc: value,
+          fontFamily,
           img: thumbnailImg ? [thumbnailImg] : [],
           catSlug: finalCatSlug,
           tags: tagIds,
@@ -467,11 +482,13 @@ const WritePage = () => {
           body: {
             title,
             desc: value,
+            fontFamily,
             img: thumbnailImg ? [thumbnailImg] : [],
             catSlug: finalCatSlug,
             tags: tagIds,
             isPublished,
             updatedAt: draft.updatedAt,
+            slug: slugInput,
           },
         });
         clearPostRecovery();
@@ -481,8 +498,9 @@ const WritePage = () => {
         const createBody = {
           title,
           desc: value,
+          fontFamily,
           img: thumbnailImg ? [thumbnailImg] : [],
-          slug: slugify(title) || `post-${crypto.randomUUID()}`,
+          slug: slugInput,
           catSlug: finalCatSlug,
           tags: tagIds,
           isPublished,
@@ -503,6 +521,8 @@ const WritePage = () => {
     editSlug,
     title,
     value,
+    fontFamily,
+    slugInput,
     thumbnailImg,
     catSlug,
     tags,
@@ -589,8 +609,24 @@ const WritePage = () => {
     },
   ];
 
+  const header = (
+    <WriteHeader
+      isEditing={isEditing}
+      disabled={status !== "authenticated" || isLoading || !!dataError || isSubmitting || uploading}
+      onOpenDrafts={() => setShowDraftPicker(true)}
+      onOpenSettings={handlePublishClick}
+    />
+  );
+
+  const imageCaptions = new Map(findMarkdownImages(value).map((image) => [image.url, image.caption]));
+
   if (status === "loading" || isLoading) {
-    return <div className={styles.loading}>Loading...</div>;
+    return (
+      <>
+        {header}
+        <main className={styles.loading}>Loading...</main>
+      </>
+    );
   }
 
   if (status === "unauthenticated") {
@@ -600,182 +636,199 @@ const WritePage = () => {
 
   if (dataError) {
     return (
-      <div className={styles.loading}>
-        데이터를 불러오지 못했습니다: {dataError} <button onClick={retryData}>다시 시도</button>
-      </div>
+      <>
+        {header}
+        <main className={styles.loading}>
+          데이터를 불러오지 못했습니다: {dataError} <button onClick={retryData}>다시 시도</button>
+        </main>
+      </>
     );
   }
 
   return (
-    <div className={styles.container}>
-      {showRecoveryToast && (
-        <div className={styles.recoveryToast} role="status" aria-live="polite">
-          <span>작성 중이던 내용을 복구했습니다.</span>
-          <button
-            type="button"
-            aria-label="복구 알림 닫기"
-            onClick={() => setShowRecoveryToast(false)}
-          >
-            ×
-          </button>
-        </div>
-      )}
-      <fieldset className={styles.editorFields} disabled={isSubmitting}>
-        <div className={styles.draftActions}>
-          {!isEditing && (
+    <>
+      {header}
+      <main className={styles.container}>
+        {showRecoveryToast && (
+          <div className={styles.recoveryToast} role="status" aria-live="polite">
+            <span>작성 중이던 내용을 복구했습니다.</span>
             <button
               type="button"
-              className={styles.secondaryAction}
-              onClick={() => setShowDraftPicker(true)}
-              disabled={isSubmitting || uploading}
+              aria-label="복구 알림 닫기"
+              onClick={() => setShowRecoveryToast(false)}
             >
-              내 초안
+              ×
             </button>
-          )}
-          <button
-            type="button"
-            className={styles.publish}
-            onClick={handlePublishClick}
-            disabled={isSubmitting || uploading}
-          >
-            {isEditing ? "수정 반영" : "저장 및 게시"}
-          </button>
-        </div>
-        <input
-          type="text"
-          placeholder="Title"
-          className={styles.titleInput}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        {!isEditing && draft && (
-          <p role="status" className={styles.postRecoveryStatus}>
-            초안 · 마지막 저장:{" "}
-            {draft.updatedAt ? new Date(draft.updatedAt).toLocaleString("ko-KR") : "저장 시각 없음"}
-          </p>
-        )}
-        {postRecoveryMessage && (
-          <p role="status" className={styles.postRecoveryStatus}>
-            {postRecoveryMessage}
-          </p>
-        )}
-        <ImageUploader
-          onUploadingChange={setUploading}
-          onImagesUploaded={handleImagesUploaded}
-          onUploadRequested={rememberImagePosition}
-          triggerUpload={triggerImageUpload}
-          onUploadTriggered={resetImageUploadTrigger}
-        />
-
-        {uploadedImages.length > 0 && (
-          <div
-            className={styles.imagePreviewList}
-            role="region"
-            aria-label={`업로드한 사진 ${uploadedImages.length}장`}
-            tabIndex={0}
-          >
-            {uploadedImages.map((url, i) => (
-              <div key={i} className={styles.imagePreviewItem}>
-                <img src={url} alt={`uploaded-${i}`} />
-                <div className={styles.imagePreviewInfo}>
-                  <span className={styles.imagePreviewIndex}>#{i + 1}</span>
-                  {thumbnailImg === url && <span className={styles.imagePreviewThumb}>썸네일</span>}
-                </div>
-                <button
-                  className={styles.imagePreviewRemove}
-                  onClick={() => {
-                    const next = uploadedImages.filter((_, idx) => idx !== i);
-                    setUploadedImages(next);
-                    if (thumbnailImg === url) {
-                      setThumbnailImg(next[0] || "");
-                    }
-                    setValue((prev) =>
-                      prev
-                        .replace(`\n\n![image](${url})\n\n`, "")
-                        .replace(`![image](${url})`, "")
-                        .replace(`![](${url})`, "")
-                    );
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
           </div>
         )}
-
-        <div
-          ref={editorContainerRef}
-          data-color-mode={theme === "dark" ? "dark" : "light"}
-          className={styles.editorContainer}
-        >
-          <MDEditor
-            value={value}
-            onChange={(val) => setValue(val || "")}
-            height={560}
-            minHeight={400}
-            textareaProps={{ "aria-label": "본문", placeholder: "여기에 이야기를 적어보세요…" }}
-            commands={[...formattingCommands, ...customCommands]}
+        <fieldset className={styles.editorFields} disabled={isSubmitting}>
+          <input
+            type="text"
+            placeholder="Title"
+            className={styles.titleInput}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
-        </div>
+          {!isEditing && draft && (
+            <p role="status" className={styles.postRecoveryStatus}>
+              초안 · 마지막 저장:{" "}
+              {draft.updatedAt
+                ? new Date(draft.updatedAt).toLocaleString("ko-KR")
+                : "저장 시각 없음"}
+            </p>
+          )}
+          {postRecoveryMessage && (
+            <p role="status" className={styles.postRecoveryStatus}>
+              {postRecoveryMessage}
+            </p>
+          )}
+          <ImageUploader
+            onUploadingChange={setUploading}
+            onImagesUploaded={handleImagesUploaded}
+            onUploadRequested={rememberImagePosition}
+            triggerUpload={triggerImageUpload}
+            onUploadTriggered={resetImageUploadTrigger}
+          />
 
-        {uploading && <p role="status">사진 업로드가 끝나면 저장할 수 있습니다.</p>}
-        {draftMessage && <p role="status">{draftMessage}</p>}
-      </fieldset>
+          {uploadedImages.length > 0 && (
+            <div
+              className={styles.imagePreviewList}
+              role="region"
+              aria-label={`업로드한 사진 ${uploadedImages.length}장`}
+              tabIndex={0}
+            >
+              {uploadedImages.map((url, i) => (
+                <div key={i} className={styles.imagePreviewItem}>
+                  <img src={url} alt="" />
+                  <div className={styles.imagePreviewInfo}>
+                    <span className={styles.imagePreviewIndex}>#{i + 1}</span>
+                    {thumbnailImg === url && (
+                      <span className={styles.imagePreviewThumb}>썸네일</span>
+                    )}
+                  </div>
+                  <label className={styles.imageCaptionLabel}>
+                    캡션
+                    <input
+                      aria-label={`사진 ${i + 1} 캡션`}
+                      placeholder={imageCaptions.has(url) ? "사진 아래에 표시할 설명" : "본문에 없는 사진입니다"}
+                      disabled={!imageCaptions.has(url)}
+                      value={imageCaptions.get(url) ?? ""}
+                      onChange={(event) => {
+                        const caption = event.target.value;
+                        setValue((previous) => updateImageCaption(previous, url, caption));
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    aria-label={`사진 ${i + 1} 삭제`}
+                    className={styles.imagePreviewRemove}
+                    onClick={() => {
+                      const next = uploadedImages.filter((_, idx) => idx !== i);
+                      setUploadedImages(next);
+                      if (thumbnailImg === url) {
+                        setThumbnailImg(next[0] || "");
+                      }
+                      setValue((prev) => removeMarkdownImage(prev, url));
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
-      {showDraftPicker && (
-        <DraftPicker
-          currentId={draft?.id}
-          onClose={() => setShowDraftPicker(false)}
-          onDeleted={handleDeletedDraft}
-          onSelect={handleSelectDraft}
-        />
-      )}
+          <div
+            ref={editorContainerRef}
+            data-color-mode={theme === "dark" ? "dark" : "light"}
+            className={styles.editorContainer}
+            style={{ "--post-font-family": POST_FONTS[fontFamily].family } as CSSProperties}
+          >
+            <MDEditor
+              value={value}
+              onChange={(val) => setValue(val || "")}
+              height={560}
+              minHeight={400}
+              components={{
+                preview: (source) => (
+                  <PostContent
+                    desc={source}
+                    isDark={theme === "dark"}
+                    fontFamily={fontFamily}
+                  />
+                ),
+              }}
+              textareaProps={{ "aria-label": "본문", placeholder: "여기에 이야기를 적어보세요…" }}
+              commands={[
+                fontFamilyCommand(fontFamily, setFontFamily),
+                ...formattingCommands,
+                ...customCommands,
+              ]}
+            />
+          </div>
 
-      {gridColumns !== null && (
-        <ImageGridPicker
-          columns={gridColumns}
-          images={[
-            ...new Set([
-              ...uploadedImages,
-              ...Array.from(value.matchAll(/!\[[^\]]*\]\(([^\s)]+)\)/g), (match) => match[1]),
-            ]),
-          ]}
-          onClose={() => setGridColumns(null)}
-          onConfirm={(urls) => {
-            const result = arrangeImageGrid(value, urls, gridColumns, gridPosition.current);
-            setValue(result.value);
-            setImageCaret(result.caret);
-            setGridColumns(null);
-          }}
-        />
-      )}
-      {showSettingsModal && (
-        <PostSettingModal
-          isOpen={showSettingsModal}
-          onClose={closeModal}
-          catSlug={catSlug}
-          setCatSlug={setCatSlug}
-          isPublished={isPublished}
-          setIsPublished={setIsPublished}
-          tagInput={tagInput}
-          setTagInput={setTagInput}
-          tags={tags}
-          setTags={setTags}
-          categories={categories}
-          availableTags={availableTags}
-          onSaveDraft={isEditing ? undefined : handleSaveDraft}
-          isEditing={isEditing}
-          isSavingDraft={draftBusy}
-          feedback={draftMessage}
-          onPublish={handleFinalPublish}
-          isSubmitting={isSubmitting || uploading}
-          uploadedImages={uploadedImages}
-          thumbnailImg={thumbnailImg}
-          setThumbnailImg={setThumbnailImg}
-        />
-      )}
-    </div>
+          {uploading && <p role="status">사진 업로드가 끝나면 저장할 수 있습니다.</p>}
+          {draftMessage && <p role="status">{draftMessage}</p>}
+        </fieldset>
+
+        {showDraftPicker && (
+          <DraftPicker
+            currentId={draft?.id}
+            onClose={() => setShowDraftPicker(false)}
+            onDeleted={handleDeletedDraft}
+            onSelect={handleSelectDraft}
+          />
+        )}
+
+        {gridColumns !== null && (
+          <ImageGridPicker
+            columns={gridColumns}
+            images={[
+              ...new Set([
+                ...uploadedImages,
+                ...findMarkdownImages(value).map((image) => image.url),
+              ]),
+            ]}
+            onClose={() => setGridColumns(null)}
+            onConfirm={(urls) => {
+              const result = arrangeImageGrid(value, urls, gridColumns, gridPosition.current);
+              setValue(result.value);
+              setImageCaret(result.caret);
+              setGridColumns(null);
+            }}
+          />
+        )}
+        {showSettingsModal && (
+          <PostSettingModal
+            isOpen={showSettingsModal}
+            postTitle={title}
+            slugInput={slugInput}
+            setSlugInput={setSlugInput}
+            onClose={closeModal}
+            catSlug={catSlug}
+            setCatSlug={setCatSlug}
+            isPublished={isPublished}
+            setIsPublished={setIsPublished}
+            tagInput={tagInput}
+            setTagInput={setTagInput}
+            tags={tags}
+            setTags={setTags}
+            categories={categories}
+            availableTags={availableTags}
+            onSaveDraft={isEditing ? undefined : handleSaveDraft}
+            isEditing={isEditing}
+            isSavingDraft={draftBusy}
+            feedback={draftMessage}
+            onPublish={handleFinalPublish}
+            isSubmitting={isSubmitting || uploading}
+            uploadedImages={uploadedImages}
+            thumbnailImg={thumbnailImg}
+            setThumbnailImg={setThumbnailImg}
+          />
+        )}
+      </main>
+    </>
   );
 };
 

@@ -55,6 +55,7 @@ test("태그 목록의 잘못된 개수는 거부하고 중복 태그 응답은 
 
 test("게시글 조회와 생성은 응답의 필수 필드를 검사한다", async () => {
   const post = {
+    fontFamily: "serif",
     id: "1",
     createdAt: "2026-01-01T00:00:00.000Z",
     slug: "hello",

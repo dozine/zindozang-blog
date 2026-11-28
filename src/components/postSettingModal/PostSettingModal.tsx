@@ -1,5 +1,7 @@
 "use client";
 
+import { resolvePostSlug } from "@/lib/utils/slug";
+
 import { getErrorMessage } from "@/lib/utils/error";
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import CategorySelect from "./CategorySelect";
@@ -9,6 +11,9 @@ import type { TagData, TagWithPostCount } from "@/types/tag";
 import { useCreateTag } from "@/queries/tag";
 
 export interface PostSettingModalProps {
+  postTitle: string;
+  slugInput: string;
+  setSlugInput: (value: string) => void;
   isOpen: boolean;
   onClose: () => void;
   catSlug: string;
@@ -33,6 +38,9 @@ export interface PostSettingModalProps {
 }
 
 const PostSettingModal = ({
+  postTitle,
+  slugInput,
+  setSlugInput,
   isOpen,
   onClose,
   catSlug,
@@ -171,6 +179,35 @@ const PostSettingModal = ({
               </div>
             </div>
           )}
+
+          <div className={styles.settingSection}>
+            <h3>
+              <label htmlFor="post-slug">게시글 주소{!isEditing && " (선택)"}</label>
+            </h3>
+            <div className={styles.slugField}>
+              <span>/posts/</span>
+              <input
+                id="post-slug"
+                value={slugInput}
+                readOnly={isEditing}
+                onChange={(event) => setSlugInput(event.target.value)}
+                placeholder="비워두면 제목으로 자동 생성"
+                aria-describedby="post-slug-hint"
+                autoCapitalize="none"
+                spellCheck={false}
+              />
+            </div>
+            <p id="post-slug-hint" className={styles.slugHint}>
+              {isEditing
+                ? "제목을 수정해도 게시글 주소는 유지됩니다."
+                : "비워두면 제목으로 자동 생성됩니다. 공백은 하이픈으로 바뀝니다."}
+            </p>
+            {!isEditing && resolvePostSlug(postTitle, slugInput) && (
+              <p className={styles.slugPreview}>
+                예상 주소: /posts/{resolvePostSlug(postTitle, slugInput)}
+              </p>
+            )}
+          </div>
 
           {/* 카테고리 */}
           <div className={styles.settingSection}>

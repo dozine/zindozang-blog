@@ -3,11 +3,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 20px;
   padding: 0 20px;
   max-width: 1040px;
   padding-bottom: 100px;
-  margin: 0 auto;
+  margin: 32px auto 0;
 }
 
 .titleInput {
@@ -20,7 +19,7 @@
   font-family: var(--font-noto-sans-kr), sans-serif;
   font-weight: 700;
   border: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--softTextColor) 18%, var(--bg));
+  border-bottom: 1px solid #1a1a1a;
   outline: none;
   background-color: transparent;
   color: var(--textColor);
@@ -29,19 +28,6 @@
 
 .titleInput::placeholder {
   color: color-mix(in srgb, var(--softTextColor) 50%, var(--bg));
-}
-
-.publish {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  padding: 10px 20px;
-  border: none;
-  background-color: #1a8917;
-  color: white;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
 }
 
 .loading {
@@ -61,12 +47,6 @@
 
   .editor {
     height: 500px;
-  }
-
-  .publish {
-    bottom: 20px;
-    right: 20px;
-    padding: 8px 16px;
   }
 }
 
@@ -99,23 +79,23 @@
 
 .imagePreviewItem {
   position: relative;
-  flex: 0 0 120px;
-  width: 120px;
-  height: 80px;
+  flex: 0 0 240px;
+  width: 240px;
   border: 1px solid #e0e0e0;
-  border-radius: 2px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .imagePreviewItem img {
   width: 100%;
-  height: 100%;
+  height: 120px;
+  display: block;
   object-fit: cover;
 }
 
 .imagePreviewInfo {
   position: absolute;
-  bottom: 0;
+  top: 97px;
   left: 0;
   right: 0;
   display: flex;
@@ -123,6 +103,31 @@
   align-items: center;
   padding: 3px 6px;
   background: rgba(0, 0, 0, 0.45);
+}
+
+.imageCaptionLabel {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  color: var(--softTextColor);
+  font-size: 12px;
+}
+
+.imageCaptionLabel input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--softTextColor);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--textColor);
+  font: inherit;
+}
+
+.imageCaptionLabel input:focus-visible {
+  outline: 2px solid #f9a03f;
+  outline-offset: 2px;
 }
 
 .imagePreviewIndex {
@@ -179,7 +184,7 @@
   width: max-content;
   max-width: calc(100vw - 40px);
   padding: 12px 16px;
-  border: 1px solid color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  border: 1px solid #444;
   border-radius: 10px;
   background: var(--bg);
   color: var(--textColor);
@@ -197,7 +202,7 @@
 }
 
 .editorContainer {
-  --editor-border: color-mix(in srgb, var(--softTextColor) 20%, var(--bg));
+  --editor-border: #444;
   --editor-accent: #b66b42;
   margin-top: 4px;
   min-width: 0;
@@ -287,14 +292,6 @@
   padding: 24px 28px;
 }
 
-.editorContainer :global(.wmde-markdown) {
-  background: var(--bg);
-  color: var(--textColor);
-  font-family: var(--font-noto-sans-kr), sans-serif;
-  font-size: 15px;
-  line-height: 1.85;
-}
-
 .editorContainer :global(.w-md-editor-bar) {
   color: var(--softTextColor);
   border-radius: 0 0 12px 12px;
@@ -322,68 +319,9 @@
   }
 }
 
-.editorContainer :global(.wmde-markdown .img-grid-2),
-.editorContainer :global(.wmde-markdown .img-grid-3) {
-  display: grid;
-  gap: 8px;
-  margin: 1.5em 0;
-}
-.editorContainer :global(.wmde-markdown .img-grid-2) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.editorContainer :global(.wmde-markdown .img-grid-3) {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.editorContainer :global(.wmde-markdown [class^="img-grid-"] p) {
-  margin: 0;
-  min-width: 0;
-}
-.editorContainer :global(.wmde-markdown [class^="img-grid-"] img) {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  margin: 0;
-  border-radius: 2px;
-}
-@media screen and (max-width: 640px) {
-  .editorContainer :global(.wmde-markdown .img-grid-2),
-  .editorContainer :global(.wmde-markdown .img-grid-3) {
-    grid-template-columns: 1fr;
-  }
-}
-
 .editorFields {
   border: 0;
   padding: 0;
   margin: 0;
   min-width: 0;
-}
-
-.draftActions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 16px 0 8px;
-}
-.draftActions .publish {
-  position: static;
-  margin: 0;
-  min-height: 44px;
-}
-.secondaryAction {
-  min-height: 44px;
-  padding: 10px 18px;
-  border: 1px solid var(--softTextColor);
-  border-radius: 20px;
-  background: var(--bg);
-  color: var(--textColor);
-  font: inherit;
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-.draftActions button:disabled {
-  opacity: 0.5;
-  cursor: wait;
 }

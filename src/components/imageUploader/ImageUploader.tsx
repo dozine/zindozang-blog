@@ -1,6 +1,5 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { ref, uploadBytesResumable, getDownloadURL, getStorage } from "firebase/storage";
 
 import styles from "./ImageUploader.module.css";
@@ -29,7 +28,7 @@ const ImageUploader = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePlusButtonClick = useCallback(() => {
+  const openFilePicker = useCallback(() => {
     if (uploadInProgress.current) return;
     onUploadRequested?.();
     fileInputRef.current?.click();
@@ -37,10 +36,10 @@ const ImageUploader = ({
 
   useEffect(() => {
     if (triggerUpload) {
-      handlePlusButtonClick();
+      openFilePicker();
       onUploadTriggered?.();
     }
-  }, [triggerUpload, onUploadTriggered, handlePlusButtonClick]);
+  }, [triggerUpload, onUploadTriggered, openFilePicker]);
 
   const prepareImage = async (file: File): Promise<File> => {
     if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
@@ -164,10 +163,9 @@ const ImageUploader = ({
   };
 
   return (
-    <div className={styles.container}>
-      <button className={styles.plusButton} onClick={handlePlusButtonClick} disabled={uploading}>
-        <Image src="/plus.png" alt="Add content" width={24} height={24} />
-      </button>
+    <div
+      className={`${styles.container} ${!uploading && uploadErrors.length === 0 ? styles.idle : ""}`}
+    >
       <input
         type="file"
         multiple
