@@ -79,23 +79,23 @@
 
 .imagePreviewItem {
   position: relative;
-  flex: 0 0 120px;
-  width: 120px;
-  height: 80px;
+  flex: 0 0 240px;
+  width: 240px;
   border: 1px solid #e0e0e0;
-  border-radius: 2px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .imagePreviewItem img {
   width: 100%;
-  height: 100%;
+  height: 120px;
+  display: block;
   object-fit: cover;
 }
 
 .imagePreviewInfo {
   position: absolute;
-  bottom: 0;
+  top: 97px;
   left: 0;
   right: 0;
   display: flex;
@@ -103,6 +103,31 @@
   align-items: center;
   padding: 3px 6px;
   background: rgba(0, 0, 0, 0.45);
+}
+
+.imageCaptionLabel {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  color: var(--softTextColor);
+  font-size: 12px;
+}
+
+.imageCaptionLabel input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--softTextColor);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--textColor);
+  font: inherit;
+}
+
+.imageCaptionLabel input:focus-visible {
+  outline: 2px solid #f9a03f;
+  outline-offset: 2px;
 }
 
 .imagePreviewIndex {

@@ -358,6 +358,19 @@ test("이전 저장소 키의 복구본을 새 이름으로 이전한다", () =>
   expect(localStorage.getItem("blog:post-draft:v1:local:new")).toBeNull();
 });
 
+test("사진 설명을 본문에 반영하고 설명을 바꾼 사진도 삭제한다", () => {
+  render(<WritePage />);
+  fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
+  fireEvent.change(screen.getByLabelText("사진 1 캡션"), {
+    target: { value: "바닷가의 노을" },
+  });
+  expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).toContain(
+    '![](/photo.png "바닷가의 노을")'
+  );
+  fireEvent.click(screen.getByRole("button", { name: "사진 1 삭제" }));
+  expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).not.toContain("/photo.png");
+});
+
 test("사진을 본문 중간에 삽입하고 사진 뒤에 커서를 둔다", () => {
   render(<WritePage />);
   const editor = screen.getByLabelText("본문") as HTMLTextAreaElement;
@@ -365,7 +378,7 @@ test("사진을 본문 중간에 삽입하고 사진 뒤에 커서를 둔다", (
   editor.setSelectionRange(4, 7);
   fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
   fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
-  const image = "\n\n![image](/photo.png)\n\n";
+  const image = "\n\n![](/photo.png)\n\n";
   expect(editor.value).toBe("앞 문단" + image + "뒤 문단");
   expect(editor.selectionStart).toBe(4 + image.length);
   expect(document.activeElement).toBe(editor);
@@ -380,7 +393,7 @@ test("업로드 중 앞쪽에 입력해도 기존 문맥의 삽입 위치를 유
   fireEvent.change(editor, { target: { value: "추가앞뒤" } });
   editor.setSelectionRange(4, 4);
   fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
-  expect(editor.value).toBe("추가앞\n\n![image](/photo.png)\n\n뒤");
+  expect(editor.value).toBe("추가앞\n\n![](/photo.png)\n\n뒤");
 });
 
 test("빈 본문에도 사진을 삽입한다", () => {
@@ -388,7 +401,7 @@ test("빈 본문에도 사진을 삽입한다", () => {
   fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
   fireEvent.click(screen.getByRole("button", { name: "업로드 완료" }));
   expect((screen.getByLabelText("본문") as HTMLTextAreaElement).value).toBe(
-    "\n\n![image](/photo.png)\n\n"
+    "\n\n![](/photo.png)\n\n"
   );
 });
 
@@ -399,8 +412,8 @@ test("여러 사진을 기억한 커서 위치에 순서대로 삽입한다", ()
   editor.setSelectionRange(1, 1);
   fireEvent.click(screen.getByRole("button", { name: "사진 선택" }));
   fireEvent.click(screen.getByRole("button", { name: "여러 장 완료" }));
-  expect(editor.value).toBe("앞\n\n![image](/first.png)\n\n\n\n![image](/second.png)\n\n뒤");
-  expect(screen.getAllByAltText(/uploaded-/)).toHaveLength(2);
+  expect(editor.value).toBe("앞\n\n![](/first.png)\n\n\n\n![](/second.png)\n\n뒤");
+  expect(screen.getAllByLabelText(/사진 \d 캡션/)).toHaveLength(2);
 });
 
 const draftContent = {

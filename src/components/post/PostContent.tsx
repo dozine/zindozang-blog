@@ -31,6 +31,14 @@ const PostContent = ({ desc, isDark, fontFamily }: PostContentProps) => {
         remarkPlugins={[remarkGfm, remarkBreaks as unknown as Pluggable]}
         rehypePlugins={[rehypeRaw]}
         components={{
+          img({ node, title, ...props }) {
+            return (
+              <span className="post-image" role="figure">
+                <img {...props} />
+                {title && <span className="post-image-caption">{title}</span>}
+              </span>
+            );
+          },
           code({ inline, node, className, children, ...props }: CodeProps) {
             const match = /language-(\w+)/.exec(className || "");
             const language = match ? match[1] : "";

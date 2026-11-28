@@ -5,6 +5,7 @@ import { normalizePostFont } from "@/lib/utils/post";
 import styles from "./writePage.module.css";
 import ImageGridPicker from "@/components/imageGridPicker/ImageGridPicker";
 import { arrangeImageGrid } from "@/lib/utils/imageGrid";
+import { findMarkdownImages, removeMarkdownImage, updateImageCaption } from "@/lib/utils/markdownImage";
 import { ThemeContext } from "@/context/ThemeContext";
 import { formattingCommands, fontFamilyCommand } from "@/components/writeEditor/toolbar";
 import { postRecoverySchema } from "@/lib/zod/postRecovery";
@@ -365,7 +366,7 @@ const WritePage = () => {
 
   const handleImagesUploaded = useCallback((imageUrls: string[]) => {
     if (!imageUrls.length) return;
-    const markdownImage = imageUrls.map((url) => `\n\n![image](${url})\n\n`).join("");
+    const markdownImage = imageUrls.map((url) => `\n\n![](${url})\n\n`).join("");
     const position = Math.min(
       imageAnchor.current ?? previousValue.current.length,
       previousValue.current.length
@@ -617,6 +618,8 @@ const WritePage = () => {
     />
   );
 
+  const imageCaptions = new Map(findMarkdownImages(value).map((image) => [image.url, image.caption]));
+
   if (status === "loading" || isLoading) {
     return (
       <>
@@ -696,14 +699,29 @@ const WritePage = () => {
             >
               {uploadedImages.map((url, i) => (
                 <div key={i} className={styles.imagePreviewItem}>
-                  <img src={url} alt={`uploaded-${i}`} />
+                  <img src={url} alt="" />
                   <div className={styles.imagePreviewInfo}>
                     <span className={styles.imagePreviewIndex}>#{i + 1}</span>
                     {thumbnailImg === url && (
                       <span className={styles.imagePreviewThumb}>썸네일</span>
                     )}
                   </div>
+                  <label className={styles.imageCaptionLabel}>
+                    캡션
+                    <input
+                      aria-label={`사진 ${i + 1} 캡션`}
+                      placeholder={imageCaptions.has(url) ? "사진 아래에 표시할 설명" : "본문에 없는 사진입니다"}
+                      disabled={!imageCaptions.has(url)}
+                      value={imageCaptions.get(url) ?? ""}
+                      onChange={(event) => {
+                        const caption = event.target.value;
+                        setValue((previous) => updateImageCaption(previous, url, caption));
+                      }}
+                    />
+                  </label>
                   <button
+                    type="button"
+                    aria-label={`사진 ${i + 1} 삭제`}
                     className={styles.imagePreviewRemove}
                     onClick={() => {
                       const next = uploadedImages.filter((_, idx) => idx !== i);
@@ -711,12 +729,7 @@ const WritePage = () => {
                       if (thumbnailImg === url) {
                         setThumbnailImg(next[0] || "");
                       }
-                      setValue((prev) =>
-                        prev
-                          .replace(`\n\n![image](${url})\n\n`, "")
-                          .replace(`![image](${url})`, "")
-                          .replace(`![](${url})`, "")
-                      );
+                      setValue((prev) => removeMarkdownImage(prev, url));
                     }}
                   >
                     ✕
@@ -774,7 +787,7 @@ const WritePage = () => {
             images={[
               ...new Set([
                 ...uploadedImages,
-                ...Array.from(value.matchAll(/!\[[^\]]*\]\(([^\s)]+)\)/g), (match) => match[1]),
+                ...findMarkdownImages(value).map((image) => image.url),
               ]),
             ]}
             onClose={() => setGridColumns(null)}
